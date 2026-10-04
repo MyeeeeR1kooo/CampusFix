@@ -20,7 +20,7 @@ Mock 往哪里挂。改任何一条都要在 Issue 里说，不要直接改代�
 | `src/api/client.ts` | 张越 | 唯一的 `fetch` 调用点；信封解析、`ApiError`、401 回调注册 |
 | `src/api/endpoints.ts` | 张越 | 一个操作一个函数，路径与查询串严格按契约 |
 | `src/api/mockBridge.ts` | 张越 | Mock **挂载点**：开关 + `MockResponder` 接口 |
-| `src/mocks/`（待建） | 舒玺悦 | Mock 数据与 responder 实现；不进 `api/` |
+| `src/mocks/` | 舒玺悦 | Mock 数据、responder、启动挂载和开发演示；不进 `api/` |
 | `src/app/App.tsx` | 张越 | 路由表 + provider 顺序 + 角色门 |
 | `src/app/{ErrorBoundary,ProtectedRoute,StatePages}.tsx` | 张越 | 壳层与状态页 |
 | `src/lib/queryClient.ts` | 张越 | QueryClient、query key 工厂、§13.3 的 409 行为 |
@@ -30,6 +30,23 @@ Mock 往哪里挂。改任何一条都要在 Issue 里说，不要直接改代�
 | `src/features/<domain>/` | 该域的负责人 | `auth`/`tickets` 张越｜`dispatch`/`technician`/`locations`/`analytics`/`users` 舒玺悦 |
 | `src/hooks/` | 谁先需要谁写 | 第二个使用者若要改语义，开 Issue |
 | `src/test/` | 各自测各自 | `AGENTS.md` §6 规定前端证据只放这里 |
+
+### #48 公共组件接口（舒玺悦）
+
+统一从 `src/components/index.ts` 导入；组件不请求接口、不推断权限，不另存服务端状态。
+
+| 文件 / 导出 | 接口与责任 |
+| --- | --- |
+| `DataTable.tsx` / `DataTable<T>` | `rows`, `columns`, `rowKey`, `caption`；支持 loading/error/empty，移动端沿用 `data-label` 卡片样式 |
+| `FilterBar.tsx` / `FilterBar` | 有名称的筛选表单，`children`, `onSubmit`, `onReset`, `busy`；字段由调用页用现有 Field + RHF/Zod 提供 |
+| `StatusBadge.tsx` / `StatusBadge`, `PriorityBadge` | 接收生成类型中的 status/priority，沿用 labels 的文字、图标和色调 |
+| `Timeline.tsx` / `Timeline` | 接收 API 已授权过滤的 `TimelineEntry[]`，按时间/kind/id 排序；事件和留言不混用 key |
+| `ConfirmDialog.tsx` / `ConfirmDialog` | 受控 `open`, `onConfirm`, `onCancel`, `pending`；确认期间防重复、焦点约束、Escape、关闭后恢复焦点；业务表单通过 children 注入 |
+| `Pagination.tsx` / `Pagination` | `nextCursor`, `hasPrevious`, `onNext(cursor)`, `onPrevious`, `busy`；只认识游标，不虚构总数/页数 |
+| `src/mocks/preview/` | #48 开发演示：两个独立页面消费同一公共库，不替代后续业务页面 |
+
+开发 Mock 在 `src/main.tsx` 渲染前经 `src/mocks/bootstrap.ts` 挂到现有 bridge；仅 DEV 且
+`VITE_USE_MOCK=1` 时加载。`src/api/`、路由、生成文件和伙伴现有组件保持原有实现。
 
 `src/routes/` 暂时为空：路由表在 `app/App.tsx` 里，它同时是 provider 树。要拆成独立模块由张越提
 Issue，不在页面 PR 里顺手做。
@@ -120,4 +137,4 @@ installMock(async (req) => {
 - `Dockerfile` / `nginx.conf` / compose：归 #45（那条分支已经在跑了）。
 - 登录行为本身（哪些账户能进、会话语义）：归 #47。这里只把 RHF + Zod 的表单接法立起来。§13.1
   给登录页列的演示账户说明与紧急渠道提示，等 #45 的种子账户和 #47 的文案就位后补上。
-- Mock 数据与公共组件库：归舒玺悦（样式层已预置在 `components.css`，见 §1）。
+- Mock 数据与公共组件库：舒玺悦已接入；使用方法与验证范围见 [ISSUE-48-HANDOFF.md](./ISSUE-48-HANDOFF.md)。

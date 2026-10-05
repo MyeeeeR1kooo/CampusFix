@@ -112,6 +112,14 @@ Mock API 测试覆盖 FR-01–12 / UC-01–05 的前端替身行为和失败路�
 
 本节同步修改 `ISSUE-48-HANDOFF.md`；本轮共涉及上述 6 个文件，未扩展 API、业务状态或正式页面范围。
 
+### #46 日期契约对齐（2026-10-06）
+
+按 `base-auth@841a011` 的 P0 基线 §5.1 / OpenAPI 说明，工单编号日期与统计趋势日期均取 `Asia/Shanghai` 自然日。修复种子工单及新建工单从 UTC 时间戳截取日期的问题；两处编号生成和统计趋势共用 `shanghaiDate`，由明确指定时区的 `Intl.DateTimeFormat` 转换。创建、更新及事件时间仍保留 UTC ISO 字符串。
+
+- 新增 6 项 API 回归，覆盖上海午夜前后、跨月、跨年、种子编号、趋势计数与 UTC 时间戳。修复前 4 项失败、2 项通过；修复后 Mock API 35 项及完整前端 174 项（10 文件）全部通过。
+- `tsc -b`、Vite 生产构建和 `git diff --check` 通过，产物未包含 Mock 标记；在临时前端副本中使用最新契约生成类型（摘要 `779110f98c95`）进行 TypeScript 兼容检查也通过。
+- 本轮只修改 `src/mocks/fixtures.ts`、`src/mocks/responder.ts`、`src/test/mockApi.test.ts` 和本交接文档，提交到原 PR #69。未修改 API、后端、生成类型或依赖；未重跑浏览器和真实后端/E2E。
+
 ## 实际修改文件
 
 | 文件 | 作用 |
@@ -147,6 +155,6 @@ Mock API 测试覆盖 FR-01–12 / UC-01–05 的前端替身行为和失败路�
 - 未连接真实 FastAPI/PostgreSQL，未运行真实三角色后端/E2E、Cookie/Origin 安全或数据库事务测试；本次不涉及后端实现。
 - Mock 拦截位置是现有 API client，不接管原生 `<img src="/api/...">`。开发时需要展示上传图，应通过 `api.downloadAttachment` 获取 Blob，再创建/释放 Object URL。下载 URL 字段仍保持契约规定的受保护相对路径。
 - 内存 Mock 只模拟当前浏览器页面的会话；刷新重置，不提供跨页面/跨标签会话持久化。文件校验使用浏览器解码，与后端文件解码器不是同一实现。
-- #46 尚未合并。当前本地 `base-auth` 后续提交 `ee45906` 增加了分派目标无效时的明确说明及 `AssignValidationError` response 别名，错误正文仍为 `ErrorResponse`。本实现按其说明返回 422/`technician_id` 字段错误；没有擅自改动伙伴的生成类型。#46 合并后由接口负责人重新生成对齐。
+- #46 尚未合并。已核对最新 `base-auth@841a011`，其中分派目标无效的 `422 / VALIDATION_ERROR`、`technician_id` 字段错误及 `AssignValidationError` 别名沿用 `ee45906` 的约定；编号日期已按最新说明修复。契约中的两处 403 声明/清单矛盾已记录在 [#65 review](https://github.com/MyeeeeR1kooo/CampusFix/pull/65#pullrequestreview-5418130475)。已提交生成类型仍为伙伴脚手架的原稿摘要 `f126bda3e32b`；最新类型仅在临时副本验证兼容，待契约评审后与接口负责人统一更新。
 - React Router 的既有 future-flag 提示、Zod 的 Rollup 注释提示不影响测试和构建；本次没有为消除提示调整依赖或脚手架配置。
 - 本次变更基于 `reporter-flow` 的脚手架提交 `ce323d7`，通过独立分支 `codex/48-mock-shared-components` 交付。#68 合并前以 `reporter-flow` 为 PR 目标分支，合并后可调整到 `main`。开始时工作区干净；全部变更均为本次任务，原有 `AppLayout`、`Field`、`Icon` 和伙伴文件实现保留。本次不包含合并或部署。

@@ -19,6 +19,17 @@ export function locationLabel(location: Location): string {
   return `${location.building} / ${location.floor} / ${location.room_or_area}`;
 }
 
+const shanghaiCalendar = new Intl.DateTimeFormat("en", {
+  timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit",
+});
+
+/** Ticket codes and daily trends share the contract's Shanghai calendar day. */
+export function shanghaiDate(value: string | number): string {
+  const parts = shanghaiCalendar.formatToParts(new Date(value));
+  const { year, month, day } = Object.fromEntries(parts.map(({ type, value: part }) => [type, part]));
+  return `${year}-${month}-${day}`;
+}
+
 export function createFixtures(now: Date) {
   const at = (days: number, hours = 0) => new Date(now.getTime() - days * 86400000 + hours * 3600000).toISOString();
   const users: User[] = MOCK_ACCOUNTS.map((user) => ({ ...user, created_at: at(40), updated_at: at(40) }));
@@ -63,7 +74,7 @@ export function createFixtures(now: Date) {
     }));
     const assigned = end >= 2;
     return {
-      id, code: `CF-${at(12 - index).slice(0, 10).replaceAll("-", "")}-${String(id).padStart(6, "0")}`,
+      id, code: `CF-${shanghaiDate(timeline[0].created_at).replaceAll("-", "")}-${String(id).padStart(6, "0")}`,
       reporter, location_id: location.id, location_label_snapshot: locationLabel(location),
       title: scenario.title, description: scenario.description, category: scenario.category,
       priority: end >= 1 ? (["LOW", "MEDIUM", "HIGH"] as const)[index % 3] : null,

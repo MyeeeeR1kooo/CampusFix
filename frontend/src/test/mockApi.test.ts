@@ -128,6 +128,34 @@ describe("mock filters and cursor contract — FR-04", () => {
   });
 });
 
+describe("Shanghai ticket dates — FR-02; updated #46 contract", () => {
+  it.each([
+    ["2026-10-03T15:59:59.999Z", "20261003", "2026-10-03"],
+    ["2026-10-03T16:00:00.000Z", "20261004", "2026-10-04"],
+    ["2026-10-31T16:00:00.000Z", "20261101", "2026-11-01"],
+    ["2026-12-31T16:00:00.000Z", "20270101", "2027-01-01"],
+  ])("uses the Shanghai day at %s for new codes and daily counts", async (utc, codeDay, trendDay) => {
+    installMock(createMockApi({ now: () => new Date(utc), emptyTickets: true }).responder);
+    await login(1);
+    const ticket = await api.createTicket(report);
+    expect(ticket).toMatchObject({ code: `CF-${codeDay}-000001`, created_at: utc, updated_at: utc });
+    expect((await api.getTicket(ticket.id)).timeline[0].created_at).toBe(utc);
+    await login(3);
+    expect((await api.getAnalytics()).daily_trend.at(-1)).toEqual({ date: trendDay, created_count: 1, closed_count: 0 });
+  });
+
+  it.each([
+    ["2026-10-03T15:59:59.999Z", "20260921", "2026-09-21T15:59:59.999Z"],
+    ["2026-10-03T16:00:00.000Z", "20260922", "2026-09-21T16:00:00.000Z"],
+  ])("uses the Shanghai creation day for seeded codes at %s", async (utc, codeDay, createdAt) => {
+    installMock(createMockApi({ now: () => new Date(utc) }).responder);
+    await login(1);
+    const ticket = await api.getTicket(1);
+    expect(ticket).toMatchObject({ code: `CF-${codeDay}-000001`, created_at: createdAt });
+    expect(ticket.timeline[0].created_at).toBe(createdAt);
+  });
+});
+
 describe("mutable workflow — FR-02, FR-05–09; UC-01–04", () => {
   it("preserves valid text and enforces length before any whitespace normalization", async () => {
     await login(1);

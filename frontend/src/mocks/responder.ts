@@ -1,7 +1,7 @@
 import type { Analytics, Attachment, Comment, Location, Role, TicketAction, TicketDetail, TicketEvent, TicketStatus, TicketSummary, User } from "../api";
 import type { MockRequest, MockResponder } from "../api/mockBridge";
 import { CATEGORY_ORDER, isTerminal, STATUS_ORDER } from "../lib/labels";
-import { createFixtures, locationLabel, MOCK_PASSWORD, person } from "./fixtures";
+import { createFixtures, locationLabel, MOCK_PASSWORD, person, shanghaiDate } from "./fixtures";
 import { createPaginator, filters, invalid, json, MockFailure, parse, schemas } from "./protocol";
 
 const responsibility: Record<TicketStatus, Pick<TicketSummary, "current_responsible_role" | "next_action">> = {
@@ -158,8 +158,6 @@ export function createMockApi(options: { now?: () => Date; emptyTickets?: boolea
   function analytics(): Analytics {
     const tickets = store.tickets;
     const closed = tickets.filter((ticket) => ticket.status === "CLOSED" && ticket.closed_at);
-    // Adding eight hours before taking the UTC date gives the Shanghai calendar date.
-    const date = (value: string | number) => new Date(new Date(value).getTime() + 8 * 3600000).toISOString().slice(0, 10);
     const buildings = [...new Set(tickets.map((ticket) => store.locations.find((location) => location.id === ticket.location_id)!.building))];
     return {
       by_status: STATUS_ORDER.map((status) => ({ status, count: tickets.filter((ticket) => ticket.status === status).length })),
@@ -168,9 +166,9 @@ export function createMockApi(options: { now?: () => Date; emptyTickets?: boolea
       backlog_count: tickets.filter((ticket) => !isTerminal(ticket.status)).length,
       average_close_seconds: closed.length ? closed.reduce((sum, ticket) => sum + (Date.parse(ticket.closed_at!) - Date.parse(ticket.created_at)) / 1000, 0) / closed.length : 0,
       daily_trend: Array.from({ length: 30 }, (_, index) => {
-        const day = date(now().getTime() - (29 - index) * 86400000);
-        return { date: day, created_count: tickets.filter((ticket) => date(ticket.created_at) === day).length,
-          closed_count: closed.filter((ticket) => date(ticket.closed_at!) === day).length };
+        const day = shanghaiDate(now().getTime() - (29 - index) * 86400000);
+        return { date: day, created_count: tickets.filter((ticket) => shanghaiDate(ticket.created_at) === day).length,
+          closed_count: closed.filter((ticket) => shanghaiDate(ticket.closed_at!) === day).length };
       }),
     };
   }
@@ -216,7 +214,7 @@ export function createMockApi(options: { now?: () => Date; emptyTickets?: boolea
       const id = nextTicket++;
       const created = timestamp();
       const ticket: TicketDetail = {
-        ...body, id, code: `CF-${created.slice(0, 10).replaceAll("-", "")}-${String(id).padStart(6, "0")}`,
+        ...body, id, code: `CF-${shanghaiDate(created).replaceAll("-", "")}-${String(id).padStart(6, "0")}`,
         reporter: person(user), location_label_snapshot: locationLabel(location), status: "SUBMITTED", version: 1,
         priority: null, current_assignee: null, created_at: created, updated_at: created, closed_at: null,
         ...responsibility.SUBMITTED, allowed_actions: [], report_photos: [], resolution_photos: [], assignments: [],

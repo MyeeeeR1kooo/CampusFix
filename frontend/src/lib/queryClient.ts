@@ -67,9 +67,13 @@ export function createAppQueryClient({ notify }: QueryClientOptions): QueryClien
       onError: (error, variables) => {
         if (!(error instanceof ApiError) || !error.isConflict) return;
 
-        notify(conflictMessage(classify(error)));
-
+        const classified = classify(error);
         const id = ticketIdOf(variables);
+        // §13.3's copy talks about a ticket, and so does the re-fetch. Not every 409 is one:
+        // the contract declares a 409 / CONFLICT for a duplicated location combination too,
+        // and there the ticket wording would send the user looking for a ticket that never
+        // moved. Off a ticket, the server's own message is the only accurate sentence.
+        notify(id === null ? classified.message : conflictMessage(classified));
         if (id === null) return;
         // Invalidate, don't patch: the server's version of the ticket is the only one
         // that can say who is responsible now.

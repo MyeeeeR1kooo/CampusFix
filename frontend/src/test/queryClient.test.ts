@@ -22,6 +22,17 @@ function conflict(code: string): ApiError {
   });
 }
 
+/** A 409 the contract declares off any ticket: the duplicated location combination. */
+function locationConflict(): ApiError {
+  return new ApiError({
+    status: 409,
+    code: "CONFLICT",
+    message: "This building, floor and room already exists.",
+    requestId: "req_2",
+    fieldErrors: [],
+  });
+}
+
 /**
  * `MutationCache.build` is what the observer uses internally; constructing `Mutation`
  * directly skips `defaultMutationOptions` and the cache wiring, so the test would not be
@@ -67,6 +78,24 @@ describe("409", () => {
 
     expect(notify).toHaveBeenCalledTimes(1);
     expect(client.getQueryCache().find({ queryKey: queryKeys.analytics() })?.isStale()).toBe(false);
+  });
+
+  it("says what the server said when the conflict is not about a ticket", async () => {
+    const notify = vi.fn();
+    const client = createAppQueryClient({ notify });
+
+    await runMutation(client, locationConflict(), {
+      building: "Teaching Building A",
+      floor: "3",
+      room_or_area: "301",
+      active: true,
+    });
+
+    expect(notify).toHaveBeenCalledTimes(1);
+    expect(notify.mock.calls[0][0]).toBe("This building, floor and room already exists.");
+    // The §13.3 wording is reserved for a ticket that actually moved; leaking it here would
+    // send the user to a ticket detail page that has nothing to do with the failure.
+    expect(notify.mock.calls[0][0]).not.toMatch(/ticket/i);
   });
 
   it("does not treat a zero or negative id as a ticket", async () => {

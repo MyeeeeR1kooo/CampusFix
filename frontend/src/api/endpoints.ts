@@ -25,13 +25,12 @@ import type {
   LocationPage,
   LoginRequest,
   ManagedRole,
-  Priority,
   ReviewRequest,
   ReworkRequest,
   StartRequest,
   TicketDetail,
+  TicketListQuery,
   TicketPage,
-  TicketStatus,
   TicketSummary,
   UpdateLocationRequest,
   User,
@@ -71,19 +70,12 @@ export function getCurrentUser(signal?: AbortSignal): Promise<User> {
 
 // ---------------------------------------------------------------- tickets (11)
 
-export interface TicketFilters {
-  cursor?: string | null;
-  limit?: number;
-  status?: TicketStatus;
-  category?: Category;
-  priority?: Priority | null;
-  building?: string;
-  created_from?: string;
-  created_before?: string;
-  q?: string;
-  /** Admin-only filter, per the contract. */
-  current_assignee_id?: Id;
-}
+/**
+ * The ticket-list filters are the contract's own `listTickets` query, aliased here so pages
+ * have a name to import. Spelling the ten parameters out by hand kept a second copy alive
+ * that a #46 rename could not break — `npm run gen:api` already publishes this shape.
+ */
+export type TicketFilters = TicketListQuery;
 
 /** GET /api/tickets — visibility is decided server-side from the session, not by filters. */
 export function listTickets(filters: TicketFilters = {}, signal?: AbortSignal): Promise<TicketPage> {

@@ -114,7 +114,7 @@ pnpm --dir tools/api-contract run typecheck
 2026-10-02 本地结果：
 
 - OpenAPI 3.1 校验通过；109 项测试通过（后端 99、Mock 10）。
-- 所有操作的成功及错误响应样例通过 Schema 校验；Mock 导出 23 操作、189 个响应示例。
+- 所有操作的成功及错误响应样例通过 Schema 校验；Mock 导出 23 操作、190 个响应示例。
 - TypeScript 类型生成及严格编译通过，含预期应失败的类型案例。
 - 一个来自现有 FastAPI/Starlette 依赖范围的 TestClient/httpx 弃用警告，不是失败；未顺手升级依赖。
 

@@ -57,6 +57,7 @@
 
 - 所有写操作需要允许的 `Origin`；浏览器自动带上，手工客户端也需提供。
 - 七个状态动作都传 `expected_version`；成功返回新版本，旧版本返回 409。留言不改变状态或版本。
+- 工单编号 `CF-YYYYMMDD-NNNNNN` 的 `YYYYMMDD` 取创建时刻的 **Asia/Shanghai 本地日期**，与统计趋势日期同一时区（不是 UTC）。
 - 分派目标账户不存在、非 Technician 或已停用：统一返回 `422 / VALIDATION_ERROR`，`field_errors.field` 为 `technician_id`，提示重新选择；失败不改变工单、分派记录或事件。
 - priority 从待分派至 CLOSED 非空；current_assignee 分派后非空且关闭后保留；只有 CLOSED 的 closed_at 非空。
 - `allowed_actions` 表示当前登录人可操作的按钮；`current_responsible_role/next_action` 表示当前业务责任，不等于当前人有权限。终态没有新增留言或状态动作。

@@ -137,7 +137,8 @@ paths:
       description: |
         仅 REPORTER；location_id 必须为启用地点，category 使用固定枚举。
         创建后 status=SUBMITTED、version=1、priority=null、current_assignee=null、closed_at=null。
-        code 为 CF-YYYYMMDD-NNNNNN，尾号用数据库生成的工单 ID，至少补足六位。
+        code 为 CF-YYYYMMDD-NNNNNN：YYYYMMDD 取创建时刻的 Asia/Shanghai 本地日期
+        （与统计趋势日期同一时区，不是 UTC），尾号用数据库生成的工单 ID，至少补足六位。
         保存地点名称快照，并通过 Workflow 协作写入一条 TICKET_SUBMITTED 公开事件。
         所有图片事务外先暂存校验；元数据、工单、事件与文件移动成功后提交，失败回滚并清理。
         即使没有图片也使用 multipart/form-data。无独立附件上传或工单删除端点。
@@ -251,8 +252,6 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
         '422':
           $ref: '#/components/responses/ValidationError'
         '500':
@@ -1033,7 +1032,11 @@ components:
       properties:
         id:
           $ref: '#/components/schemas/Id'
-        code: {type: string, pattern: '^CF-[0-9]{8}-[0-9]{6,}$', example: CF-20261002-000001}
+        code:
+          type: string
+          pattern: '^CF-[0-9]{8}-[0-9]{6,}$'
+          description: 前 8 位是创建时刻的 Asia/Shanghai 本地日期（YYYYMMDD），与统计趋势日期同一时区。
+          example: CF-20261002-000001
         reporter:
           $ref: '#/components/schemas/UserSummary'
         location_id:
@@ -1643,7 +1646,11 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
           example: {error: {code: UNAUTHORIZED, message: Authentication failed., request_id: req_example, field_errors: []}}
     Forbidden:
-      description: 403 / FORBIDDEN（角色/操作不允许）或 ORIGIN_NOT_ALLOWED（写请求来源不允许）。
+      description: |
+        403。FORBIDDEN（角色或资源关系不允许该动作）或 ORIGIN_NOT_ALLOWED（写请求来源不允许）。
+        下面两个示例只表示这两种错误的形状，不代表每个引用它的操作都会产生两种：
+        GET/HEAD/OPTIONS 不校验 Origin，只可能返回 FORBIDDEN；匿名端点（login）没有角色要求，
+        只可能返回 ORIGIN_NOT_ALLOWED。各操作的实际触发条件以该操作自己的 description 为准。
       headers:
         X-Request-ID:
           $ref: '#/components/headers/RequestId'
@@ -1667,7 +1674,13 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
           example: {error: {code: NOT_FOUND, message: Resource not found., request_id: req_example, field_errors: []}}
     Conflict:
-      description: 409 / TICKET_VERSION_CONFLICT（旧版本）或 CONFLICT（非法状态、唯一约束、终态留言、停用地点）。
+      description: |
+        409。TICKET_VERSION_CONFLICT（客户端提交的 expected_version 已过期）或 CONFLICT
+        （状态不允许、唯一约束冲突、终态工单新增留言、所选地点已停用）。
+        下面两个示例只表示这两种错误的形状，不代表每个引用它的操作都会产生两种：
+        只有携带 expected_version 的状态动作才可能返回 TICKET_VERSION_CONFLICT；
+        创建类操作（POST /api/tickets、POST /api/admin/locations）没有版本可冲突。
+        各操作的实际触发条件以该操作自己的 description 为准。
       headers:
         X-Request-ID:
           $ref: '#/components/headers/RequestId'

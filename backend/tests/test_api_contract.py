@@ -133,7 +133,10 @@ def test_exact_frozen_p0_route_coverage_without_extra_features(contract):
     operation_ids = [operation["operationId"] for _, _, _, operation in operations(contract)]
     assert len(operation_ids) == len(set(operation_ids))
     assert all(path == "/health" or path.startswith("/api/") for _, path in actual)
-    assert contract["x-contract-status"] == "pending-review"
+    # The status flips from pending-review to frozen when the contract is approved.
+    # Asserting one exact value would make the freeze itself break this test, so the
+    # guard only rejects a status that is neither of the two known states.
+    assert contract["x-contract-status"] in {"pending-review", "frozen"}
 
 
 def test_all_existing_public_core_routes_are_documented(contract):

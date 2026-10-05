@@ -17,7 +17,7 @@
 | 地点维护 | 所有地点列表、创建、局部修改/启停；停用不改变历史快照；唯一组合冲突 409 | 待评审 |
 | 账户管理 | Reporter/Technician，role/active 筛选、启停；无账号创建/改角色/管理 Admin | 待评审 |
 | 管理统计 | 六组字段；秒不是纯维修时间，0/空集合；30 日、Asia/Shanghai、按日期升序 | 待评审 |
-| 通用错误与附件 | error.code/message/request_id/field_errors；8 枚举；413/415/422图片提示；授权二进制下载 | 待评审 |
+| 通用错误与附件 | error.code/message/request_id/field_errors；8 枚举；413/415/422图片提示；授权二进制下载。403 只在写请求的 Origin 与角色场景出现，列表类 GET 不会有 403 | 待评审 |
 
 ## Mock 和类型检查
 

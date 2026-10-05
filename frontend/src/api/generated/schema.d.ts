@@ -1,9 +1,9 @@
 /*
  * CampusFix #48 — generated API types. Run `npm run gen:api`, never edit by hand.
  *   contract version : 1.0.0
- *   contract digest  : sha256:f126bda3e32b
+ *   contract digest  : sha256:779110f98c95
  *   contract source  : docs/api/openapi.yaml
- *   generated at     : 2026-10-02T16:28:00.116Z
+ *   generated at     : 2026-10-05T06:21:51.298Z
  *
  * The digest is the anchor while #46 is unmerged: two runs over the same YAML differ only
  * by timestamp, and any contract edit changes it. Record the upstream commit in the commit
@@ -121,7 +121,8 @@ export interface paths {
          * Reporter 创建工单和可选现场图片
          * @description 仅 REPORTER；location_id 必须为启用地点，category 使用固定枚举。
          *     创建后 status=SUBMITTED、version=1、priority=null、current_assignee=null、closed_at=null。
-         *     code 为 CF-YYYYMMDD-NNNNNN，尾号用数据库生成的工单 ID，至少补足六位。
+         *     code 为 CF-YYYYMMDD-NNNNNN：YYYYMMDD 取创建时刻的 Asia/Shanghai 本地日期
+         *     （与统计趋势日期同一时区，不是 UTC），尾号用数据库生成的工单 ID，至少补足六位。
          *     保存地点名称快照，并通过 Workflow 协作写入一条 TICKET_SUBMITTED 公开事件。
          *     所有图片事务外先暂存校验；元数据、工单、事件与文件移动成功后提交，失败回滚并清理。
          *     即使没有图片也使用 multipart/form-data。无独立附件上传或工单删除端点。
@@ -198,6 +199,10 @@ export interface paths {
         /**
          * Admin 分派一名启用的 Technician
          * @description 仅 ADMIN，PENDING_ASSIGNMENT → ASSIGNED。technician_id 必须属于启用的 TECHNICIAN。
+         *     technician_id 对应账户不存在、角色不是 TECHNICIAN 或已停用，均返回 422 / VALIDATION_ERROR，
+         *     field_errors 指向 technician_id；不以目标账户的 404 或 409 表达这些失败。
+         *     执行分派时由后端校验；失败不改变工单状态、版本、负责人、分派记录或事件。
+         *     工单不存在、工单状态不允许及旧版本仍按原有 404 / 409 语义处理。
          *     一张工单同时最多一条 ended_at IS NULL 的分派；P0 不支持重新分派。
          *     assignments、current_assignee_id、状态、版本与 TICKET_ASSIGNED 事件同事务提交。
          *     关闭后保留 current_assignee_id，ended_at 在 P0 正常流程仍为空。
@@ -595,7 +600,10 @@ export interface components {
          */
         TicketFields: {
             id: components["schemas"]["Id"];
-            /** @example CF-20261002-000001 */
+            /**
+             * @description 前 8 位是创建时刻的 Asia/Shanghai 本地日期（YYYYMMDD），与统计趋势日期同一时区。
+             * @example CF-20261002-000001
+             */
             code: string;
             reporter: components["schemas"]["UserSummary"];
             location_id: components["schemas"]["Id"];
@@ -964,7 +972,12 @@ export interface components {
                 "application/json": components["schemas"]["ErrorResponse"];
             };
         };
-        /** @description 403 / FORBIDDEN（角色/操作不允许）或 ORIGIN_NOT_ALLOWED（写请求来源不允许）。 */
+        /**
+         * @description 403。FORBIDDEN（角色或资源关系不允许该动作）或 ORIGIN_NOT_ALLOWED（写请求来源不允许）。
+         *     下面两个示例只表示这两种错误的形状，不代表每个引用它的操作都会产生两种：
+         *     GET/HEAD/OPTIONS 不校验 Origin，只可能返回 FORBIDDEN；匿名端点（login）没有角色要求，
+         *     只可能返回 ORIGIN_NOT_ALLOWED。各操作的实际触发条件以该操作自己的 description 为准。
+         */
         Forbidden: {
             headers: {
                 "X-Request-ID": components["headers"]["RequestId"];
@@ -994,7 +1007,14 @@ export interface components {
                 "application/json": components["schemas"]["ErrorResponse"];
             };
         };
-        /** @description 409 / TICKET_VERSION_CONFLICT（旧版本）或 CONFLICT（非法状态、唯一约束、终态留言、停用地点）。 */
+        /**
+         * @description 409。TICKET_VERSION_CONFLICT（客户端提交的 expected_version 已过期）或 CONFLICT
+         *     （状态不允许、唯一约束冲突、终态工单新增留言、所选地点已停用）。
+         *     下面两个示例只表示这两种错误的形状，不代表每个引用它的操作都会产生两种：
+         *     只有携带 expected_version 的状态动作才可能返回 TICKET_VERSION_CONFLICT；
+         *     创建类操作（POST /api/tickets、POST /api/admin/locations）没有版本可冲突。
+         *     各操作的实际触发条件以该操作自己的 description 为准。
+         */
         Conflict: {
             headers: {
                 "X-Request-ID": components["headers"]["RequestId"];
@@ -1041,6 +1061,20 @@ export interface components {
                  *       }
                  *     }
                  */
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
+        /**
+         * @description 422 / VALIDATION_ERROR，分派字段校验失败。technician_id 对应账户不存在、
+         *     角色不是 TECHNICIAN 或已停用时，field_errors 指向 technician_id，要求重新选择。
+         *     也适用于必填字段缺失、ID 或 expected_version 格式不合法等输入校验失败。
+         */
+        AssignValidationError: {
+            headers: {
+                "X-Request-ID": components["headers"]["RequestId"];
+                [name: string]: unknown;
+            };
+            content: {
                 "application/json": components["schemas"]["ErrorResponse"];
             };
         };
@@ -1253,7 +1287,6 @@ export interface operations {
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
-            403: components["responses"]["Forbidden"];
             422: components["responses"]["ValidationError"];
             500: components["responses"]["InternalError"];
         };
@@ -1389,7 +1422,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
-            422: components["responses"]["ValidationError"];
+            422: components["responses"]["AssignValidationError"];
             500: components["responses"]["InternalError"];
         };
     };

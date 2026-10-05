@@ -15,6 +15,7 @@ import type {
   AttachmentPurpose,
   Category,
   EventType,
+  NextAction,
   Priority,
   Role,
   TicketAction,
@@ -133,6 +134,20 @@ export const ACTION_LABELS: Record<TicketAction, string> = {
   CANCEL: "Cancel request",
   COMMENT_PUBLIC: "Add comment",
   COMMENT_ADMIN_ONLY: "Add internal note",
+};
+
+/**
+ * `next_action` is its own closed enum, not a subset of `TicketAction`: the contract adds
+ * `CONFIRM_OR_REWORK`, a step the reporter takes that is deliberately not an action token.
+ * The four members that do coincide borrow their wording from `ACTION_LABELS` rather than
+ * retyping it, so one rename cannot leave the header strip and the buttons disagree.
+ */
+export const NEXT_ACTION_LABELS: Record<NextAction, string> = {
+  REVIEW: ACTION_LABELS.REVIEW,
+  ASSIGN: ACTION_LABELS.ASSIGN,
+  START: ACTION_LABELS.START,
+  RESOLVE: ACTION_LABELS.RESOLVE,
+  CONFIRM_OR_REWORK: "Confirm or request rework",
 };
 
 /** "Who acts next" per status, for the detail header strip. */

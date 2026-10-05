@@ -24,6 +24,7 @@ import type {
   Location,
   LocationPage,
   LoginRequest,
+  ManagedRole,
   Priority,
   ReviewRequest,
   ReworkRequest,
@@ -191,7 +192,9 @@ export function updateLocation(id: number, body: UpdateLocationRequest): Promise
 export interface UserFilters {
   cursor?: string | null;
   limit?: number;
-  role?: "REPORTER" | "TECHNICIAN";
+  /** The contract types this param as `ManagedRole`; spelling the members out here would
+   *  be a second copy that no compile error and no census would notice going stale. */
+  role?: ManagedRole;
   active?: boolean;
 }
 

@@ -34,8 +34,13 @@ export interface ClassifiedError {
   requestId?: string;
 }
 
-const CONFLICT_CODES: readonly string[] = ["TICKET_VERSION_CONFLICT", "CONFLICT"];
-const PERMISSION_CODES: readonly string[] = ["FORBIDDEN", "ORIGIN_NOT_ALLOWED"];
+/**
+ * Groupings over the contract's own `ErrorCode`, so a rename or removal fails the build here
+ * instead of leaving a code silently unclassified. `CONFLICT_CODES` is the §13.3 pair — both
+ * mean "the ticket moved" and share one presentation.
+ */
+const CONFLICT_CODES: readonly ErrorCode[] = ["TICKET_VERSION_CONFLICT", "CONFLICT"];
+const PERMISSION_CODES: readonly ErrorCode[] = ["FORBIDDEN", "ORIGIN_NOT_ALLOWED"];
 
 const SYSTEM_FALLBACK = "The service is temporarily unavailable. Please try again.";
 

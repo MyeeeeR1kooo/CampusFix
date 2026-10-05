@@ -18,6 +18,7 @@ import {
   CATEGORY_ORDER,
   EVENT_LABELS,
   NEXT_ACTOR,
+  PHOTO_PURPOSE_LABELS,
   PRIORITY_LABELS,
   PRIORITY_ORDER,
   RAIL_STEPS,
@@ -29,6 +30,7 @@ import {
   STATUS_TONES,
   TERMINAL_STATUSES,
   TERMINAL_STEP,
+  VISIBILITY_LABELS,
   hasAction,
   isTerminal,
   statusStep,
@@ -50,6 +52,8 @@ const ENUMS = {
   Role: enumMembers("Role"),
   EventType: enumMembers("EventType"),
   TicketAction: enumMembers("TicketAction"),
+  AttachmentPurpose: enumMembers("AttachmentPurpose"),
+  Visibility: enumMembers("Visibility"),
 };
 
 describe("the census itself", () => {
@@ -61,6 +65,8 @@ describe("the census itself", () => {
     expect(ENUMS.Role).toHaveLength(3);
     expect(ENUMS.EventType).toHaveLength(9);
     expect(ENUMS.TicketAction).toHaveLength(9);
+    expect(ENUMS.AttachmentPurpose).toHaveLength(2);
+    expect(ENUMS.Visibility).toHaveLength(2);
   });
 });
 
@@ -75,6 +81,8 @@ const MAPS: Record<EnumAlias, Record<string, string>> = {
   Role: ROLE_LABELS,
   EventType: EVENT_LABELS,
   TicketAction: ACTION_LABELS,
+  AttachmentPurpose: PHOTO_PURPOSE_LABELS,
+  Visibility: VISIBILITY_LABELS,
 };
 
 describe("label maps cover the contract enums", () => {

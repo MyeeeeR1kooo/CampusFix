@@ -11,7 +11,16 @@
  */
 
 import type { IconName } from "../components/Icon";
-import type { Category, EventType, Priority, Role, TicketAction, TicketStatus } from "../api";
+import type {
+  AttachmentPurpose,
+  Category,
+  EventType,
+  Priority,
+  Role,
+  TicketAction,
+  TicketStatus,
+  Visibility,
+} from "../api";
 
 /** Status labels — exactly the eight `TicketStatus` members the contract carries. */
 export const STATUS_LABELS: Record<TicketStatus, string> = {
@@ -88,6 +97,25 @@ export const EVENT_LABELS: Record<EventType, string> = {
   RESOLUTION_SUBMITTED: "Result submitted",
   TICKET_CLOSED: "Confirmed — closed",
   REWORK_REQUESTED: "Rework requested",
+};
+
+/**
+ * The two `AttachmentPurpose` members. The detail page shows both photo groups off one
+ * attachment list, so this is the only place their difference gets said in words — which is
+ * exactly why it lives here rather than in whichever page renders it first.
+ */
+export const PHOTO_PURPOSE_LABELS: Record<AttachmentPurpose, string> = {
+  REPORT_PHOTO: "Report photo",
+  RESOLUTION_PHOTO: "Resolution photo",
+};
+
+/**
+ * `Visibility` as a reader sees it under a comment. `ADMIN_ONLY` is the internal note the
+ * contract says a non-admin never receives, so that string only ever renders for an admin.
+ */
+export const VISIBILITY_LABELS: Record<Visibility, string> = {
+  PUBLIC: "Visible to everyone on this ticket",
+  ADMIN_ONLY: "Administrators only",
 };
 
 /**

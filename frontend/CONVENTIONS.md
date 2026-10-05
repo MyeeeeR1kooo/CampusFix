@@ -57,6 +57,10 @@ Issue，不在页面 PR 里顺手做。
   因此请求里**不得**手工塞 actor、role 或 `X-Actor`。
 - 成功体就是契约声明的那个对象，**没有** `{ user }` / `{ data }` 之类的包裹：登录返回裸 `User`，
   统计返回裸 `Analytics`。`logout` 是 204，不解析正文。
+- `TicketFields.code` 是服务端生成的展示用编号 `CF-YYYYMMDD-NNNNNN`。前 8 位是**创建时刻的
+  Asia/Shanghai 本地日期**（`841a011` 把这条写进了契约，与统计趋势同一时区），不是 UTC，也不保证与
+  `created_at` 换算后的 UTC 日相同。前端**只原样渲染**：不切片、不反推日期、不做时区换算、不拿它排序
+  当日工单。要显示时间请用 `created_at` / `closed_at`。
 - 失败一律是 `ApiError`，带 `code`（八选一）、`message`、`requestId`、`fieldErrors[]`。判断用
   `isConflict` / `isNotFound` / `isDenied` / `isUnauthorized`，不要比字符串。
 - 分页只有 `cursor` + `limit`，响应只有 `items` + `next_cursor`（没有 `total`、没有 `page`、没有

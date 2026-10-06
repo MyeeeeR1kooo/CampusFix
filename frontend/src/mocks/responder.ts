@@ -2,7 +2,7 @@ import type { Analytics, Attachment, Comment, Location, Role, TicketAction, Tick
 import type { MockRequest, MockResponder } from "../api/mockBridge";
 import { CATEGORY_ORDER, isTerminal, STATUS_ORDER } from "../lib/labels";
 import { createFixtures, locationLabel, MOCK_PASSWORD, person, shanghaiDate } from "./fixtures";
-import { createPaginator, filters, invalid, json, MockFailure, parse, schemas } from "./protocol";
+import { createPaginator, filters, invalid, json, MockFailure, parse, requestId, schemas } from "./protocol";
 
 const responsibility: Record<TicketStatus, Pick<TicketSummary, "current_responsible_role" | "next_action">> = {
   SUBMITTED: { current_responsible_role: "ADMIN", next_action: "REVIEW" },
@@ -309,7 +309,7 @@ export function createMockApi(options: { now?: () => Date; emptyTickets?: boolea
       const ticket = store.tickets.find((item) => [...item.report_photos, ...item.resolution_photos].some((photo) => photo.id === id));
       if (!ticket || !visible(ticket, user) || !blobs.has(id)) throw new MockFailure(404, "NOT_FOUND", "Attachment not found.");
       const blob = blobs.get(id)!;
-      return new Response(new Uint8Array(blob.bytes), { headers: { "Content-Type": blob.mime, "X-Request-ID": `mock-attachment-${id}` } });
+      return new Response(new Uint8Array(blob.bytes), { headers: { "Content-Type": blob.mime, "X-Request-ID": requestId() } });
     }
 
     if (method === "GET" && (path === "/api/locations" || path === "/api/admin/locations")) {

@@ -80,6 +80,19 @@ describe("mock sessions and visibility — FR-01, FR-04", () => {
     await expect(api.getAnalytics()).rejects.toMatchObject({ status: 403 });
   });
 
+  it.each([1, 2])("returns role-only 403 envelopes for restricted GETs as user %s — #46 009f7f3", async (userId) => {
+    await login(userId);
+    for (const path of ["/api/tickets?current_assignee_id=2", "/api/admin/locations", "/api/admin/users", "/api/admin/analytics"]) {
+      const response = await mock.responder({ method: "GET", path });
+      expect(response?.status).toBe(403);
+      expect(await response!.json()).toMatchObject({ error: {
+        code: "FORBIDDEN", request_id: response!.headers.get("X-Request-ID"), field_errors: [],
+      } });
+    }
+    expect((await api.listTickets()).items.length).toBeGreaterThan(0);
+    expect((await api.listActiveLocations()).items.length).toBeGreaterThan(0);
+  });
+
   it("returns contract errors and fails closed for unsupported API requests", async () => {
     await login(3);
     const response = await mock.responder({ method: "DELETE", path: "/api/tickets/1" });
@@ -88,6 +101,24 @@ describe("mock sessions and visibility — FR-01, FR-04", () => {
     const body = await response!.json();
     expect(body.error).toMatchObject({ code: "NOT_FOUND", request_id: response!.headers.get("X-Request-ID"), field_errors: [] });
     expect(await mock.responder({ method: "GET", path: "/health" })).toBeNull();
+  });
+
+  it("uses contract request IDs for errors, JSON, downloads and empty responses", async () => {
+    const unauthorized = await mock.responder({ method: "GET", path: "/api/me" });
+    expect(unauthorized!.headers.get("X-Request-ID")).toMatch(/^req_/);
+    expect((await unauthorized!.json()).error.request_id).toBe(unauthorized!.headers.get("X-Request-ID"));
+    await login(1);
+    const ticket = await api.createTicket({ ...report, photos: [photo()] });
+    const detail = await api.getTicket(ticket.id);
+    for (const path of ["/api/tickets", detail.report_photos[0].download_url]) {
+      const response = await mock.responder({ method: "GET", path });
+      expect(response!.status).toBe(200);
+      expect(response!.headers.get("X-Request-ID")).toMatch(/^req_/);
+    }
+    const logout = await mock.responder({ method: "POST", path: "/api/auth/logout" });
+    expect(logout!.status).toBe(204);
+    expect(logout!.headers.get("X-Request-ID")).toMatch(/^req_/);
+    expect(await logout!.text()).toBe("");
   });
 });
 
@@ -102,6 +133,7 @@ describe("mock filters and cursor contract — FR-04", () => {
   it("ANDs filters with inclusive/exclusive time bounds and no made-up total", async () => {
     await login(3);
     const ticket = await api.getTicket(10);
+    if (ticket.priority === null) throw new Error("The assigned fixture must have a priority");
     const result = await api.listTickets({ status: ticket.status, category: ticket.category, priority: ticket.priority,
       building: "Teaching Building A", current_assignee_id: 5, q: ticket.code, created_from: ticket.created_at,
       created_before: new Date(Date.parse(ticket.created_at) + 1).toISOString() });
@@ -115,6 +147,7 @@ describe("mock filters and cursor contract — FR-04", () => {
     await login(3);
     const first = await api.listTickets({ limit: 2 });
     expect(first.items.map((ticket) => ticket.id)).toEqual([10, 9]);
+    if (first.next_cursor === null) throw new Error("Expected another page after the first two tickets");
     const second = await api.listTickets({ limit: 2, cursor: first.next_cursor });
     expect(second.items.map((ticket) => ticket.id)).toEqual([8, 7]);
     await expect(api.listTickets({ cursor: first.next_cursor, status: "CLOSED" })).rejects.toMatchObject({ status: 400, fields: { cursor: expect.any(String) } });
@@ -123,6 +156,7 @@ describe("mock filters and cursor contract — FR-04", () => {
     await login(1);
     await expect(api.listTickets({ cursor: first.next_cursor })).rejects.toMatchObject({ status: 400 });
     const own = await api.listTickets({ limit: 2 });
+    if (own.next_cursor === null) throw new Error("Expected another page of the reporter's tickets");
     await api.createTicket(report);
     expect((await api.listTickets({ limit: 2, cursor: own.next_cursor })).items.map((ticket) => ticket.id)).toEqual([6, 5]);
   });

@@ -24,7 +24,7 @@ export function QueuePreviewPage() {
   const [values, setValues] = useState(defaults);
   const [cursors, setCursors] = useState<Array<string | null>>([null]);
   const { register, handleSubmit, reset } = useForm({ defaultValues: defaults, resolver: zodResolver(schema) });
-  const filters = { q: values.q, status: values.status || undefined, cursor: cursors.at(-1), limit: 4 };
+  const filters = { q: values.q, status: values.status || undefined, cursor: cursors.at(-1) ?? undefined, limit: 4 };
   const query = useQuery({ queryKey: queryKeys.tickets.list(filters), queryFn: ({ signal }) => api.listTickets(filters, signal) });
   return <>
     <h1>Ticket queue · component preview</h1>

@@ -22,6 +22,14 @@ npm run dev
 - 刷新页面会重建数据和清除模拟会话；不使用 localStorage、真实 Cookie 或真实个人数据。
 - 切换真实后端：停止开发进程，执行 `$env:VITE_USE_MOCK='0'; npm run dev`。请求继续通过原有 `/api` 代理。
 
+### 端口与搭档交接（2026-10-07）
+
+`mock-preview.html` 和正式脚手架入口使用同一个 Vite dev server，默认 `5173`，不另起端口。状态型 Mock 在 API client 内存中拦截请求，不连接 `4010`。
+
+按当前约定保留 `VITE_API_TARGET` 的默认值 `http://localhost:8080`（Compose web 入口）。直跑 FastAPI 时显式设为 `http://localhost:8000`；查看 #46 固定契约样例时显式设为 `http://127.0.0.1:4010`，服务启动方法见 [契约文档](https://github.com/MyeeeeR1kooo/CampusFix/blob/27d85c6/docs/api/README.md)。使用任一代理目标时均应关闭状态型 Mock（`VITE_USE_MOCK=0`）。真实后端写请求仍需允许浏览器实际 Origin（通常为 `http://localhost:5173`）。`npm run preview` 的 `4173` 用于生产构建预览，不提供开发 Mock 页面。
+
+`vite.config.ts` 默认值保持不变；前端 README 的端口入口由张越统一补充，本轮只更新本交接文档。
+
 | 邮箱 | 角色/用途 |
 | --- | --- |
 | `reporter01@campusfix.test` | Reporter A，工单 1–8 |
@@ -120,6 +128,28 @@ Mock API 测试覆盖 FR-01–12 / UC-01–05 的前端替身行为和失败路�
 - `tsc -b`、Vite 生产构建和 `git diff --check` 通过，产物未包含 Mock 标记；在临时前端副本中使用最新契约生成类型（摘要 `779110f98c95`）进行 TypeScript 兼容检查也通过。
 - 本轮只修改 `src/mocks/fixtures.ts`、`src/mocks/responder.ts`、`src/test/mockApi.test.ts` 和本交接文档，提交到原 PR #69。未修改 API、后端、生成类型或依赖；未重跑浏览器和真实后端/E2E。
 
+### #46 修正稿复核与 #71 组合验证（2026-10-07）
+
+复核对象为 `base-auth@009f7f3`；最新 `27d85c6` 只更新交接说明，YAML 内容相同。版本为 `1.0.0 / pending-review`，LF 规范化 SHA-256 为 `9cfffc74c83517c6695834c4f70f7673db99aa913f20dc42e6f0d5928de5485c`。
+
+- 按 `docs/api/review-checklist.md` 12 行重新核对，包含调度/维修、审核分派、提交结果、地点、账户、统计，所需字段齐全。原两项阻断已修复：列表为非 Admin 使用 `current_assignee_id` 声明角色 403；清单区分写请求的 Origin 拒绝与读/写的角色拒绝。三个管理 GET 保留 403，普通地点 GET 无 403。七类筛选对应八个筛选参数，加分页共十个查询参数。
+- 新增 Reporter、Technician 两项回归，验证上述四种受限 GET 的 `403 / FORBIDDEN` 和统一错误封装，同时确认正常列表与有效地点仍可读取。
+- Schema 校验发现原 Mock 的 `mock-` 请求 ID 不符合 `^req_`，现统一为 `req_mock_` 序列；JSON、错误、附件二进制和 204 共用生成函数，错误正文与响应头一致。新增回归在修复前失败、修复后通过。
+- #71 将查询类型收紧到契约后，组合编译发现演示列表及测试把响应的可空字段直接作为查询参数。本轮在列表首屏省略空游标；测试先确认夹具优先级和下一页游标非空，不放宽 #71 的查询类型。
+
+| 本轮检查 | 结果 |
+| --- | --- |
+| OpenAPI 与固定契约 Mock | OpenAPI 校验通过；23 个操作 / 191 份响应样例校验通过；固定 Mock 的 14 项测试通过 |
+| 状态型 Mock 与当前 YAML | 临时脚本直接调用 responder，采集覆盖全部 22 个业务操作的 75 份响应；JSON 正文经解引用的 JSON Schema + format 校验，响应状态/媒体类型/请求 ID、204 空正文及附件字节检查通过。包含三角色、正常/空列表、十份种子详情、全部状态动作、三类无效分派目标、两类照片和管理统计 |
+| #69 当前前端 | 10 文件 / 177 项测试通过，其中 Mock API 38 项；`tsc -b` 与 Vite build 通过 |
+| #69 + #71 组合副本 | 以 `ce323d7` 为共同基线做前端三方组合；184 项测试、`tsc -b`、Vite build 通过。#71 的 `fdb1082` 与最新 `56a4716` 前端逐文件相同，后续差异仅根 `.gitignore` |
+| 当前 YAML 重新生成类型 | 临时组合副本重新生成的文件与 #71 逐字一致，仅生成时间不同；摘要为 `9cfffc74c835` |
+| 合并与生产产物检查 | 唯一双方修改的 `CONVENTIONS.md` 三方合并无冲突；两个构建的产物均不含 Mock 标记；`git diff --check` 通过 |
+
+响应校验中浏览器图片解码回调由测试替身提供，只证明字段/Schema 与模拟行为，不构成真实图片解码或 HTTP/Cookie/Origin 验收；本轮未重跑浏览器、真实后端或 E2E。
+
+类型和 Mock 的整合顺序仍为 #68 → #69 → #71。#71 的两次类型重生成提交可以按该顺序进入整合，不再以“等待 #46 冻结”为前置条件。最终工作分支保留 #69 最新 Mock 和 #71 当前类型，再对同一 YAML 做一次生成比对；若只有时间变化，不另提重复提交。正式冻结若改变 YAML，再按新摘要重生成并重跑受影响检查。本次验证是临时副本组合，尚未合并这些 PR，也未修改冻结状态。
+
 ## 实际修改文件
 
 | 文件 | 作用 |
@@ -155,6 +185,6 @@ Mock API 测试覆盖 FR-01–12 / UC-01–05 的前端替身行为和失败路�
 - 未连接真实 FastAPI/PostgreSQL，未运行真实三角色后端/E2E、Cookie/Origin 安全或数据库事务测试；本次不涉及后端实现。
 - Mock 拦截位置是现有 API client，不接管原生 `<img src="/api/...">`。开发时需要展示上传图，应通过 `api.downloadAttachment` 获取 Blob，再创建/释放 Object URL。下载 URL 字段仍保持契约规定的受保护相对路径。
 - 内存 Mock 只模拟当前浏览器页面的会话；刷新重置，不提供跨页面/跨标签会话持久化。文件校验使用浏览器解码，与后端文件解码器不是同一实现。
-- #46 尚未合并。已核对最新 `base-auth@841a011`，其中分派目标无效的 `422 / VALIDATION_ERROR`、`technician_id` 字段错误及 `AssignValidationError` 别名沿用 `ee45906` 的约定；编号日期已按最新说明修复。契约中的两处 403 声明/清单矛盾已记录在 [#65 review](https://github.com/MyeeeeR1kooo/CampusFix/pull/65#pullrequestreview-5418130475)。已提交生成类型仍为伙伴脚手架的原稿摘要 `f126bda3e32b`；最新类型仅在临时副本验证兼容，待契约评审后与接口负责人统一更新。
+- #46 尚未合并，最新复核及证据见上节；`009f7f3` 已解决先前两处 403 问题。#69 保留脚手架原稿生成类型，统一更新由 #71 的 `9cfffc74c835` 版本承接，避免两个分支重复生成或用旧文件覆盖新版本。三类无效分派目标继续返回 `422 / VALIDATION_ERROR` 和 `technician_id` 字段错误。正式页面、真实服务验收与契约冻结由对应负责人继续完成。
 - React Router 的既有 future-flag 提示、Zod 的 Rollup 注释提示不影响测试和构建；本次没有为消除提示调整依赖或脚手架配置。
 - 本次变更基于 `reporter-flow` 的脚手架提交 `ce323d7`，通过独立分支 `codex/48-mock-shared-components` 交付。#68 合并前以 `reporter-flow` 为 PR 目标分支，合并后可调整到 `main`。开始时工作区干净；全部变更均为本次任务，原有 `AppLayout`、`Field`、`Icon` 和伙伴文件实现保留。本次不包含合并或部署。

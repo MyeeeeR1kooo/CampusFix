@@ -3,18 +3,19 @@ import type { ErrorCode, ErrorResponse, FieldError, Page } from "../api";
 import { CATEGORY_ORDER, PRIORITY_ORDER, STATUS_ORDER } from "../lib/labels";
 
 let requestSequence = 0;
+export function requestId(): string { return `req_mock_${++requestSequence}`; }
 export function json(body: unknown, status = 200): Response {
   return new Response(status === 204 ? null : JSON.stringify(body), {
-    status, headers: { "Content-Type": "application/json", "X-Request-ID": `mock-${++requestSequence}` },
+    status, headers: { "Content-Type": "application/json", "X-Request-ID": requestId() },
   });
 }
 
 export class MockFailure extends Error {
   constructor(readonly status: number, readonly code: ErrorCode, message: string, readonly fields: FieldError[] = []) { super(message); }
   response(): Response {
-    const requestId = `mock-${++requestSequence}`;
-    const body: ErrorResponse = { error: { code: this.code, message: this.message, request_id: requestId, field_errors: this.fields } };
-    return new Response(JSON.stringify(body), { status: this.status, headers: { "Content-Type": "application/json", "X-Request-ID": requestId } });
+    const id = requestId();
+    const body: ErrorResponse = { error: { code: this.code, message: this.message, request_id: id, field_errors: this.fields } };
+    return new Response(JSON.stringify(body), { status: this.status, headers: { "Content-Type": "application/json", "X-Request-ID": id } });
   }
 }
 

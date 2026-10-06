@@ -1,9 +1,9 @@
 /*
  * CampusFix #48 — generated API types. Run `npm run gen:api`, never edit by hand.
  *   contract version : 1.0.0
- *   contract digest  : sha256:779110f98c95
+ *   contract digest  : sha256:9cfffc74c835
  *   contract source  : docs/api/openapi.yaml
- *   generated at     : 2026-10-05T06:21:51.298Z
+ *   generated at     : 2026-10-06T04:24:46.932Z
  *
  * The digest is the anchor while #46 is unmerged: two runs over the same YAML differ only
  * by timestamp, and any contract edit changes it. Record the upstream commit in the commit
@@ -108,12 +108,16 @@ export interface paths {
          * 查询当前用户可见工单
          * @description REPORTER 仅见本人创建的；TECHNICIAN 仅见当前分配给自己的，包含关闭历史；ADMIN 可见全部。
          *     可见范围必须在查询和分页前施加，客户端参数不能扩大范围。
-         *     七类筛选以 AND 组合；按 created_at DESC, id DESC 排序。
+         *     共七类筛选：状态、类别、优先级、楼宇、创建时间范围、编号或标题关键词、
+         *     当前维修人员（仅 ADMIN），即六类通用加一类 ADMIN 专用。
+         *     时间范围占两个参数，共八个筛选参数；加 cursor/limit 共十个查询参数。
+         *     筛选以 AND 组合；按 created_at DESC, id DESC 排序。
          *     cursor 为含这两个排序字段的不透明游标，分页期间保持相同筛选条件。
          *     created_from 含边界、created_before 不含边界，均为 UTC 时间。
          *     building 按关联地点的楼宇筛选；历史显示仍使用 location_label_snapshot。
          *     q 匹配工单编号或标题；无匹配返回 items=[]、next_cursor=null。
-         *     current_assignee_id 筛选仅 ADMIN 可用，其他角色传入时返回 403。
+         *     current_assignee_id 筛选仅 ADMIN 可用，其他角色传入时返回 403 / FORBIDDEN。
+         *     GET 不校验 Origin；此操作的 403 仅表示上述角色拒绝。
          */
         get: operations["listTickets"];
         put?: never;
@@ -1287,6 +1291,16 @@ export interface operations {
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
+            /** @description 非 ADMIN 在工单列表使用 current_assignee_id 筛选，返回 FORBIDDEN；GET 不校验 Origin。 */
+            403: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             422: components["responses"]["ValidationError"];
             500: components["responses"]["InternalError"];
         };

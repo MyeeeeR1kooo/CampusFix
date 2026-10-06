@@ -2,6 +2,8 @@
 
 契约 `1.0.0` / Pending review。本表是人工检查入口，不预填“已通过”。前端评审者：张越、舒玺悦；后端负责人：蒋雨涵、熊雄。实际负责人在 Issue/PR 记录身份、日期、结果和链接。
 
+2026-10-07 更新：前端 12 行字段复核及 Mock/类型对齐已在公开评审中通过，见下方证据索引。本表的人工表格与勾选仍待有决策权限的负责人批准后落笔；未填写的表格不表示链接中的评审未发生，也不能据此提前勾选业务页面、真实后端或 E2E 的验收项。
+
 ## 页面字段检查
 
 | 页面/流程 | 重点字段、契约路径 | 前端确认/问题 |
@@ -43,15 +45,15 @@
 
 ## 评审证据索引（非冻结批准）
 
-记录日期：2026-10-06。本节整理已公开的评审结论、对应修订和证据范围，不代替评审人签署，不勾选上面的检查项，也不填写批准人或批准日期。当前修正稿为 `base-auth@009f7f3`，契约仍是 `1.0.0 / pending-review`。
+记录日期：2026-10-07。本节整理已公开的评审结论、对应修订和证据范围，不代替评审人签署，不勾选上面的检查项，也不填写批准人或批准日期。舒玺悦最新评审对应本次文档更新前的 `base-auth@27d85c6`，契约内容锚点为 `009f7f3`，仍是 `1.0.0 / pending-review`。本次文档更新通过现有 PR #65 交付终审，不改变契约或上述人类评审的签署范围。
 
 | 证据 / 负责人 | 对应修订和已记录结论 | 仍需确认的范围 |
 | --- | --- | --- |
 | 熊雄：后端字段及可实现性 | [2026-10-02 评审记录](https://github.com/MyeeeeR1kooo/CampusFix/pull/65#issuecomment-5950257146)针对 `0ba628b`，认可后端可实现性和与 Core 的一致性；同时明确真实业务路由、事务、权限、图片及 E2E 未验收 | 旧技术评审不等于当前稿的冻结批准；本轮契约/Core 增量回归已完成，记录见 README。冻结时引用原评审及当前修订的验证证据，是否另需人工后端复核由负责人确认，不自动新增一轮完整重审 |
-| 张越：自己负责的前端字段 | [字段逐条确认](https://github.com/MyeeeeR1kooo/CampusFix/issues/46#issuecomment-5991909270)已于 2026-10-06 更新至 `009f7f3`；[更新指针](https://github.com/MyeeeeR1kooo/CampusFix/issues/46#issuecomment-6009710357)确认两处 403 问题解决。页面字段表第 1、2、4、7、8、12 行已核对，第 3 行仅确认 Reporter 的“我的报修”部分 | 不替舒玺悦确认第 3 行的调度/维修部分，以及第 5、6、9、10、11 行；不把字段核对当作实际页面或真实后端验收 |
-| 舒玺悦：前端字段及修改请求 | [Issue 字段检查](https://github.com/MyeeeeR1kooo/CampusFix/issues/46#issuecomment-5999377198)和 [PR 修改请求](https://github.com/MyeeeeR1kooo/CampusFix/pull/65#pullrequestreview-5418130475)针对 `841a011`：12 行所需字段齐全，但要求修复列表角色 403 声明和清单 GET/403 说明后再复核整体通过 | 两处问题已在 `009f7f3` 修正；截至本次读取，尚未见她针对修正稿的整体复核结论，不能把旧记录改写成最新稿已通过 |
-| 张越：生成类型与请求封装 | [草稿 PR #71](https://github.com/MyeeeeR1kooo/CampusFix/pull/71) 的 `fdb1082` 已按 `009f7f3` 重生成类型；[更新记录](https://github.com/MyeeeeR1kooo/CampusFix/issues/46#issuecomment-6009710357)指出其契约摘要为 `sha256:9cfffc74c835`，筛选参数及错误码分组回到契约类型来源 | PR #71 尚未合并；#68/#69 的生成类型仍为旧摘要 `f126bda3e32b`。按前端合并顺序在最终工作分支重新生成并核对，不能以单独分支对齐代表全组已同步 |
-| 舒玺悦：前端 Mock | [原 Mock 修复记录](https://github.com/MyeeeeR1kooo/CampusFix/issues/46#issuecomment-5999377198)说明 #69 的 `f1fd1e6` 已修正上海自然日；[张越的检查记录](https://github.com/MyeeeeR1kooo/CampusFix/issues/46#issuecomment-6009710357)指出现有 Mock 已覆盖非 Admin 使用 `current_assignee_id` 返回 403，无需重写该逻辑 | 仍需 Mock 负责人确认 fixtures 与 `009f7f3` 同版、给出对应修订及验证证据；生成类型和 Mock 的合成检查项在两部分都完成前保持未勾选 |
+| 张越：自己负责的前端字段 | [字段逐条确认](https://github.com/MyeeeeR1kooo/CampusFix/issues/46#issuecomment-5991909270)已于 2026-10-06 更新至 `009f7f3`；[更新指针](https://github.com/MyeeeeR1kooo/CampusFix/issues/46#issuecomment-6009710357)确认两处 403 问题解决。页面字段表第 1、2、4、7、8、12 行已核对，第 3 行仅确认 Reporter 的“我的报修”部分 | 其余前端字段已由舒玺悦在 2026-10-07 的整体复核中确认；不扩大张越本人签署范围，也不把字段核对当作实际页面或真实后端验收 |
+| 舒玺悦：前端字段及修改请求 | [更新后的 Issue 复核](https://github.com/MyeeeeR1kooo/CampusFix/issues/46#issuecomment-5999377198)及 [APPROVED 评审](https://github.com/MyeeeeR1kooo/CampusFix/pull/65#pullrequestreview-5432043884)针对 `27d85c6`：12 行字段全部通过，含第 3 行调度/维修；两处 403 问题已解决，无遗留修改请求。旧 [CHANGES_REQUESTED](https://github.com/MyeeeeR1kooo/CampusFix/pull/65#pullrequestreview-5418130475) 仅作历史证据 | 前端批准不等于项管批准冻结；正式状态、批准记录和人工清单仍待有权限的负责人处理 |
+| 张越：生成类型与请求封装 | [草稿 PR #71](https://github.com/MyeeeeR1kooo/CampusFix/pull/71) 当前 `56a4716` 的前端文件与 `fdb1082` 相同，类型摘要为 `sha256:9cfffc74c835`；筛选参数及错误码分组回到契约类型来源。舒玺悦报告组合副本重新生成的类型与其一致，仅时间不同 | 按 #68 → #69 → #71 整合后，在最终工作分支对同一 YAML 做生成比对；冻结若改变 YAML 摘要，再重新生成并验证，不能以临时组合验证代表实际分支已合并 |
+| 舒玺悦：前端 Mock | [最新交接](https://github.com/MyeeeeR1kooo/CampusFix/blob/333608035631a35bbff93292fd6ba3b014ed99f9/frontend/ISSUE-48-HANDOFF.md)及整体复核确认 #69 的 `3336080` 对齐当前契约：保留上海日期修复，统一 req_mock_ 请求 ID，新增四种受限 GET 403 回归；记录 22 个业务操作、75 份响应契约校验通过。作者报告 #69 前端 177 项、与 #71 组合 184 项测试及类型/构建通过 | 同版本确认已补齐；最终实际分支整合及验证仍待执行。上方合成检查项留给有权限的人类落笔；Mock 不代替真实业务、图片解码或 E2E 验收 |
 
 ### 证据范围与后续验收
 

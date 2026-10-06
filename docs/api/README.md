@@ -4,29 +4,33 @@
 
 - 契约版本：`1.0.0`，**Pending review / 未正式冻结**。
 - 任务：[Issue #46](https://github.com/MyeeeeR1kooo/CampusFix/issues/46)。负责人：蒋雨涵、熊雄；前端逐条评审：张越、舒玺悦；人工批准后才冻结。
-- 代码基线：用户已确认使用 `base-auth`，核对快照为 `261007dde3ce710ea9ef2395c6c98a36602c750f`。Issue 中的历史分支标注不代表此次使用了不存在的分支。
+- 代码基线：用户已确认使用 `base-auth`，本次文档更新前的公开评审快照为 `27d85c6`；契约内容锚点为 `009f7f3`，后续提交只更新交接文档。Issue 中的历史分支标注不代表此次使用了不存在的分支。
 - 产品依据：[P0 冻结基线](../superpowers/specs/CampusFix%20P0%20Requirements%20%26%20Design%20Baseline.md)，尤其第 3–7、9–12、14 节；Core 依据：[交接说明](../superpowers/handoffs/2026-10-02-base-auth-api-handoff.md)。旧 PRD 已作废，不用于增加功能。
-- 交付范围：字段清单、完整契约、契约校验、可生成的 Mock、TypeScript 类型生成验证。本次没有修改状态机、权限、数据库、Core 或业务模块。待评审稿通过分支/草稿 PR 交付；人工评审批准、正式冻结、合并及关闭 #46 仍未完成。
+- 交付范围：字段清单、完整契约、契约校验、可生成的 Mock、TypeScript 类型生成验证。本次没有修改状态机、权限、数据库、Core 或业务模块。待评审稿通过分支/草稿 PR 交付；前端字段复核及 Mock/类型对齐已通过，正式冻结批准、合并及关闭 #46 仍未完成。
 
 入口：[最小字段清单](minimal-fields.md) → [OpenAPI 契约](openapi.yaml) → [前端评审清单](review-checklist.md)。
+
+2026-10-07 经用户授权，将本次收尾材料提交到现有 PR #65，并从草稿转为正式待审批，申请项管批准冻结。正式待审批不等于已获冻结批准或已合并；YAML 状态、人工勾选及批准人/日期仍不代填。
 
 2026-10-03 经项目负责人在本次会话批准，按基线文档修订 1.0.1 补齐 PR #65 评审 §3.3：分派目标不存在、非 Technician 或已停用，统一使用 `422 / VALIDATION_ERROR`，字段错误指向 `technician_id`。此次只完善待评审稿的错误语义和样例，契约仍为 `1.0.0 / pending-review`，不代表整个契约已获人工批准或冻结。
 
 2026-10-06 根据[张越的字段评审](https://github.com/MyeeeeR1kooo/CampusFix/issues/46#issuecomment-5991909270)及[舒玺悦的修改请求](https://github.com/MyeeeeR1kooo/CampusFix/pull/65#pullrequestreview-5418130475)，在 `base-auth@841a011` 基础上完成待评审修正：补回 `GET /api/tickets` 已描述的 `403 / FORBIDDEN`，只提供 Admin 专属筛选的角色拒绝样例；纠正清单对 GET/403 的说明；统一七类筛选的计数。这是既有权限规则的契约一致性修复，不新增权限、字段、错误码或业务端点。保留 #70 的上海编号日期和冻结状态测试修正；契约仍为 `1.0.0 / pending-review`，批准人、日期及人工勾选不由本次修正代填。
 
-### 2026-10-06 收尾快照（非最终批准）
+### 2026-10-07 收尾快照（前端通过，待冻结批准）
 
 已上传的契约修正锚点为 [`base-auth@009f7f3`](https://github.com/MyeeeeR1kooo/CampusFix/commit/009f7f30ceec0b28267efd556ff6617ee1d18be6)。GitHub 上 YAML 的 SHA256 为 `9cfffc74c83517c6695834c4f70f7673db99aa913f20dc42e6f0d5928de5485c`；Windows 工作文件比较前需统一为 LF 换行，不能将 CRLF 字节差异误报为契约内容变化。此处只索引已发生的评审和技术验证，不代填人工清单、批准人或批准日期。
 
 | 事项 | 已有证据 | 尚需处理 |
 | --- | --- | --- |
-| 契约及错误约定 | 字段清单、23 个操作、8 个 ErrorCode、分页/ID/日期约定和冻结规则已交付；403 修正已进入草稿 PR #65 | 收齐当前修订的人工评审结论；不能把“已推送”等同于“已冻结” |
-| 张越的字段复核 | [最新确认](https://github.com/MyeeeeR1kooo/CampusFix/issues/46#issuecomment-6009710357)说明 009f7f3 已解除两处 403 问题；其[逐条评论](https://github.com/MyeeeeR1kooo/CampusFix/issues/46#issuecomment-5991909270)保留了本人负责页面的确认范围 | 列表行只确认 Reporter 一侧，不能据此替舒玺悦签署调度/维修页面；完整证据索引见评审清单 |
-| 前端生成类型 | [草稿 PR #71](https://github.com/MyeeeeR1kooo/CampusFix/pull/71) 的 fdb1082 已按当前 YAML 重生成；生成正文与本地重新生成结果一致 | PR #68/#69 仍有旧类型快照；按各 PR 的交接顺序整合后，在实际工作分支重新生成并检查，避免旧快照覆盖新类型 |
-| Mock | 本仓库已按当前 YAML 导出并校验 23 个操作、191 个固定响应样例；前端 #69 已有列表角色 403 和三类分派 422 的测试源码 | 舒玺悦确认 #69 的状态型 Mock/fixtures 对应当前契约，并留下版本和验证记录；已有 403 逻辑不需要为本次修正重写 |
-| 正式批准与交付 | PR #65 仍为 open/draft，契约仍为 1.0.0/pending-review | 有权限的负责人批准后，补齐清单及批准证据、同步冻结状态、按流程合并并通知全组，再更新 Issue 完成记录 |
+| 契约及错误约定 | 字段清单、23 个操作、8 个 ErrorCode、分页/ID/日期约定和冻结规则已交付；403 修正已进入草稿 PR #65，前端复核通过 | 有决策权限的人类批准冻结；不能把评审通过或已推送等同于已冻结 |
+| 前端字段复核 | 张越的[逐条确认](https://github.com/MyeeeeR1kooo/CampusFix/issues/46#issuecomment-5991909270)覆盖本人页面；舒玺悦的[最新整体复核](https://github.com/MyeeeeR1kooo/CampusFix/pull/65#pullrequestreview-5432043884)针对 27d85c6，覆盖全部 12 行（含调度/维修），无遗留修改请求 | 批准后由负责人据公开证据填写人工清单；字段复核不等于完整页面或真实后端验收 |
+| 前端生成类型 | [草稿 PR #71](https://github.com/MyeeeeR1kooo/CampusFix/pull/71) 当前为 56a4716，前端文件与已生成新类型的 fdb1082 相同；舒玺悦报告组合副本重新生成的类型与其一致，仅生成时间不同 | 按 #68 → #69 → #71 整合后，在实际工作分支对同一 YAML 做生成比对，避免旧快照覆盖新类型；冻结状态改动若改变 YAML 摘要，按新快照重新生成并验证 |
+| Mock | 固定 Mock 已校验 23 个操作、191 个响应样例；#69 的 [3336080](https://github.com/MyeeeeR1kooo/CampusFix/commit/333608035631a35bbff93292fd6ba3b014ed99f9) 修复 req_mock_ 请求 ID 及四种受限 GET 403 回归；舒玺悦记录 22 个业务操作、75 份响应按当前契约通过校验 | 在最终整合分支保留最新 Mock 并验证；模拟行为不作为真实权限、事务、图片解码或 E2E 的验收证据 |
+| 正式批准与交付 | 经用户授权通过现有 PR #65 提交正式待审批交付；契约仍为 1.0.0/pending-review，未合并 | 有权限的负责人批准后，补齐清单及批准证据、同步冻结状态、按流程合并并通知全组，再更新 Issue 完成记录 |
 
-舒玺悦目前可见的[修改请求](https://github.com/MyeeeeR1kooo/CampusFix/pull/65#pullrequestreview-5418130475)针对 `841a011`；其中两处代码问题已由 `009f7f3` 修复，但尚未看到她对新修订的整体通过结论。历史后端评审和这项待复核事实均在 [评审证据索引](review-checklist.md#评审证据索引非冻结批准)中记录，不将旧评审静默改写成对最新提交的批准。
+舒玺悦于 2026-10-07 对 `27d85c6` 提交新的 [APPROVED 评审](https://github.com/MyeeeeR1kooo/CampusFix/pull/65#pullrequestreview-5432043884)，明确两处 403 修改请求已修复、整体复核通过。旧的 [CHANGES_REQUESTED](https://github.com/MyeeeeR1kooo/CampusFix/pull/65#pullrequestreview-5418130475) 保留为历史记录，不再列为待修复阻断。历史后端评审及各证据范围见 [评审证据索引](review-checklist.md#评审证据索引非冻结批准)。
+
+舒玺悦的[交接记录](https://github.com/MyeeeeR1kooo/CampusFix/blob/333608035631a35bbff93292fd6ba3b014ed99f9/frontend/ISSUE-48-HANDOFF.md)报告 #69 前端 177 项、与 #71 组合 184 项测试及类型/构建通过；这些是作者验证记录，本次未重跑远程前端。端口口径已确认：8080 是 Compose 默认入口，8000/4010 是显式代理目标，5173 是前端开发入口；状态型 Mock 使用 VITE_USE_MOCK=1，不依赖 4010。合并前的规则候选、批准条件及操作交接见 [整合准备记录](../superpowers/handoffs/2026-10-07-pr-integration-preparation.md)，它不构成冻结或合并批准。
 
 完整页面布局、图片展示、错误提示、真实登录/授权、PostgreSQL 事务和 E2E 仍由后续页面及业务 Issue 补验。这里没有删除、勾选或豁免原清单中的相应条目；冻结前应将尚未完成的业务验收交接给对应负责人，不能用 Schema、生成类型或 Mock 宣称这些行为已通过，也不应为完成契约而接管后续业务模块。
 
@@ -143,9 +147,9 @@ pnpm --dir tools/api-contract run typecheck
 
 上述记录为本地验证证据。经用户授权，本轮修正以独立提交更新 `base-auth` 上的[现有草稿 PR #65](https://github.com/MyeeeeR1kooo/CampusFix/pull/65)，只提交修改供复核，不代表最终稿或正式冻结，也不授权合并到 `main`、代签评审或关闭 Issue。真实业务路由/授权、PostgreSQL 事务与并发、图片和前端/E2E 联调不在这些测试的验证范围内。
 
-修正提交后仍需收齐两位评审人的当前结论、有决策权限的人类批准及全组冻结通知。张越已在 2026-10-06 复核修正稿并提交 PR #71 的新类型；舒玺悦的整体复核及前端 Mock 同版本确认仍待记录。前端实际工作分支在整合后仍应按同一 YAML 重新生成类型并同步 Mock；此处类型编译和固定样例验证不代表业务页面、真实授权或端到端联调通过。
+2026-10-06 修正提交时仍待舒玺悦的整体复核及前端 Mock 同版本确认；这两项已在 2026-10-07 的新评审中补齐。当前仍待有决策权限的人类批准冻结及全组通知。前端实际工作分支在整合后仍应对同一 YAML 做类型生成比对并保留最新 Mock；此处类型编译和固定样例验证不代表业务页面、真实授权或端到端联调通过。
 
-本次收尾重新运行 OpenAPI 校验、上述 #46/Core/Mock 的 122 项测试、Mock 导出和 TypeScript 严格编译，全部通过；仍只有同一项既有 TestClient 弃用警告。本次仅补充 README 和评审清单中的证据索引与交接范围，没有修改 YAML、字段、状态码、权限、冻结状态或业务实现。前端 PR #71 的测试/构建结果属于作者报告；本次没有重跑远程前端或真实业务/E2E 测试。
+2026-10-06 收尾时重新运行 OpenAPI 校验、上述 #46/Core/Mock 的 122 项测试、Mock 导出和 TypeScript 严格编译，全部通过；仍只有同一项既有 TestClient 弃用警告。该轮仅补充 README 和评审清单中的证据索引与交接范围，没有修改 YAML、字段、状态码、权限、冻结状态或业务实现。前端 PR #71 的测试/构建结果属于作者报告；该轮没有重跑远程前端或真实业务/E2E 测试。
 
 ### 原始 #46 交付记录
 

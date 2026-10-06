@@ -40,3 +40,21 @@
 - [ ] 全组收到正式冻结通知，知悉后续修改须 Issue + 升版本号 + 通知全组。
 
 批准人：待填写。批准日期：待填写。Issue/PR 证据：待填写。
+
+## 评审证据索引（非冻结批准）
+
+记录日期：2026-10-06。本节整理已公开的评审结论、对应修订和证据范围，不代替评审人签署，不勾选上面的检查项，也不填写批准人或批准日期。当前修正稿为 `base-auth@009f7f3`，契约仍是 `1.0.0 / pending-review`。
+
+| 证据 / 负责人 | 对应修订和已记录结论 | 仍需确认的范围 |
+| --- | --- | --- |
+| 熊雄：后端字段及可实现性 | [2026-10-02 评审记录](https://github.com/MyeeeeR1kooo/CampusFix/pull/65#issuecomment-5950257146)针对 `0ba628b`，认可后端可实现性和与 Core 的一致性；同时明确真实业务路由、事务、权限、图片及 E2E 未验收 | 旧技术评审不等于当前稿的冻结批准；本轮契约/Core 增量回归已完成，记录见 README。冻结时引用原评审及当前修订的验证证据，是否另需人工后端复核由负责人确认，不自动新增一轮完整重审 |
+| 张越：自己负责的前端字段 | [字段逐条确认](https://github.com/MyeeeeR1kooo/CampusFix/issues/46#issuecomment-5991909270)已于 2026-10-06 更新至 `009f7f3`；[更新指针](https://github.com/MyeeeeR1kooo/CampusFix/issues/46#issuecomment-6009710357)确认两处 403 问题解决。页面字段表第 1、2、4、7、8、12 行已核对，第 3 行仅确认 Reporter 的“我的报修”部分 | 不替舒玺悦确认第 3 行的调度/维修部分，以及第 5、6、9、10、11 行；不把字段核对当作实际页面或真实后端验收 |
+| 舒玺悦：前端字段及修改请求 | [Issue 字段检查](https://github.com/MyeeeeR1kooo/CampusFix/issues/46#issuecomment-5999377198)和 [PR 修改请求](https://github.com/MyeeeeR1kooo/CampusFix/pull/65#pullrequestreview-5418130475)针对 `841a011`：12 行所需字段齐全，但要求修复列表角色 403 声明和清单 GET/403 说明后再复核整体通过 | 两处问题已在 `009f7f3` 修正；截至本次读取，尚未见她针对修正稿的整体复核结论，不能把旧记录改写成最新稿已通过 |
+| 张越：生成类型与请求封装 | [草稿 PR #71](https://github.com/MyeeeeR1kooo/CampusFix/pull/71) 的 `fdb1082` 已按 `009f7f3` 重生成类型；[更新记录](https://github.com/MyeeeeR1kooo/CampusFix/issues/46#issuecomment-6009710357)指出其契约摘要为 `sha256:9cfffc74c835`，筛选参数及错误码分组回到契约类型来源 | PR #71 尚未合并；#68/#69 的生成类型仍为旧摘要 `f126bda3e32b`。按前端合并顺序在最终工作分支重新生成并核对，不能以单独分支对齐代表全组已同步 |
+| 舒玺悦：前端 Mock | [原 Mock 修复记录](https://github.com/MyeeeeR1kooo/CampusFix/issues/46#issuecomment-5999377198)说明 #69 的 `f1fd1e6` 已修正上海自然日；[张越的检查记录](https://github.com/MyeeeeR1kooo/CampusFix/issues/46#issuecomment-6009710357)指出现有 Mock 已覆盖非 Admin 使用 `current_assignee_id` 返回 403，无需重写该逻辑 | 仍需 Mock 负责人确认 fixtures 与 `009f7f3` 同版、给出对应修订及验证证据；生成类型和 Mock 的合成检查项在两部分都完成前保持未勾选 |
+
+### 证据范围与后续验收
+
+- 字段齐全、Schema/样例校验、类型生成与 Mock 检查，只证明对应的契约或前端模拟层；不证明会话授权、服务端权限、PostgreSQL 事务/并发、图片解码及真实 HTTP 联调通过。
+- 页面布局、动作按钮、完整错误提示、真实分派选择框、业务接口及端到端闭环，随 #47、#49、#51–#58 等对应模块补充实现与验收。此说明不删除、减免或提前勾选上面的任何检查项；未验证的内容保持待验证，并由负责人记录后续证据。
+- 本节所列评论、测试结果和分支提交均不构成 v1.0 冻结批准。正式批准、清单落笔、YAML/README 状态同步、合并及全组通知，仍按 [README 的评审和冻结规则](README.md#评审和冻结规则) 执行。

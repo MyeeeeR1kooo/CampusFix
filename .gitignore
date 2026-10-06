@@ -1,6 +1,10 @@
+# macOS
 .DS_Store
 
-# `tsc -b` leaves this next to frontend/tsconfig.json. The rest of the artefacts this stack
-# produces (`node_modules/`, `dist/`, `.env*`) are #45's to declare, and PR #66 already
-# carries them here — this file is #45's, so #48 adds only the one line nothing else owns.
+# Frontend build artefacts (npm run build / npm test emit these under frontend/)
+node_modules/
+dist/
 frontend/tsconfig.tsbuildinfo
+
+# Local VITE_USE_MOCK / VITE_API_TARGET overrides
+.env

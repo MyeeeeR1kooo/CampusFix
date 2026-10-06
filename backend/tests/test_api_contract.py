@@ -163,6 +163,39 @@ def test_session_security_and_origin_headers_match_core(contract):
             assert "403" in operation["responses"]
 
 
+@pytest.mark.parametrize("path", [
+    "/api/tickets", "/api/admin/locations", "/api/admin/users", "/api/admin/analytics",
+])
+def test_role_restricted_gets_declare_forbidden_without_origin_validation(contract, path):
+    path_item = contract["paths"][path]
+    operation = path_item["get"]
+    assert "403" in operation["responses"], path
+    parameters = [
+        resolve(contract, value)[0]
+        for value in path_item.get("parameters", []) + operation.get("parameters", [])
+    ]
+    assert not any(p["in"] == "header" and p["name"].lower() == "origin" for p in parameters)
+
+
+def test_ticket_list_forbidden_has_only_the_applicable_role_error(contract):
+    operation = contract["paths"]["/api/tickets"]["get"]
+    body, _ = response(contract, operation, "403")
+    assert body["headers"]["X-Request-ID"] == {"$ref": "#/components/headers/RequestId"}
+    media = body["content"]["application/json"]
+    assert media["schema"] == {"$ref": "#/components/schemas/ErrorResponse"}
+    examples = list(samples(contract, media))
+    assert examples
+    for example in examples:
+        schema_validator(contract, "ErrorResponse").validate(example)
+        assert example["error"]["code"] == ErrorCode.FORBIDDEN.value
+        assert example["error"]["field_errors"] == []
+
+
+def test_enabled_locations_get_does_not_add_a_role_rejection(contract):
+    operation = contract["paths"]["/api/locations"]["get"]
+    assert "403" not in operation["responses"]
+
+
 def test_cookie_runtime_attributes_and_contract_examples(contract):
     from fastapi import Response
 

@@ -12,6 +12,8 @@
 
 2026-10-03 经项目负责人在本次会话批准，按基线文档修订 1.0.1 补齐 PR #65 评审 §3.3：分派目标不存在、非 Technician 或已停用，统一使用 `422 / VALIDATION_ERROR`，字段错误指向 `technician_id`。此次只完善待评审稿的错误语义和样例，契约仍为 `1.0.0 / pending-review`，不代表整个契约已获人工批准或冻结。
 
+2026-10-06 根据[张越的字段评审](https://github.com/MyeeeeR1kooo/CampusFix/issues/46#issuecomment-5991909270)及[舒玺悦的修改请求](https://github.com/MyeeeeR1kooo/CampusFix/pull/65#pullrequestreview-5418130475)，在 `base-auth@841a011` 基础上完成待评审修正：补回 `GET /api/tickets` 已描述的 `403 / FORBIDDEN`，只提供 Admin 专属筛选的角色拒绝样例；纠正清单对 GET/403 的说明；统一七类筛选的计数。这是既有权限规则的契约一致性修复，不新增权限、字段、错误码或业务端点。保留 #70 的上海编号日期和冻结状态测试修正；契约仍为 `1.0.0 / pending-review`，批准人、日期及人工勾选不由本次修正代填。
+
 ## 已实现与待实现对照
 
 | 契约 / 能力 | `base-auth` 现状 | 此次一致性证据 |
@@ -43,7 +45,8 @@
 | 时间 | UTC ISO 8601，以 Z 结尾；趋势日期单独使用 Asia/Shanghai 的 YYYY-MM-DD。数据库仍使用 timestamptz |
 | 分页 | `items/next_cursor`；无下一页 null。默认 20、最大 100；排序 `created_at DESC,id DESC`。游标不透明，不跨筛选条件复用；无 count/offset/page 额外接口 |
 | 可空 | `?` 是必返字段的 null，不是省略。工单 priority/assignee/closed_at 按状态关系校验；终态无 allowed_actions |
-| 列表筛选 | 七类过滤 AND 组合；时间范围 `[created_from, created_before)`；维修人员筛选仅 Admin。楼宇使用关联地点的 building，历史展示仍读取快照 |
+| 列表筛选 | 共七类：状态、类别、优先级、楼宇、创建时间范围、编号或标题关键词、当前维修人员（仅 Admin），即六类通用 + 一类 Admin 专用；AND 组合。时间范围 `[created_from, created_before)` 占两个参数，共八个筛选参数，加 cursor/limit 共十个查询参数。楼宇使用关联地点的 building，历史展示仍读取快照 |
+| 读请求的 403 | 非 Admin 在工单列表使用 current_assignee_id，以及非 Admin 访问管理地点/用户/统计 GET，返回 403 / FORBIDDEN；GET 不校验 Origin。普通地点 GET 无 403 声明，不能把所有列表 GET 一概视为有或无 403 |
 | 时间线 | 合并事件与留言，按 `created_at ASC, kind ASC, id ASC` 稳定排序；kind 同时用于前端区分两类对象 |
 | 图片 | 创建/resolve 两处 multipart，重复同名 photos 部件；每用途累计最多 5 张，每张 5 MiB，JPEG/PNG/WebP。返工不增加图片总额度，无独立上传、编辑或删除接口 |
 | 统计 | 六组，耗时单位秒且包括等待阶段；无关闭样本为 0，空分布 []；连续 30 个上海自然日含今日、升序补零。Mock 日期固定，仅供确定性展示 |
@@ -92,6 +95,7 @@ pnpm --dir tools/api-contract run typecheck
 | 待确认详情含图片/分派 | GET `/api/tickets/1`，`X-Mock-Example: pending_confirmation_reporter` |
 | 审核驳回 | POST `/api/tickets/1/review`，`X-Mock-Example: rejected` |
 | 空列表 | GET `/api/tickets`，`X-Mock-Example: empty` |
+| 非 Admin 使用维修人员筛选（固定拒绝样例） | GET `/api/tickets?current_assignee_id=2`，`X-Mock-Status: 403`、`X-Mock-Example: role`；控制头只选择样例，不验证真实用户或查询权限 |
 | 版本冲突 | POST `/api/tickets/1/confirm`，`X-Mock-Status: 409`、`X-Mock-Example: version` |
 | 分派目标不存在 | POST `/api/tickets/1/assign`，`X-Mock-Status: 422`、`X-Mock-Example: technician_not_found` |
 | 分派目标角色不符 | POST `/api/tickets/1/assign`，`X-Mock-Status: 422`、`X-Mock-Example: technician_wrong_role` |
@@ -102,6 +106,30 @@ pnpm --dir tools/api-contract run typecheck
 这只是**无状态样例服务**：不验证请求体、Cookie、Origin、权限、筛选，不保存状态或改变版本；路径 ID 不改变样例中的 ID。它按契约返回固定示例，不做真实登录，也不设置假会话 Cookie。附件下载用安全的 1×1 PNG 占位图；JPEG/WebP 在导出中是媒体类型说明，不代表真实图片上传测试。控制头不在正式业务契约中，不能发送到生产 API。Mock 自身的错误用 `mock_error` 明确区分。
 
 ## 测试记录与未验证部分
+
+### 2026-10-06 评审修正
+
+本地分支 `feat/46-review-fixes`，起点 `841a011`。本轮只修改以下六个已跟踪文件；既有 #45/#51 未提交文件不属于本次修正：
+
+- `docs/api/openapi.yaml`、`docs/api/review-checklist.md`、`docs/api/README.md`。
+- `backend/tests/test_api_contract.py`、`tools/test_api_contract_mock.py`、`tools/api-contract/smoke.ts`。
+
+新增回归覆盖工单列表与三个管理 GET 的角色拒绝声明、GET 无 Origin 参数、列表 403 仅角色样例、Mock 的固定 403 样例及生成类型的响应/筛选字段。修正前新增契约回归准确发现两项失败；修正后通过。生成物仍位于忽略的 `.contract-artifacts/`，只用生成器更新，不手改。
+
+本轮实际验证结果：
+
+- OpenAPI 3.1 校验通过；重新生成的 Mock 含 23 个操作、191 个响应样例，全部 JSON 样例通过 Schema 校验。
+- #46 相关 122 项测试通过：契约 94、现有 Core 14、Mock 14，含本次新增的 6 项契约回归和 3 项 Mock 回归。
+- `pytest backend/tests tools/test_api_contract_mock.py -q` 全量 401 项通过；其中 279 项属于保留的 #51 准备测试，不算作 #46 新增成果。
+- 从修改后的 YAML 重新生成 TypeScript 类型，严格编译通过；包括列表 403、管理员筛选/时间参数及预期应拒绝的拼错字段与字符串 ID。
+- 1 个既有 FastAPI/Starlette TestClient 弃用警告，不是失败；未新增或升级依赖。
+- 正常 Git 差异空白检查通过；原有 12 个 #45/#51 未提交文件逐一对比 SHA256，内容保持不变。
+
+上述记录为本地验证证据。经用户授权，本轮修正以独立提交更新 `base-auth` 上的[现有草稿 PR #65](https://github.com/MyeeeeR1kooo/CampusFix/pull/65)，只提交修改供复核，不代表最终稿或正式冻结，也不授权合并到 `main`、代签评审或关闭 Issue。真实业务路由/授权、PostgreSQL 事务与并发、图片和前端/E2E 联调不在这些测试的验证范围内。
+
+修正提交后仍需两位评审人复核、有决策权限的人类批准及全组冻结通知。前端实际工作分支应按修正后的 YAML 重新生成类型并同步 Mock；此处类型编译和固定样例验证不代表业务页面、真实授权或端到端联调通过。
+
+### 原始 #46 交付记录
 
 实际变更文件（均为 #46；原始工作树干净，未覆盖他人修改）：
 

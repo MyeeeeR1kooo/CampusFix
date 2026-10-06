@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | 登录与登录态 | login/me 的 id/name/email/role/active；Cookie 不读 JSON token；401 回登录页；logout 204 不解析 JSON | 待评审 |
 | Reporter 创建 | 有效 locations 的 building/floor/room_or_area；title/description/category/location_id/photos；201 的 code/status/version | 待评审 |
-| 我的报修/调度/维修列表 | items/next_cursor；七类筛选；location snapshot、priority、assignee、责任方及 allowed_actions；无 total | 待评审 |
+| 我的报修/调度/维修列表 | items/next_cursor；共七类筛选（六类通用 + 当前维修人员仅 Admin）；时间范围用 created_from/created_before 两个参数，共八个筛选参数，加 cursor/limit 共十个查询参数；location snapshot、priority、assignee、责任方及 allowed_actions；无 total | 待评审 |
 | 工单详情 | description、两类照片 download_url、分派历史、timeline kind、责任阶段、可执行动作；ADMIN_ONLY 后端过滤 | 待评审 |
 | 审核/驳回/分派 | APPROVE 的 category/priority，REJECT 的 reason；启用 Technician 列表；expected_version 和更新摘要 | 待评审 |
 | 开始/提交结果 | note 可选；resolution_note 必填；可选照片 multipart；409 重新读详情 | 待评审 |
@@ -17,7 +17,7 @@
 | 地点维护 | 所有地点列表、创建、局部修改/启停；停用不改变历史快照；唯一组合冲突 409 | 待评审 |
 | 账户管理 | Reporter/Technician，role/active 筛选、启停；无账号创建/改角色/管理 Admin | 待评审 |
 | 管理统计 | 六组字段；秒不是纯维修时间，0/空集合；30 日、Asia/Shanghai、按日期升序 | 待评审 |
-| 通用错误与附件 | error.code/message/request_id/field_errors；8 枚举；413/415/422图片提示；授权二进制下载。403 只在写请求的 Origin 与角色场景出现，列表类 GET 不会有 403 | 待评审 |
+| 通用错误与附件 | error.code/message/request_id/field_errors；8 枚举；413/415/422图片提示；授权二进制下载。Origin 拒绝仅适用于写请求；角色拒绝可发生于读或写请求。工单列表中非 Admin 使用 current_assignee_id，以及三个管理 GET（locations/users/analytics）的角色拒绝均为 403 / FORBIDDEN；普通地点 GET 无 403 声明。按各操作检查，不为 GET 增加 Origin 校验 | 待评审 |
 
 ## Mock 和类型检查
 

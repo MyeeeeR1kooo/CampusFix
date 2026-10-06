@@ -111,6 +111,42 @@ class ContractMockTests(unittest.TestCase):
                 self.assertEqual(error["code"], code)
                 self.assertEqual(headers["X-Request-ID"], error["request_id"])
 
+    def test_ticket_list_403_manifest_has_only_role_fixture(self):
+        records = [
+            record for record in self.manifest["responses"]
+            if record["operationId"] == "listTickets" and record["status"] == 403
+        ]
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0]["method"], "GET")
+        self.assertEqual(records[0]["path"], "/api/tickets")
+        self.assertEqual(records[0]["exampleName"], "role")
+        self.assertEqual(records[0]["body"]["error"]["code"], "FORBIDDEN")
+
+    def test_ticket_list_role_error_is_explicitly_selectable(self):
+        # Selecting a documented fixture does not verify real role authorization.
+        status, headers, body = self.request(
+            "GET", "/api/tickets?current_assignee_id=3",
+            {"X-Mock-Status": "403", "X-Mock-Example": "role"},
+        )
+        error = json.loads(body)["error"]
+        self.assertEqual(status, 403)
+        self.assertEqual(error["code"], "FORBIDDEN")
+        self.assertEqual(error["field_errors"], [])
+        self.assertEqual(headers["X-Request-ID"], error["request_id"])
+        self.assertEqual(headers["X-Mock-Response"], "stateless-contract-fixture")
+        self.assertIsNone(headers.get("X-Mock-Control-Error"))
+
+    def test_ticket_list_origin_fixture_is_a_mock_control_error(self):
+        status, headers, body = self.request(
+            "GET", "/api/tickets",
+            {"X-Mock-Status": "403", "X-Mock-Example": "origin"},
+        )
+        self.assertEqual(status, 400)
+        self.assertEqual(headers["X-Mock-Control-Error"], "true")
+        payload = json.loads(body)
+        self.assertIn("mock_error", payload)
+        self.assertNotIn("error", payload)
+
     def test_assignment_target_errors_are_selectable_422_field_errors(self):
         for name in ("technician_not_found", "technician_wrong_role", "technician_inactive"):
             with self.subTest(example=name):

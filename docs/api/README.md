@@ -2,11 +2,11 @@
 
 ## 当前状态
 
-- 契约版本：`1.0.0`，**Pending review / 未正式冻结**。
+- 契约版本：`1.0.0`，**Frozen / 已冻结**（2026-10-07 经 PM 徐琨钦 批准，证据见 [批准记录](https://github.com/MyeeeeR1kooo/CampusFix/pull/65#issuecomment-6030042408)）。
 - 任务：[Issue #46](https://github.com/MyeeeeR1kooo/CampusFix/issues/46)。负责人：蒋雨涵、熊雄；前端逐条评审：张越、舒玺悦；人工批准后才冻结。
 - 代码基线：用户已确认使用 `base-auth`，本次文档更新前的公开评审快照为 `27d85c6`；契约内容锚点为 `009f7f3`，后续提交只更新交接文档。Issue 中的历史分支标注不代表此次使用了不存在的分支。
 - 产品依据：[P0 冻结基线](../superpowers/specs/CampusFix%20P0%20Requirements%20%26%20Design%20Baseline.md)，尤其第 3–7、9–12、14 节；Core 依据：[交接说明](../superpowers/handoffs/2026-10-02-base-auth-api-handoff.md)。旧 PRD 已作废，不用于增加功能。
-- 交付范围：字段清单、完整契约、契约校验、可生成的 Mock、TypeScript 类型生成验证。本次没有修改状态机、权限、数据库、Core 或业务模块。待评审稿通过分支/草稿 PR 交付；前端字段复核及 Mock/类型对齐已通过，正式冻结批准、合并及关闭 #46 仍未完成。
+- 交付范围：字段清单、完整契约、契约校验、可生成的 Mock、TypeScript 类型生成验证。本次没有修改状态机、权限、数据库、Core 或业务模块。契约稿通过分支/PR 交付，前端字段复核及 Mock/类型对齐已通过；**契约已于 2026-10-07 批准冻结 v1.0**，按整合顺序合并及关闭 #46 仍未完成。
 
 入口：[最小字段清单](minimal-fields.md) → [OpenAPI 契约](openapi.yaml) → [前端评审清单](review-checklist.md)。
 
@@ -16,17 +16,17 @@
 
 2026-10-06 根据[张越的字段评审](https://github.com/MyeeeeR1kooo/CampusFix/issues/46#issuecomment-5991909270)及[舒玺悦的修改请求](https://github.com/MyeeeeR1kooo/CampusFix/pull/65#pullrequestreview-5418130475)，在 `base-auth@841a011` 基础上完成待评审修正：补回 `GET /api/tickets` 已描述的 `403 / FORBIDDEN`，只提供 Admin 专属筛选的角色拒绝样例；纠正清单对 GET/403 的说明；统一七类筛选的计数。这是既有权限规则的契约一致性修复，不新增权限、字段、错误码或业务端点。保留 #70 的上海编号日期和冻结状态测试修正；契约仍为 `1.0.0 / pending-review`，批准人、日期及人工勾选不由本次修正代填。
 
-### 2026-10-07 收尾快照（前端通过，待冻结批准）
+### 2026-10-07 冻结批准快照
 
 已上传的契约修正锚点为 [`base-auth@009f7f3`](https://github.com/MyeeeeR1kooo/CampusFix/commit/009f7f30ceec0b28267efd556ff6617ee1d18be6)。GitHub 上 YAML 的 SHA256 为 `9cfffc74c83517c6695834c4f70f7673db99aa913f20dc42e6f0d5928de5485c`；Windows 工作文件比较前需统一为 LF 换行，不能将 CRLF 字节差异误报为契约内容变化。此处只索引已发生的评审和技术验证，不代填人工清单、批准人或批准日期。
 
 | 事项 | 已有证据 | 尚需处理 |
 | --- | --- | --- |
-| 契约及错误约定 | 字段清单、23 个操作、8 个 ErrorCode、分页/ID/日期约定和冻结规则已交付；403 修正已进入草稿 PR #65，前端复核通过 | 有决策权限的人类批准冻结；不能把评审通过或已推送等同于已冻结 |
+| 契约及错误约定 | 字段清单、23 个操作、8 个 ErrorCode、分页/ID/日期约定和冻结规则已交付；403 修正已进入草稿 PR #65，前端复核通过 | 已于 2026-10-07 由 PM 批准冻结，见[批准记录](https://github.com/MyeeeeR1kooo/CampusFix/pull/65#issuecomment-6030042408) |
 | 前端字段复核 | 张越的[逐条确认](https://github.com/MyeeeeR1kooo/CampusFix/issues/46#issuecomment-5991909270)覆盖本人页面；舒玺悦的[最新整体复核](https://github.com/MyeeeeR1kooo/CampusFix/pull/65#pullrequestreview-5432043884)针对 27d85c6，覆盖全部 12 行（含调度/维修），无遗留修改请求 | 批准后由负责人据公开证据填写人工清单；字段复核不等于完整页面或真实后端验收 |
 | 前端生成类型 | [草稿 PR #71](https://github.com/MyeeeeR1kooo/CampusFix/pull/71) 当前为 56a4716，前端文件与已生成新类型的 fdb1082 相同；舒玺悦报告组合副本重新生成的类型与其一致，仅生成时间不同 | 按 #68 → #69 → #71 整合后，在实际工作分支对同一 YAML 做生成比对，避免旧快照覆盖新类型；冻结状态改动若改变 YAML 摘要，按新快照重新生成并验证 |
 | Mock | 固定 Mock 已校验 23 个操作、191 个响应样例；#69 的 [3336080](https://github.com/MyeeeeR1kooo/CampusFix/commit/333608035631a35bbff93292fd6ba3b014ed99f9) 修复 req_mock_ 请求 ID 及四种受限 GET 403 回归；舒玺悦记录 22 个业务操作、75 份响应按当前契约通过校验 | 在最终整合分支保留最新 Mock 并验证；模拟行为不作为真实权限、事务、图片解码或 E2E 的验收证据 |
-| 正式批准与交付 | 经用户授权通过现有 PR #65 提交正式待审批交付；契约仍为 1.0.0/pending-review，未合并 | 有权限的负责人批准后，补齐清单及批准证据、同步冻结状态、按流程合并并通知全组，再更新 Issue 完成记录 |
+| 正式批准与交付 | 经用户授权通过现有 PR #65 提交终审；契约 1.0.0 已于 2026-10-07 批准冻结，尚未合并 | 已批准；清单与状态已同步，按整合顺序合并并通知全组后更新 Issue 完成记录 |
 
 舒玺悦于 2026-10-07 对 `27d85c6` 提交新的 [APPROVED 评审](https://github.com/MyeeeeR1kooo/CampusFix/pull/65#pullrequestreview-5432043884)，明确两处 403 修改请求已修复、整体复核通过。旧的 [CHANGES_REQUESTED](https://github.com/MyeeeeR1kooo/CampusFix/pull/65#pullrequestreview-5418130475) 保留为历史记录，不再列为待修复阻断。历史后端评审及各证据范围见 [评审证据索引](review-checklist.md#评审证据索引非冻结批准)。
 

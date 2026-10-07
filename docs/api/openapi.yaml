@@ -3,7 +3,7 @@ info:
   title: CampusFix P0 API
   version: 1.0.0
   description: |
-    Issue #46 的 v1.0 待评审契约，以 P0 冻结基线为需求依据。
+    Issue #46 的 v1.0 冻结契约，以 P0 冻结基线为需求依据。
     版本号不表示人工评审或冻结已完成；冻结状态见 README.md。
     生产业务端点均以 /api 为前缀；/health 保留现有 Core 的部署检查地址。
     使用同源 Cookie 会话，所有写请求（包括登录）必须携带允许的 Origin。
@@ -13,7 +13,7 @@ info:
     当前仅 /health 已实现。此文件定义后续业务实现目标，不代表端点已经可用。
   license:
     name: MIT
-x-contract-status: pending-review
+x-contract-status: frozen
 x-baseline: docs/superpowers/specs/CampusFix P0 Requirements & Design Baseline.md
 servers:
   - url: /

@@ -1,9 +1,12 @@
 /**
  * Application root: providers + route table (P0 Baseline §13.1, §13.2).
  *
- * Provider order is load-bearing: the error boundary wraps everything, auth resolves
- * before any guard runs, the query client sits *under* the toast provider because §13.3's
- * conflict notice needs somewhere to be rendered, and toasts are available to every page.
+ * Provider order is load-bearing: the error boundary wraps everything, the query client
+ * sits *under* the toast provider because §13.3's conflict notice needs somewhere to be
+ * rendered, and it wraps the auth provider because the session lifecycle owns the cache
+ * reset (#68 review) — `AuthContext` reaches the client through `useQueryClient`, so the
+ * client must be above it. Auth still resolves before any guard runs: every route and
+ * guard renders below the auth provider.
  *
  * Route map — all nine pages Baseline §13.1 lists, no more:
  *   /login            all
@@ -67,9 +70,9 @@ function QueryProvider({ children }: { children: ReactNode }) {
 export default function App() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <ToastProvider>
-          <QueryProvider>
+      <ToastProvider>
+        <QueryProvider>
+          <AuthProvider>
             <BrowserRouter>
               <Routes>
                 <Route path="/login" element={<LoginPage />} />
@@ -142,9 +145,9 @@ export default function App() {
                 </Route>
               </Routes>
             </BrowserRouter>
-          </QueryProvider>
-        </ToastProvider>
-      </AuthProvider>
+          </AuthProvider>
+        </QueryProvider>
+      </ToastProvider>
     </ErrorBoundary>
   );
 }

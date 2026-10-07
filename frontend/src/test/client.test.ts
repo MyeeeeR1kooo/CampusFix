@@ -10,6 +10,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError, buildQuery, http, setUnauthorizedHandler } from "../api/client";
+import { bumpSessionVersion } from "../lib/session";
 import { jsonResponse, userPayload, validationError } from "../test-helpers";
 
 
@@ -121,6 +122,30 @@ describe("401 handling (§13.3)", () => {
 
     await expect(http.get("/api/me")).rejects.toBeInstanceOf(ApiError);
     expect(cleared).toHaveBeenCalledTimes(1);
+  });
+
+  it("ignores a 401 from a request issued in an earlier session generation (#68 review)", async () => {
+    const cleared = vi.fn();
+    setUnauthorizedHandler(cleared);
+    // A response withheld until the test has moved the session forward: the request was
+    // issued before the boundary, so its 401 describes an already-ended session.
+    let answer: ((response: Response) => void) | null = null;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => new Promise<Response>((resolve) => { answer = resolve; })),
+    );
+
+    const pending = http.get("/api/me").catch(() => undefined);
+    // One macrotask: the request has reached the stub (its generation stamp was taken
+    // synchronously at issue time), but no response has been delivered yet.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    bumpSessionVersion();
+    answer!(
+      jsonResponse({ error: { code: "UNAUTHORIZED", message: "No.", request_id: "r", field_errors: [] } }, 401),
+    );
+    await pending;
+
+    expect(cleared).not.toHaveBeenCalled();
   });
 
   it("does not notify on other failures", async () => {

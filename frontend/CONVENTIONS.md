@@ -118,8 +118,15 @@ installMock(async (req) => {
 
 ## 6. 错误处理（§13.3，写在两处，不在页面里）
 
-- **401**：`client.ts` 是唯一看见所有响应的地方，它调用 `AuthContext` 注册的 `clearSession()`；
+- **401**：`client.ts` 是唯一看见所有响应的地方，它调用 `AuthContext` 注册的 `endSession()`；
   清空后 `RequireSession` 自然把用户带回 `/login`。页面不需要、也不应该自己写跳转。
+  迟到的 401 只属于发出它的世代：`client.ts` 在请求发出时打会话世代戳，世代已推进（边界已发生）
+  就不再触发 `endSession`——mutation 没有 signal、无法取消，防旧写操作的迟到 401 踢掉新会话
+  全靠这条守卫（#68 评审）。
+- **会话边界**（退出、401、换账户登录）统一走 `AuthContext`：除了登录状态，还要先 `cancelQueries`
+  再 `clear()` 清空查询缓存——上一账户的缓存数据与在途请求不得进入下一个会话（#68 评审）。
+  页面和 Mock 预览不得自带第二套清理；`App.tsx` 里 `QueryClientProvider` 必须包在 `AuthProvider`
+  外面，`AuthContext` 才拿得到 client。
 - **409**（§13.3 v1.1 澄清，已随 #71 评审记录进基线）：`lib/queryClient.ts` 的 `MutationCache.onError`
   按这条 mutation **是不是工单状态动作**分流，而"是不是"由 mutation 自己声明：携带 `expected_version` 的状态动作必须带
   `meta: ticketActionMeta`（从 `lib/queryClient.ts` 导入），命中则提示 §13.3 的"工单已被他人更新"
@@ -132,6 +139,7 @@ installMock(async (req) => {
   猜把它当成工单，#71 评审修的就是这个。约定不变：工单动作的 variables 必须带 `id` 或 `ticketId`
   （指明是哪个工单），否则只能提示、无法自动重取。
   也不许改成按 `field_errors` 分流：共享的 `Conflict` 组件里 `field_errors` 示例是空数组，那条分支永远不执行。
+  上述 409 分流只处理当前会话：上一会话提交的 mutation 迟到失败时，先忽略回调，不提示也不刷新当前会话。
 - `VALIDATION_ERROR` 的 `field_errors` 显示在对应控件旁边，页面级摘要另给一条；不要混成一个红条。
 - 分类只有契约里的八个 code。以前的 `VERSION_CONFLICT`、`ACCESS_DENIED`、`INVALID_STATE_TRANSITION`
   都不是契约值，看到它们说明有人在手写。

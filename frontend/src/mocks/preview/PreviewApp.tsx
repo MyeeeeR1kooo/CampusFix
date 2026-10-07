@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { QueryClientProvider, useQueryClient } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { HashRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider, useAuth } from "../../features/auth/AuthContext";
 import { ToastProvider, useToast } from "../../hooks/useToast";
@@ -10,12 +10,12 @@ import { DetailPreviewPage } from "./DetailPreviewPage";
 
 function Session() {
   const auth = useAuth();
-  const client = useQueryClient();
+  // Cache resets at the session boundary live in AuthContext, exactly as in the real
+  // app — this preview must not carry a second copy of that behaviour.
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   async function login(email: string) {
     setBusy(true); setError(undefined);
-    await client.cancelQueries(); client.clear();
     try { await auth.login(email, MOCK_PASSWORD); }
     catch (failure) { setError(failure instanceof Error ? failure.message : "Login failed."); }
     finally { setBusy(false); }
@@ -26,7 +26,7 @@ function Session() {
       <p>CampusFix handles facilities only. Use existing school emergency channels for urgent safety or medical incidents.</p>
       {auth.initialising ? <p role="status">Checking session…</p> : auth.user ? <div>
         <p>Signed in: {auth.user.name} · {auth.user.role}</p>
-        <button type="button" disabled={busy} onClick={() => { void client.cancelQueries().then(() => { client.clear(); return auth.logout(); }); }}>Log out</button>
+        <button type="button" disabled={busy} onClick={() => { void auth.logout(); }}>Log out</button>
       </div> : <div className="action-buttons">{MOCK_ACCOUNTS.filter((account) => account.active).map((account) => <button type="button" key={account.id} disabled={busy} onClick={() => { void login(account.email); }}>Use {account.name}</button>)}</div>}
       {error && <p role="alert">{error}</p>}
     </header>

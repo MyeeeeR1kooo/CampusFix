@@ -15,6 +15,7 @@
  */
 
 import { requestViaMock } from "./mockBridge";
+import { currentSessionVersion } from "../lib/session";
 import type { components } from "./generated/schema";
 
 type Schema = components["schemas"];
@@ -77,11 +78,17 @@ let onUnauthorized: (() => void) | null = null;
 
 /**
  * §13.3's 401 rule, from the one place that can see every response. The auth provider
- * registers `clearSession`; passing null detaches it again for tests.
+ * registers `endSession`, which also resets the query cache; passing null detaches it
+ * again for tests.
  *
- * A failed *login* is also a 401. It still runs the handler, which is harmless — there
- * is no session to clear and the user is already on the login page — and the ApiError
- * is thrown regardless so the form can show why.
+ * The handler only fires for a request of the *current* session generation: every
+ * request is stamped at issue time, so a 401 arriving from work issued before the last
+ * boundary describes an already-ended session and must not end the one on screen
+ * (#68 review) — mutations carry no AbortSignal and cannot be cancelled, so this guard,
+ * not cancellation, is what keeps their late 401s from logging the next account out.
+ * A failed *login* is also a 401 of the current generation; the handler runs, which is
+ * harmless — there is no session to clear and the user is already on the login page —
+ * and the ApiError is thrown regardless so the form can show why.
  */
 export function setUnauthorizedHandler(handler: (() => void) | null): void {
   onUnauthorized = handler;
@@ -155,6 +162,9 @@ async function send(path: string, options: RequestOptions, want: "json"): Promis
 async function send(path: string, options: RequestOptions, want: "blob"): Promise<Blob>;
 async function send(path: string, options: RequestOptions, want: "json" | "blob"): Promise<unknown> {
   const { method = "GET", json, form, signal } = options;
+  // The generation this request was issued in (see setUnauthorizedHandler): it decides
+  // whether a late 401 still belongs to the session on screen.
+  const issuedIn = currentSessionVersion();
 
   // The Mock mount point sits above `fetch`, not above the envelope handling: a served
   // mock still passes through the same 204 rule and error parser, so the Mock layer
@@ -173,9 +183,11 @@ async function send(path: string, options: RequestOptions, want: "json" | "blob"
 
   if (!response.ok) {
     const apiError = await toApiError(response);
-    // §13.3: a 401 anywhere means the session is gone. The handler clears it and
-    // redirects; the throw still happens so the caller can say why.
-    if (apiError.isUnauthorized) onUnauthorized?.();
+    // §13.3: a 401 anywhere means the session that issued the request is gone. The
+    // handler clears it and redirects — but only when that session is still the one on
+    // screen (§13.3 says to clean the login state, not the successor session); the
+    // throw still happens so the caller can say why.
+    if (apiError.isUnauthorized && currentSessionVersion() === issuedIn) onUnauthorized?.();
     throw apiError;
   }
   // 204 has no body — logout is the only declared 204, and parsing it would throw.

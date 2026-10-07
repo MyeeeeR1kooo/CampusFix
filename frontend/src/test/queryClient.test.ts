@@ -15,6 +15,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../api/client";
 import { queryKeys, createAppQueryClient, ticketActionMeta } from "../lib/queryClient";
+import { bumpSessionVersion } from "../lib/session";
 
 function conflict(code: string): ApiError {
   return new ApiError({
@@ -191,6 +192,59 @@ describe("other failures", () => {
     const mutation = client.getMutationCache().build(client, { mutationFn: async () => ({ ok: true }) });
     await mutation.execute({ id: 1 });
     expect(notify).not.toHaveBeenCalled();
+  });
+});
+
+describe("session generations (#68 review)", () => {
+  /** A mutation whose failure is delivered by hand, so the test controls *when*. */
+  function pendingFailure(client: QueryClient, meta?: MutationMeta) {
+    let rejectMutation: ((error: unknown) => void) | null = null;
+    const mutation = client.getMutationCache().build(client, {
+      meta,
+      mutationFn: () =>
+        new Promise((_resolve, reject) => {
+          rejectMutation = reject;
+        }),
+    });
+    const settled = mutation.execute({ id: 1 }).catch(() => undefined);
+    // One macrotask: by the time it runs, the submission — and its generation
+    // stamp — has happened.
+    const submitted = new Promise((resolve) => setTimeout(resolve, 0));
+    return { fail: (error: unknown) => rejectMutation!(error), settled, submitted };
+  }
+
+  it.each([
+    ["declared ticket action", conflict("CONFLICT"), ticketActionMeta],
+    ["ticket version conflict without metadata", conflict("TICKET_VERSION_CONFLICT"), undefined],
+    ["location conflict", locationConflict(), undefined],
+  ] as const)("suppresses an old-session %s without invalidating the new session", async (_case, error, meta) => {
+    const notify = vi.fn();
+    const client = createAppQueryClient({ notify });
+    const { fail, settled, submitted } = pendingFailure(client, meta);
+
+    await submitted;
+    bumpSessionVersion(); // the session that issued the mutation has ended
+    client.clear();
+    const key = queryKeys.tickets.detail(1);
+    client.setQueryData(key, { id: 1, version: 2 });
+    fail(error);
+    await settled;
+
+    expect(notify).not.toHaveBeenCalled();
+    expect(client.getQueryData(key)).toEqual({ id: 1, version: 2 });
+    expect(client.getQueryCache().find({ queryKey: key })?.isStale()).toBe(false);
+  });
+
+  it("still toasts a 409 raised inside the current session", async () => {
+    const notify = vi.fn();
+    const client = createAppQueryClient({ notify });
+    const { fail, settled, submitted } = pendingFailure(client);
+
+    await submitted;
+    fail(conflict("TICKET_VERSION_CONFLICT"));
+    await settled;
+
+    expect(notify).toHaveBeenCalledTimes(1);
   });
 });
 

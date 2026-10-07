@@ -17,9 +17,11 @@
  */
 
 import { MutationCache, QueryClient } from "@tanstack/react-query";
+import type { Mutation } from "@tanstack/react-query";
 
 import { ApiError } from "../api/client";
 import { conflictMessage, classify } from "../lib/errors";
+import { currentSessionVersion } from "../lib/session";
 import type { Id } from "../api";
 
 export const queryKeys = {
@@ -71,36 +73,42 @@ export interface QueryClientOptions {
 }
 
 export function createAppQueryClient({ notify }: QueryClientOptions): QueryClient {
+  // Which session generation a mutation was submitted in, stamped when it starts and
+  // read when it fails (#68 review): a conflict arriving after the session that issued
+  // the mutation has ended is a stale callback — it must neither toast nor re-fetch into
+  // the session now on screen. Fail-open when unstamped, so a missed stamp can never
+  // silently disable §13.3's conflict handling.
+  const submittedIn = new WeakMap<Mutation<unknown, unknown, unknown>, number>();
+  const mutationCache = new MutationCache({
+    onMutate: (_variables, mutation) => {
+      submittedIn.set(mutation, currentSessionVersion());
+    },
+    onError: (error, variables, _context, mutation) => {
+      if (!(error instanceof ApiError) || !error.isConflict) return;
+      const submitted = submittedIn.get(mutation);
+      if (submitted !== undefined && submitted !== currentSessionVersion()) return;
+
+      const classified = classify(error);
+      // Only current-session failures reach #71's operation-type handling.
+      const ticketAction = error.code === "TICKET_VERSION_CONFLICT" || mutation.meta?.ticketAction === true;
+      if (!ticketAction) {
+        notify(classified.message);
+        return;
+      }
+      notify(conflictMessage(classified));
+
+      const id = ticketIdOf(variables);
+      if (id === null) return;
+      // Invalidate, don't patch: the server's version of the ticket is the only one
+      // that can say who is responsible now.
+      void client.invalidateQueries({ queryKey: queryKeys.tickets.detail(id) });
+    },
+  });
   const client = new QueryClient({
     // Failed queries are re-fetched by the user acting, not by the client hammering a
     // backend that is down.
     defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
-    mutationCache: new MutationCache({
-      onError: (error, variables, _context, mutation) => {
-        if (!(error instanceof ApiError) || !error.isConflict) return;
-
-        const classified = classify(error);
-        // §13.3 (v1.1) scopes the ticket wording and the re-fetch to ticket state actions:
-        // a mutation declared via `ticketActionMeta`, plus TICKET_VERSION_CONFLICT,
-        // which only a ticket state action can produce — that keeps a call site that
-        // forgot its meta from showing a bare server sentence for a version conflict.
-        // Everything else — the duplicated location combination, for instance — gets
-        // the server's own message: the ticket wording would send the user looking for
-        // a ticket that never moved.
-        const ticketAction = error.code === "TICKET_VERSION_CONFLICT" || mutation?.meta?.ticketAction === true;
-        if (!ticketAction) {
-          notify(classified.message);
-          return;
-        }
-
-        notify(conflictMessage(classified));
-        const id = ticketIdOf(variables);
-        if (id === null) return;
-        // Invalidate, don't patch: the server's version of the ticket is the only one
-        // that can say who is responsible now.
-        void client.invalidateQueries({ queryKey: queryKeys.tickets.detail(id) });
-      },
-    }),
+    mutationCache,
   });
   return client;
 }

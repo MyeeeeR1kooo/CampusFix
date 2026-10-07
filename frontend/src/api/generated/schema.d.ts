@@ -1,9 +1,9 @@
 /*
  * CampusFix #48 — generated API types. Run `npm run gen:api`, never edit by hand.
  *   contract version : 1.0.0
- *   contract digest  : sha256:9cfffc74c835
+ *   contract digest  : sha256:e958fbf475b9
  *   contract source  : docs/api/openapi.yaml
- *   generated at     : 2026-10-06T04:24:46.932Z
+ *   generated at     : 2026-10-07T06:01:36.263Z
  *
  * The digest is the anchor while #46 is unmerged: two runs over the same YAML differ only
  * by timestamp, and any contract edit changes it. Record the upstream commit in the commit

@@ -105,6 +105,8 @@ describe("409 on another resource", () => {
   it("says what the server said when creating a location", async () => {
     const notify = vi.fn();
     const client = createAppQueryClient({ notify });
+    const key = queryKeys.tickets.detail(5);
+    client.setQueryData(key, { id: 5, version: 3 });
 
     await runMutation(client, locationConflict(), {
       building: "Teaching Building A",
@@ -118,6 +120,7 @@ describe("409 on another resource", () => {
     // The §13.3 wording is reserved for a ticket that actually moved; leaking it here would
     // send the user to a ticket detail page that has nothing to do with the failure.
     expect(notify.mock.calls[0][0]).not.toMatch(/ticket/i);
+    expect(client.getQueryCache().find({ queryKey: key })?.isStale()).toBe(false);
   });
 
   it("does not mistake a location edit's id for a ticket (#71 review)", async () => {
@@ -140,6 +143,25 @@ describe("409 on another resource", () => {
     expect(notify).toHaveBeenCalledTimes(1);
     expect(notify.mock.calls[0][0]).toBe("This building, floor and room already exists.");
     expect(notify.mock.calls[0][0]).not.toMatch(/ticket/i);
+    expect(client.getQueryCache().find({ queryKey: key })?.isStale()).toBe(false);
+  });
+});
+
+describe("409 outside ticket state actions", () => {
+  it.each([
+    ["ticket creation with an inactive location", { location_id: 5 }, "The selected location is inactive."],
+    ["a comment on a terminal ticket", { ticketId: 5, text: "Comment" }, "Closed tickets are read-only."],
+  ] as const)("preserves the server message without refreshing detail for %s", async (_case, variables, message) => {
+    const notify = vi.fn();
+    const client = createAppQueryClient({ notify });
+    const key = queryKeys.tickets.detail(5);
+    client.setQueryData(key, { id: 5, version: 3 });
+    const error = new ApiError({ status: 409, code: "CONFLICT", message, requestId: "r", fieldErrors: [] });
+
+    await runMutation(client, error, variables);
+
+    expect(notify).toHaveBeenCalledTimes(1);
+    expect(notify).toHaveBeenCalledWith(message);
     expect(client.getQueryCache().find({ queryKey: key })?.isStale()).toBe(false);
   });
 });

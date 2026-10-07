@@ -8,7 +8,7 @@
  *   1. One query-key factory. Cache keys are the only place a resource is named, and two
  *      pages that spell the same key differently silently fail to invalidate each other.
  *   2. One 409 rule. §13.3 (v1.1) scopes "tell the user and re-fetch the authoritative
- *      ticket" to ticket operations, declared by `ticketActionMeta`; other resources'
+ *      ticket" to ticket state actions, declared by `ticketActionMeta`; other resources'
  *      conflicts show the server's own message. That decision happens in the mutation
  *      cache, not in whichever page remembers.
  *
@@ -58,9 +58,9 @@ function ticketIdOf(variables: unknown): Id | null {
 }
 
 /**
- * Attaches to every mutation that acts on a ticket, so the mutation cache can tell a
- * ticket operation from any other write without inspecting its variables. §13.3 (v1.1
- * clarification) scopes the ticket copy and the detail re-fetch to ticket operations;
+ * Attaches to ticket state actions carrying expected_version, so the mutation cache
+ * distinguishes them without inspecting variables. Do not attach to creation or comments.
+ * §13.3 (v1.1) scopes the ticket copy and the detail re-fetch to ticket state actions;
  * other resources' `409 / CONFLICT` renders the server's own message.
  */
 export const ticketActionMeta = { ticketAction: true } as const;
@@ -80,7 +80,7 @@ export function createAppQueryClient({ notify }: QueryClientOptions): QueryClien
         if (!(error instanceof ApiError) || !error.isConflict) return;
 
         const classified = classify(error);
-        // §13.3 (v1.1) scopes the ticket wording and the re-fetch to ticket operations:
+        // §13.3 (v1.1) scopes the ticket wording and the re-fetch to ticket state actions:
         // a mutation declared via `ticketActionMeta`, plus TICKET_VERSION_CONFLICT,
         // which only a ticket state action can produce — that keeps a call site that
         // forgot its meta from showing a bare server sentence for a version conflict.

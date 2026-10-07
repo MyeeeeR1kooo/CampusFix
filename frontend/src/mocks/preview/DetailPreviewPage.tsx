@@ -4,7 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import { api, type TicketSummary } from "../../api";
 import { ConfirmDialog, DataTable, PriorityBadge, StatusBadge, Timeline, type TableColumn } from "../../components";
 import { NEXT_ACTOR } from "../../lib/labels";
-import { queryKeys } from "../../lib/queryClient";
+import { queryKeys, ticketActionMeta } from "../../lib/queryClient";
 
 const columns: TableColumn<TicketSummary>[] = [
   { key: "code", label: "Code", className: "cell-primary", render: (ticket) => ticket.code },
@@ -20,6 +20,7 @@ export function DetailPreviewPage() {
   const client = useQueryClient();
   const query = useQuery({ queryKey: queryKeys.tickets.detail(id), queryFn: ({ signal }) => api.getTicket(id, signal) });
   const cancel = useMutation({
+    meta: ticketActionMeta,
     mutationFn: ({ id: ticketId, version }: { id: number; version: number }) => api.cancelTicket(ticketId, { expected_version: version }),
     // Refresh before restoring focus, since the updated actions can remove the trigger.
     onSuccess: async () => { await client.invalidateQueries({ queryKey: queryKeys.tickets.all }); setOpen(false); },

@@ -121,11 +121,13 @@ installMock(async (req) => {
 - **401**：`client.ts` 是唯一看见所有响应的地方，它调用 `AuthContext` 注册的 `clearSession()`；
   清空后 `RequireSession` 自然把用户带回 `/login`。页面不需要、也不应该自己写跳转。
 - **409**（§13.3 v1.1 澄清，已随 #71 评审记录进基线）：`lib/queryClient.ts` 的 `MutationCache.onError`
-  按这条 mutation **是不是工单操作**分流，而"是不是"由 mutation 自己声明：工单动作必须带
+  按这条 mutation **是不是工单状态动作**分流，而"是不是"由 mutation 自己声明：携带 `expected_version` 的状态动作必须带
   `meta: ticketActionMeta`（从 `lib/queryClient.ts` 导入），命中则提示 §13.3 的"工单已被他人更新"
   并 `invalidateQueries(detail(id))`。`TICKET_VERSION_CONFLICT` 即便漏带 meta 也按工单处理——只有
   工单状态动作产出它。其他资源（例如地点创建/编辑的唯一组合冲突，契约同样声明 409 / CONFLICT）：
   **直接展示服务端 `message`**，不冒充工单文案、不重取工单详情。
+  工单创建（如地点停用）和终态留言的 409 也展示服务端 `message`，不触发此处的详情刷新；
+  创建和留言不得携带 `ticketActionMeta`。当前 `DetailPreviewPage` 的取消操作已携带该标记。
   **禁止**按 variables 里有没有 `id`/`ticketId` 来猜资源类型——地点编辑也带 `id`（地点的），
   猜把它当成工单，#71 评审修的就是这个。约定不变：工单动作的 variables 必须带 `id` 或 `ticketId`
   （指明是哪个工单），否则只能提示、无法自动重取。

@@ -116,6 +116,9 @@ installMock(async (req) => {
 
 - **401**：`client.ts` 是唯一看见所有响应的地方，它调用 `AuthContext` 注册的 `endSession()`；
   清空后 `RequireSession` 自然把用户带回 `/login`。页面不需要、也不应该自己写跳转。
+  迟到的 401 只属于发出它的世代：`client.ts` 在请求发出时打会话世代戳，世代已推进（边界已发生）
+  就不再触发 `endSession`——mutation 没有 signal、无法取消，防旧写操作的迟到 401 踢掉新会话
+  全靠这条守卫（#68 评审）。
 - **会话边界**（退出、401、换账户登录）统一走 `AuthContext`：除了登录状态，还要先 `cancelQueries`
   再 `clear()` 清空查询缓存——上一账户的缓存数据与在途请求不得进入下一个会话（#68 评审）。
   页面和 Mock 预览不得自带第二套清理；`App.tsx` 里 `QueryClientProvider` 必须包在 `AuthProvider`

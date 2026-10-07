@@ -19,11 +19,14 @@ import { QueryClientProvider, useQuery, useQueryClient } from "@tanstack/react-q
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { AuthProvider, useAuth } from "../features/auth/AuthContext";
+import { http } from "../api/client";
 import { getTicket } from "../api/endpoints";
 import { createAppQueryClient, queryKeys } from "../lib/queryClient";
 import { errorResponse, jsonResponse, userPayload } from "../test-helpers";
 
 const TICKET_KEY = queryKeys.tickets.detail(42);
+/** A key nothing observes, so a cached entry there can only disappear via a reset. */
+const RESIDUAL_KEY = queryKeys.tickets.detail(999);
 
 const NO_SESSION = () => ({
   status: 401,
@@ -99,7 +102,7 @@ function SessionProbe() {
       </button>
       <button type="button" onClick={() => void logout()}>Log out</button>
       <button type="button" onClick={() => void detail.refetch()}>Refresh</button>
-      <button type="button" onClick={() => client.setQueryData(TICKET_KEY, { residual: true })}>
+      <button type="button" onClick={() => client.setQueryData(RESIDUAL_KEY, { residual: true })}>
         Seed residual cache
       </button>
     </div>
@@ -263,12 +266,47 @@ describe("switching accounts", () => {
     await screen.findByTestId("session");
 
     // Simulates whatever the previous session left behind — the login boundary must
-    // not depend on every earlier path having cleaned up.
+    // not depend on every earlier path having cleaned up. The key is observer-less on
+    // purpose: nothing will ever refetch it, so only a real reset removes it.
     await userEvent.click(screen.getByRole("button", { name: "Seed residual cache" }));
-    expect(client.getQueryData(TICKET_KEY)).toMatchObject({ residual: true });
+    expect(client.getQueryData(RESIDUAL_KEY)).toMatchObject({ residual: true });
 
     await userEvent.click(screen.getByRole("button", { name: "Sign in as reporter" }));
     await waitFor(() => expect(screen.getByTestId("session").textContent).toBe("signed-in:Reporter Rep"));
+    expect(client.getQueryData(RESIDUAL_KEY)).toBeUndefined();
+    // The reporter's own data arrives from a fresh fetch, not from the old cache.
     expect(client.getQueryData(TICKET_KEY)).toMatchObject({ internal_note: "fresh" });
+  });
+});
+
+describe("a signal-less request's late 401 (#68 review)", () => {
+  it("cannot end the session that replaced its own", async () => {
+    // Mutations carry no AbortSignal, so logout cannot cancel them the way it cancels
+    // queries. The guard is the generation stamp in client.ts: this slow write was
+    // issued by the admin session, so its 401 — landing after the reporter already
+    // signed in — describes an ended session and must be dropped instead of ending the
+    // reporter's fresh one.
+    const { stub } = renderSession([
+      { match: /\/api\/me$/, reply: NO_SESSION },
+      loginRoute,
+      { match: /\/api\/tickets$/, method: "POST", reply: () => ({ ...NO_SESSION(), delayMs: 300 }) },
+      { match: /\/api\/tickets\/42$/, reply: () => ({ body: { id: 42, internal_note: "REPORTER VIEW" } }) },
+    ]);
+    await screen.findByTestId("session");
+
+    await userEvent.click(screen.getByRole("button", { name: "Sign in as admin" }));
+    await waitFor(() => expect(screen.getByTestId("session").textContent).toBe("signed-in:Admin Ada"));
+
+    const slowWrite = http.post("/api/tickets").catch(() => undefined);
+    await waitFor(() => expect(stub.calls.some((c) => c.method === "POST" && /\/api\/tickets$/.test(c.url))).toBe(true));
+
+    await userEvent.click(screen.getByRole("button", { name: "Log out" }));
+    await waitFor(() => expect(screen.getByTestId("session").textContent).toBe("no-session"));
+    await userEvent.click(screen.getByRole("button", { name: "Sign in as reporter" }));
+    await waitFor(() => expect(screen.getByTestId("session").textContent).toBe("signed-in:Reporter Rep"));
+
+    await slowWrite; // the old write's 401 lands here
+    await new Promise((resolve) => setTimeout(resolve, 350));
+    expect(screen.getByTestId("session").textContent).toBe("signed-in:Reporter Rep");
   });
 });

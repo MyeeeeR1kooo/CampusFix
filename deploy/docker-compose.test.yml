@@ -6,6 +6,8 @@ services:
       target: test
     environment:
       CAMPUSFIX_TEST_DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}
+      # Existing backend test requests use the Vite development origin.
+      ALLOWED_ORIGINS: http://localhost:5173
     volumes:
       - ./docs:/docs:ro
     command: [pytest, -q]

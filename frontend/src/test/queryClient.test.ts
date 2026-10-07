@@ -1,16 +1,20 @@
 /**
- * §13.3's conflict behaviour, tested at the query client (#48).
+ * §13.3's conflict behaviour (v1.1 clarification), tested at the query client (#48, #71).
  *
- * The rule is "on 409, tell the user and re-fetch the authoritative ticket". Putting it in
- * the mutation cache is what makes it one behaviour instead of nine page-level habits, so
- * these tests drive a real mutation through the real client — no component required.
+ * The clarified rule: the ticket wording and the authoritative re-fetch belong to ticket
+ * operations — declared by `ticketActionMeta`, with `TICKET_VERSION_CONFLICT` counting
+ * even if a call site forgot its meta — while other resources' `409 / CONFLICT` shows
+ * the server's own message. Putting this in the mutation cache is what makes it one
+ * behaviour instead of nine page-level habits, so these tests drive a real mutation
+ * through the real client — no component required.
  */
 
 import { QueryClient } from "@tanstack/react-query";
+import type { MutationMeta } from "@tanstack/react-query";
 import { describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../api/client";
-import { queryKeys, createAppQueryClient } from "../lib/queryClient";
+import { queryKeys, createAppQueryClient, ticketActionMeta } from "../lib/queryClient";
 
 function conflict(code: string): ApiError {
   return new ApiError({
@@ -38,17 +42,31 @@ function locationConflict(): ApiError {
  * directly skips `defaultMutationOptions` and the cache wiring, so the test would not be
  * exercising the same path the app does.
  */
-async function runMutation(client: QueryClient, error: unknown, variables: unknown) {
+async function runMutation(client: QueryClient, error: unknown, variables: unknown, meta?: MutationMeta) {
   const mutation = client.getMutationCache().build(client, {
     mutationFn: async () => {
       throw error;
     },
+    meta,
   });
   await mutation.execute(variables).catch(() => undefined);
 }
 
-describe("409", () => {
-  it("notifies and marks the detail query stale", async () => {
+describe("409 on a ticket operation", () => {
+  it("notifies and marks the detail query stale for a declared ticket action", async () => {
+    const notify = vi.fn();
+    const client = createAppQueryClient({ notify });
+    const key = queryKeys.tickets.detail(7);
+    client.setQueryData(key, { id: 7, version: 1 });
+
+    await runMutation(client, conflict("CONFLICT"), { ticketId: 7 }, ticketActionMeta);
+
+    expect(notify).toHaveBeenCalledTimes(1);
+    expect(notify.mock.calls[0][0]).toMatch(/moved on/);
+    expect(client.getQueryCache().find({ queryKey: key })?.isStale()).toBe(true);
+  });
+
+  it("treats TICKET_VERSION_CONFLICT as a ticket even if the call site forgot its meta", async () => {
     const notify = vi.fn();
     const client = createAppQueryClient({ notify });
     const key = queryKeys.tickets.detail(42);
@@ -56,31 +74,35 @@ describe("409", () => {
 
     await runMutation(client, conflict("TICKET_VERSION_CONFLICT"), { id: 42, expected_version: 1 });
 
-    expect(notify).toHaveBeenCalledTimes(1);
     expect(notify.mock.calls[0][0]).toMatch(/updated by someone else/);
     expect(client.getQueryCache().find({ queryKey: key })?.isStale()).toBe(true);
   });
 
-  it("covers a plain state conflict too, since both are 409", async () => {
-    const notify = vi.fn();
-    const client = createAppQueryClient({ notify });
-    await runMutation(client, conflict("CONFLICT"), { ticketId: 7 });
-    expect(notify.mock.calls[0][0]).toMatch(/moved on/);
-    expect(client.getQueryCache().find({ queryKey: queryKeys.tickets.detail(7) })).toBeUndefined();
-  });
-
-  it("re-fetches nothing when the variables name no ticket", async () => {
+  it("still announces the ticket wording when the variables name no ticket", async () => {
+    // A ticket action whose variables somehow carry no id: the copy is right, but there
+    // is nothing to re-fetch.
     const notify = vi.fn();
     const client = createAppQueryClient({ notify });
     client.setQueryData(queryKeys.analytics(), { backlog_count: 0 });
 
-    await runMutation(client, conflict("CONFLICT"), { note: "no id here" });
+    await runMutation(client, conflict("CONFLICT"), { note: "no id here" }, ticketActionMeta);
 
     expect(notify).toHaveBeenCalledTimes(1);
+    expect(notify.mock.calls[0][0]).toMatch(/moved on/);
     expect(client.getQueryCache().find({ queryKey: queryKeys.analytics() })?.isStale()).toBe(false);
   });
 
-  it("says what the server said when the conflict is not about a ticket", async () => {
+  it("does not treat a zero or negative id as a ticket to re-fetch", async () => {
+    const notify = vi.fn();
+    const client = createAppQueryClient({ notify });
+    client.setQueryData(queryKeys.tickets.detail(0 as never), {});
+    await runMutation(client, conflict("CONFLICT"), { id: 0 }, ticketActionMeta);
+    expect(client.getQueryCache().find({ queryKey: queryKeys.tickets.detail(0 as never) })?.isStale()).toBe(false);
+  });
+});
+
+describe("409 on another resource", () => {
+  it("says what the server said when creating a location", async () => {
     const notify = vi.fn();
     const client = createAppQueryClient({ notify });
 
@@ -98,12 +120,27 @@ describe("409", () => {
     expect(notify.mock.calls[0][0]).not.toMatch(/ticket/i);
   });
 
-  it("does not treat a zero or negative id as a ticket", async () => {
+  it("does not mistake a location edit's id for a ticket (#71 review)", async () => {
+    // The regression the review caught: a location edit carries `id` — the location's —
+    // and the old id-based inference showed the ticket wording and refreshed ticket 5,
+    // a ticket that has nothing to do with the failed edit.
     const notify = vi.fn();
     const client = createAppQueryClient({ notify });
-    client.setQueryData(queryKeys.tickets.detail(0 as never), {});
-    await runMutation(client, conflict("CONFLICT"), { id: 0 });
-    expect(client.getQueryCache().find({ queryKey: queryKeys.tickets.detail(0 as never) })?.isStale()).toBe(false);
+    const key = queryKeys.tickets.detail(5);
+    client.setQueryData(key, { id: 5, version: 3 });
+
+    await runMutation(client, locationConflict(), {
+      id: 5,
+      building: "Teaching Building A",
+      floor: "3",
+      room_or_area: "301",
+      active: true,
+    });
+
+    expect(notify).toHaveBeenCalledTimes(1);
+    expect(notify.mock.calls[0][0]).toBe("This building, floor and room already exists.");
+    expect(notify.mock.calls[0][0]).not.toMatch(/ticket/i);
+    expect(client.getQueryCache().find({ queryKey: key })?.isStale()).toBe(false);
   });
 });
 

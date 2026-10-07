@@ -103,10 +103,15 @@ installMock(async (req) => {
 
 - **401**：`client.ts` 是唯一看见所有响应的地方，它调用 `AuthContext` 注册的 `clearSession()`；
   清空后 `RequireSession` 自然把用户带回 `/login`。页面不需要、也不应该自己写跳转。
-- **409**：`lib/queryClient.ts` 的 `MutationCache.onError` 先看这条 mutation 动的是不是某个工单。
-  variables 里带 `id` 或 `ticketId`：提示 §13.3 的"工单已被他人更新"，并 `invalidateQueries(detail(id))`。
-  不带（例如地点唯一组合冲突，契约同样声明 409 / CONFLICT）：**直接展示服务端 `message`**，不冒充工单文案。
-  约定不变——动作类 mutation 的 variables 必须带 `id` 或 `ticketId`，否则只能提示、无法自动重取。
+- **409**（§13.3 v1.1 澄清，已随 #71 评审记录进基线）：`lib/queryClient.ts` 的 `MutationCache.onError`
+  按这条 mutation **是不是工单操作**分流，而"是不是"由 mutation 自己声明：工单动作必须带
+  `meta: ticketActionMeta`（从 `lib/queryClient.ts` 导入），命中则提示 §13.3 的"工单已被他人更新"
+  并 `invalidateQueries(detail(id))`。`TICKET_VERSION_CONFLICT` 即便漏带 meta 也按工单处理——只有
+  工单状态动作产出它。其他资源（例如地点创建/编辑的唯一组合冲突，契约同样声明 409 / CONFLICT）：
+  **直接展示服务端 `message`**，不冒充工单文案、不重取工单详情。
+  **禁止**按 variables 里有没有 `id`/`ticketId` 来猜资源类型——地点编辑也带 `id`（地点的），
+  猜把它当成工单，#71 评审修的就是这个。约定不变：工单动作的 variables 必须带 `id` 或 `ticketId`
+  （指明是哪个工单），否则只能提示、无法自动重取。
   也不许改成按 `field_errors` 分流：共享的 `Conflict` 组件里 `field_errors` 示例是空数组，那条分支永远不执行。
 - `VALIDATION_ERROR` 的 `field_errors` 显示在对应控件旁边，页面级摘要另给一条；不要混成一个红条。
 - 分类只有契约里的八个 code。以前的 `VERSION_CONFLICT`、`ACCESS_DENIED`、`INVALID_STATE_TRANSITION`

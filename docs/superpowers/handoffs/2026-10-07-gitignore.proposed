@@ -1,23 +1,16 @@
-# macOS
+# Integration candidate only; not the active repository .gitignore.
+# Existing patterns from PR #65, #66 and #68; awaiting #45 owner confirmation.
 .DS_Store
-
-# Python / contract tooling
 .venv/
 __pycache__/
 .pytest_cache/
 *.egg-info/
 .contract-artifacts/
-
-# Node / frontend build artefacts
 node_modules/
 dist/
 frontend/dist/
 frontend/tsconfig.tsbuildinfo
-
-# Local env overrides
 .env
 .env.*
 !.env.example
-
-# Local data
 data/

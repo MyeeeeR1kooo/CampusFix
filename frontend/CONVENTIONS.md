@@ -114,11 +114,15 @@ installMock(async (req) => {
 
 ## 6. 错误处理（§13.3，写在两处，不在页面里）
 
-- **401**：`client.ts` 是唯一看见所有响应的地方，它调用 `AuthContext` 注册的 `clearSession()`；
+- **401**：`client.ts` 是唯一看见所有响应的地方，它调用 `AuthContext` 注册的 `endSession()`；
   清空后 `RequireSession` 自然把用户带回 `/login`。页面不需要、也不应该自己写跳转。
+- **会话边界**（退出、401、换账户登录）统一走 `AuthContext`：除了登录状态，还要先 `cancelQueries`
+  再 `clear()` 清空查询缓存——上一账户的缓存数据与在途请求不得进入下一个会话（#68 评审）。
+  页面和 Mock 预览不得自带第二套清理；`App.tsx` 里 `QueryClientProvider` 必须包在 `AuthProvider`
+  外面，`AuthContext` 才拿得到 client。
 - **409**：`lib/queryClient.ts` 的 `MutationCache.onError` 统一提示"工单已被他人更新"并
   `invalidateQueries(detail(id))`。约定：**动作类 mutation 的 variables 里必须带 `id` 或 `ticketId`**，
-  否则只能提示、无法自动重取。
+  否则只能提示、无法自动重取。提交自上一会话世代的 mutation 迟到 409，既不提示也不重取。
 - `VALIDATION_ERROR` 的 `field_errors` 显示在对应控件旁边，页面级摘要另给一条；不要混成一个红条。
 - 分类只有契约里的八个 code。以前的 `VERSION_CONFLICT`、`ACCESS_DENIED`、`INVALID_STATE_TRANSITION`
   都不是契约值，看到它们说明有人在手写。

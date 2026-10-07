@@ -15,9 +15,11 @@
  */
 
 import { MutationCache, QueryClient } from "@tanstack/react-query";
+import type { Mutation } from "@tanstack/react-query";
 
 import { ApiError } from "../api/client";
 import { conflictMessage, classify } from "../lib/errors";
+import { currentSessionVersion } from "../lib/session";
 import type { Id } from "../api";
 
 export const queryKeys = {
@@ -59,23 +61,35 @@ export interface QueryClientOptions {
 }
 
 export function createAppQueryClient({ notify }: QueryClientOptions): QueryClient {
+  // Which session generation a mutation was submitted in, stamped when it starts and
+  // read when it fails (#68 review): a conflict arriving after the session that issued
+  // the mutation has ended is a stale callback — it must neither toast nor re-fetch into
+  // the session now on screen. Fail-open when unstamped, so a missed stamp can never
+  // silently disable §13.3's conflict handling.
+  const submittedIn = new WeakMap<Mutation<unknown, unknown, unknown>, number>();
+  const mutationCache = new MutationCache({
+    onMutate: (_variables, mutation) => {
+      submittedIn.set(mutation, currentSessionVersion());
+    },
+    onError: (error, variables, _context, mutation) => {
+      if (!(error instanceof ApiError) || !error.isConflict) return;
+      const submitted = submittedIn.get(mutation);
+      if (submitted !== undefined && submitted !== currentSessionVersion()) return;
+
+      notify(conflictMessage(classify(error)));
+
+      const id = ticketIdOf(variables);
+      if (id === null) return;
+      // Invalidate, don't patch: the server's version of the ticket is the only one
+      // that can say who is responsible now.
+      void client.invalidateQueries({ queryKey: queryKeys.tickets.detail(id) });
+    },
+  });
   const client = new QueryClient({
     // Failed queries are re-fetched by the user acting, not by the client hammering a
     // backend that is down.
     defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
-    mutationCache: new MutationCache({
-      onError: (error, variables) => {
-        if (!(error instanceof ApiError) || !error.isConflict) return;
-
-        notify(conflictMessage(classify(error)));
-
-        const id = ticketIdOf(variables);
-        if (id === null) return;
-        // Invalidate, don't patch: the server's version of the ticket is the only one
-        // that can say who is responsible now.
-        void client.invalidateQueries({ queryKey: queryKeys.tickets.detail(id) });
-      },
-    }),
+    mutationCache,
   });
   return client;
 }

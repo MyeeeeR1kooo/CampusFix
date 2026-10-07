@@ -11,6 +11,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../api/client";
 import { queryKeys, createAppQueryClient } from "../lib/queryClient";
+import { bumpSessionVersion } from "../lib/session";
 
 function conflict(code: string): ApiError {
   return new ApiError({
@@ -103,6 +104,50 @@ describe("other failures", () => {
     const mutation = client.getMutationCache().build(client, { mutationFn: async () => ({ ok: true }) });
     await mutation.execute({ id: 1 });
     expect(notify).not.toHaveBeenCalled();
+  });
+});
+
+describe("session generations (#68 review)", () => {
+  /** A mutation whose failure is delivered by hand, so the test controls *when*. */
+  function pendingFailure(client: QueryClient) {
+    let rejectMutation: ((error: unknown) => void) | null = null;
+    const mutation = client.getMutationCache().build(client, {
+      mutationFn: () =>
+        new Promise((_resolve, reject) => {
+          rejectMutation = reject;
+        }),
+    });
+    const settled = mutation.execute({ id: 1 }).catch(() => undefined);
+    // One macrotask: by the time it runs, the submission — and its generation
+    // stamp — has happened.
+    const submitted = new Promise((resolve) => setTimeout(resolve, 0));
+    return { fail: (error: unknown) => rejectMutation!(error), settled, submitted };
+  }
+
+  it("suppresses a 409 raised by a mutation of a previous session", async () => {
+    const notify = vi.fn();
+    const client = createAppQueryClient({ notify });
+    const { fail, settled, submitted } = pendingFailure(client);
+
+    await submitted;
+    bumpSessionVersion(); // the session that issued the mutation has ended
+    fail(conflict("CONFLICT"));
+    await settled;
+
+    expect(notify).not.toHaveBeenCalled();
+    expect(client.getQueryCache().find({ queryKey: queryKeys.tickets.detail(1) })).toBeUndefined();
+  });
+
+  it("still toasts a 409 raised inside the current session", async () => {
+    const notify = vi.fn();
+    const client = createAppQueryClient({ notify });
+    const { fail, settled, submitted } = pendingFailure(client);
+
+    await submitted;
+    fail(conflict("TICKET_VERSION_CONFLICT"));
+    await settled;
+
+    expect(notify).toHaveBeenCalledTimes(1);
   });
 });
 

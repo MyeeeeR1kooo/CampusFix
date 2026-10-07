@@ -19,5 +19,6 @@ USER root
 COPY requirements-dev.lock ./
 RUN pip install --no-cache-dir -r requirements-dev.lock
 COPY tests ./tests
+ENV PYTEST_ADDOPTS="-o cache_dir=/tmp/campusfix-pytest-cache"
 USER campusfix
 CMD ["pytest", "-q"]

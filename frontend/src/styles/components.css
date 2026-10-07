@@ -737,6 +737,8 @@ input[type="radio"] {
 
 .filter-actions {
   margin-left: auto;
+  display: flex;
+  gap: var(--space-2);
 }
 
 /* Not a `.field`: it takes no label-above-control treatment, and it must not
@@ -772,6 +774,10 @@ input[type="radio"] {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--fs-control);
+}
+
+.data-table td {
+  overflow-wrap: anywhere;
 }
 
 .data-table th,
@@ -1331,6 +1337,17 @@ input[type="radio"] {
   border-radius: var(--radius);
   padding: var(--space-2);
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* #48 development examples use the same component styles as the application. */
+.preview-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: var(--space-4);
 }
 
 .timeline-comment-body {

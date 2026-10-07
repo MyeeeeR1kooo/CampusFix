@@ -51,8 +51,18 @@ cmd /c "set VITE_USE_MOCK=1&& npm run dev"   # Windows cmd
 ```
 
 The switch is read per request, so it can be flipped inside a test. With the flag off — or with
-no responder installed — requests go to `/api` exactly as they would in production. The responder
-itself is 舒玺悦's Mock layer (#48's other half); see CONVENTIONS.md §4.
+no responder installed — requests go to `/api` exactly as they would in production. The development
+entry now installs 舒玺悦's responder before the auth probe. Production builds exclude its fixtures.
+
+For PowerShell, run `$env:VITE_USE_MOCK='1'; npm run dev`. Open
+`http://localhost:5173/mock-preview.html#/queue` for the two component demonstration pages
+(queue and detail). These are development examples for #48; the eight business routes still
+belong to their follow-up issues. The regular login form also works with the mock accounts:
+`reporter01@campusfix.test`, `technician01@campusfix.test`, `admin01@campusfix.test`, all using
+the **mock-only** password `campusfix-mock`. These are unrelated to backend seed credentials.
+
+Reloading resets the in-memory data and session. See [the #48 handoff](./ISSUE-48-HANDOFF.md)
+for component APIs, endpoint coverage, tests and limits.
 
 ### Talking to a real backend
 
@@ -76,11 +86,12 @@ One consequence worth knowing before your first write request: the contract requ
 | `src/api/client.ts` | the only `fetch` call site; envelope parsing, `ApiError`, 401 hook |
 | `src/api/endpoints.ts` | one function per declared operation, cursor paging, bare payloads |
 | `src/api/mockBridge.ts` | the Mock **mount point**: one switch + one interceptor interface |
+| `src/mocks/` | typed fixtures, stateful responder, DEV bootstrap and two preview pages |
 | `src/app/` | providers, the nine-page route table, error boundary, route guards, state pages |
 | `src/lib/queryClient.ts` | TanStack Query client, query keys, §13.3's 409 behaviour |
 | `src/lib/labels.ts` | presentation vocabulary, keyed to the generated enums |
 | `src/features/auth/` | login page (RHF + Zod) and session context — behaviour is issue #47 |
-| `src/components/` | the three files the shell needs today; the shared component library is 舒玺悦's |
+| `src/components/` | existing shell components plus shared table, filters, badges, timeline, confirmation dialog and cursor pagination |
 | `src/test/` | frontend test evidence, per AGENTS.md §6 |
 
 Container files (`Dockerfile`, `nginx.conf`) are **not** here: serving the built SPA is issue

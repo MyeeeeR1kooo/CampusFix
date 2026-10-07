@@ -1,4 +1,8 @@
-import type { Category, Location, TicketDetail, TicketEvent, TicketStatus, User, UserSummary } from "../api";
+import type { Attachment, Category, Location, TicketDetail, TicketEvent, TicketStatus, User, UserSummary } from "../api";
+import { PRIORITY_ORDER } from "../lib/labels";
+
+// The contract Mock's valid 1 × 1 PNG, used only as fictional downloadable fixture bytes.
+const fixturePng = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
 
 /** Fictional, browser-only accounts. These are not the backend seed credentials. */
 export const MOCK_PASSWORD = "campusfix-mock";
@@ -32,6 +36,14 @@ export function shanghaiDate(value: string | number): string {
 
 export function createFixtures(now: Date) {
   const at = (days: number, hours = 0) => new Date(now.getTime() - days * 86400000 + hours * 3600000).toISOString();
+  const blobs = new Map<number, { bytes: Uint8Array; mime: string }>();
+  function photo(ticketId: number, purpose: Attachment["purpose"], uploader: UserSummary, createdAt: string): Attachment {
+    const id = blobs.size + 1;
+    const bytes = Uint8Array.from(atob(fixturePng), (value) => value.charCodeAt(0));
+    blobs.set(id, { bytes, mime: "image/png" });
+    return { id, ticket_id: ticketId, uploader, original_name: `demo-${ticketId}-${purpose.toLowerCase()}.png`,
+      mime: "image/png", size: bytes.length, purpose, created_at: createdAt, download_url: `/api/attachments/${id}` };
+  }
   const users: User[] = MOCK_ACCOUNTS.map((user) => ({ ...user, created_at: at(40), updated_at: at(40) }));
   const locations: Location[] = [
     { id: 1, building: "Teaching Building A", floor: "3", room_or_area: "301", active: true },
@@ -63,29 +75,35 @@ export function createFixtures(now: Date) {
     const location = locations[scenario.location - 1];
     const end = stages.findIndex(([, status]) => status === scenario.status);
     const history = stages.slice(0, end < 0 ? 1 : end + 1);
+    if (scenario.status === "CLOSED") history.splice(history.length - 1, 0,
+      ["REWORK_REQUESTED", "IN_PROGRESS", users[0]], ["RESOLUTION_SUBMITTED", "PENDING_CONFIRMATION", users[1]]);
     if (scenario.status === "REJECTED") history.push(["TICKET_REJECTED", "REJECTED", users[2]]);
     if (scenario.status === "CANCELLED") history.push(["TICKET_CANCELLED", "CANCELLED", users[0]]);
     const timeline: TicketEvent[] = history.map(([type, status, actor], step) => ({
       kind: "EVENT", id: id * 100 + step, ticket_id: id,
       actor: type === "TICKET_ASSIGNED" ? person(users[2]) : actor.role === "REPORTER" ? reporter : actor.role === "TECHNICIAN" ? technician : person(actor),
       type, from_status: step ? history[step - 1][1] : null, to_status: status,
-      note: type === "RESOLUTION_SUBMITTED" ? "Repaired and checked during normal operation." : type === "TICKET_REJECTED" ? "Please use the existing IT support channel." : null,
+      note: type === "RESOLUTION_SUBMITTED" ? "Repaired and checked during normal operation." : type === "REWORK_REQUESTED" ? "The bracket is still loose; please check it again." : type === "TICKET_REJECTED" ? "Please use the existing IT support channel." : null,
       visibility: "PUBLIC", created_at: at(12 - index, step),
     }));
     const assigned = end >= 2;
+    const resolved = timeline.find((entry) => entry.type === "RESOLUTION_SUBMITTED");
     return {
       id, code: `CF-${shanghaiDate(timeline[0].created_at).replaceAll("-", "")}-${String(id).padStart(6, "0")}`,
       reporter, location_id: location.id, location_label_snapshot: locationLabel(location),
       title: scenario.title, description: scenario.description, category: scenario.category,
-      priority: end >= 1 ? (["LOW", "MEDIUM", "HIGH"] as const)[index % 3] : null,
+      priority: end >= 1 ? PRIORITY_ORDER[index % PRIORITY_ORDER.length] : null,
       status: scenario.status, current_assignee: assigned ? technician : null, version: timeline.length,
       created_at: timeline[0].created_at, updated_at: timeline.at(-1)!.created_at,
       closed_at: scenario.status === "CLOSED" ? timeline.at(-1)!.created_at : null,
       current_responsible_role: null, next_action: null, allowed_actions: [],
-      report_photos: [], resolution_photos: [],
+      report_photos: resolved ? [photo(id, "REPORT_PHOTO", reporter, timeline[0].created_at)] : [],
+      resolution_photos: resolved ? [photo(id, "RESOLUTION_PHOTO", technician, resolved.created_at)] : [],
       assignments: assigned ? [{ id, ticket_id: id, technician, assigned_by: person(users[2]), assigned_at: timeline[2].created_at, ended_at: null, reason: null }] : [],
-      timeline: [...timeline, { kind: "COMMENT", id, ticket_id: id, author: person(users[2]), body: "Demo internal scheduling note.", visibility: "ADMIN_ONLY", created_at: timeline[0].created_at }],
+      timeline: [...timeline,
+        { kind: "COMMENT", id, ticket_id: id, author: person(users[2]), body: "Demo internal scheduling note.", visibility: "ADMIN_ONLY", created_at: timeline[0].created_at },
+        { kind: "COMMENT", id: 1000 + id, ticket_id: id, author: reporter, body: "Please contact me before entering the room.", visibility: "PUBLIC", created_at: timeline[0].created_at }],
     };
   });
-  return { users, locations, tickets };
+  return { users, locations, tickets, blobs };
 }

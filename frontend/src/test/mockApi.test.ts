@@ -5,6 +5,7 @@ import { MOCK_ACCOUNTS, MOCK_PASSWORD } from "../mocks/fixtures";
 import { createMockApi } from "../mocks/responder";
 import { createAppQueryClient, queryKeys } from "../lib/queryClient";
 import { QueryObserver } from "@tanstack/react-query";
+import { EVENT_LABELS } from "../lib/labels";
 
 const instant = new Date("2026-10-03T16:30:00Z");
 const login = (id: number) => api.login({ email: MOCK_ACCOUNTS.find((account) => account.id === id)!.email, password: MOCK_PASSWORD });
@@ -119,6 +120,113 @@ describe("mock sessions and visibility — FR-01, FR-04", () => {
     expect(logout!.status).toBe(204);
     expect(logout!.headers.get("X-Request-ID")).toMatch(/^req_/);
     expect(await logout!.text()).toBe("");
+  });
+});
+
+describe("partner review: seeded details and failure envelopes", () => {
+  it("downloads both seeded photo purposes without an upload, preserving visibility and later IDs", async () => {
+    await login(1);
+    const seeded = [];
+    for (const id of [5, 6]) {
+      const ticket = await api.getTicket(id);
+      expect(ticket.report_photos.length).toBeGreaterThan(0);
+      expect(ticket.resolution_photos.length).toBeGreaterThan(0);
+      for (const attachment of [...ticket.report_photos, ...ticket.resolution_photos]) {
+        const response = await mock.responder({ method: "GET", path: attachment.download_url });
+        expect(response!.status).toBe(200);
+        expect(response!.headers.get("Content-Type")).toBe(attachment.mime);
+        const bytes = new Uint8Array(await response!.arrayBuffer());
+        expect(bytes.byteLength).toBe(attachment.size);
+        expect([...bytes.slice(0, 8)]).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
+        seeded.push(attachment);
+      }
+    }
+    expect(new Set(seeded.map((attachment) => attachment.id)).size).toBe(seeded.length);
+    const created = await api.createTicket({ ...report, photos: [photo()] });
+    const uploaded = (await api.getTicket(created.id)).report_photos[0];
+    expect(seeded.map((attachment) => attachment.id)).not.toContain(uploaded.id);
+    const original = await mock.responder({ method: "GET", path: seeded[0].download_url });
+    expect((await original!.arrayBuffer()).byteLength).toBe(seeded[0].size);
+    for (const userId of [2, 3]) {
+      await login(userId);
+      for (const attachment of seeded) await expect(api.downloadAttachment(attachment.id)).resolves.toBeInstanceOf(Blob);
+    }
+    await login(4);
+    for (const attachment of seeded) await expect(api.downloadAttachment(attachment.id)).rejects.toMatchObject({ status: 404 });
+    await api.logout();
+    await expect(api.downloadAttachment(seeded[0].id)).rejects.toMatchObject({ status: 401 });
+    installMock(createMockApi({ now: () => instant, emptyTickets: true }).responder);
+    await login(3);
+    await expect(api.downloadAttachment(seeded[0].id)).rejects.toMatchObject({ status: 404 });
+  });
+
+  it("seeds public comments and all event types while keeping P0 assignments open", async () => {
+    await login(1);
+    const reporterDetail = await api.getTicket(5);
+    expect(reporterDetail.timeline.some((entry) => entry.kind === "COMMENT" && entry.visibility === "PUBLIC")).toBe(true);
+    expect(reporterDetail.timeline.every((entry) => entry.visibility === "PUBLIC")).toBe(true);
+    await login(3);
+    const details = await Promise.all((await api.listTickets()).items.map((ticket) => api.getTicket(ticket.id)));
+    const eventTypes = new Set(details.flatMap((ticket) => ticket.timeline.filter((entry) => entry.kind === "EVENT").map((event) => event.type)));
+    expect([...eventTypes].sort()).toEqual(Object.keys(EVENT_LABELS).sort());
+    const closed = details.find((ticket) => ticket.id === 6)!;
+    const events = closed.timeline.filter((entry) => entry.kind === "EVENT");
+    expect(events.slice(-4).map((event) => event.type)).toEqual(["RESOLUTION_SUBMITTED", "REWORK_REQUESTED", "RESOLUTION_SUBMITTED", "TICKET_CLOSED"]);
+    expect(events.find((event) => event.type === "REWORK_REQUESTED")).toMatchObject({
+      actor: closed.reporter, from_status: "PENDING_CONFIRMATION", to_status: "IN_PROGRESS", note: expect.any(String),
+    });
+    expect(closed.version).toBe(events.length);
+    expect(closed.current_assignee).not.toBeNull();
+    expect(closed.assignments).toHaveLength(1);
+    expect(details.flatMap((ticket) => ticket.assignments).every((assignment) => assignment.ended_at === null)).toBe(true);
+    expect(details.find((ticket) => ticket.id === 5)!.timeline.some((entry) => entry.visibility === "ADMIN_ONLY")).toBe(true);
+  });
+
+  it("wraps unexpected errors safely and lets the next queued request recover", async () => {
+    const clock = vi.fn(() => instant);
+    const isolated = createMockApi({ now: clock });
+    installMock(isolated.responder);
+    await login(1);
+    const fail = () => { throw new Error("Private database path and stack must not escape"); };
+    clock.mockImplementationOnce(fail);
+    const failed = isolated.responder({ method: "GET", path: "/api/tickets" });
+    const recovery = api.listTickets();
+    const response = await failed;
+    expect(response!.status).toBe(500);
+    expect(await response!.json()).toEqual({ error: {
+      code: "INTERNAL_ERROR", message: "An unexpected error occurred.", request_id: response!.headers.get("X-Request-ID"), field_errors: [],
+    } });
+    expect(response!.headers.get("X-Request-ID")).toMatch(/^req_/);
+    expect((await recovery).items).toHaveLength(8);
+    clock.mockImplementationOnce(fail);
+    await expect(api.listTickets()).rejects.toMatchObject({ status: 500, code: "INTERNAL_ERROR", message: "An unexpected error occurred." });
+  });
+
+  it.each([
+    ["GET", "/api/tickets/{id}"], ["GET", "/api/attachments/{id}"],
+    ["PATCH", "/api/admin/locations/{id}"], ["PATCH", "/api/admin/users/{id}/active"],
+    ...["review", "assign", "start", "resolve", "confirm", "rework", "cancel", "comments"].map((action) => ["POST", `/api/tickets/{id}/${action}`]),
+  ])("returns path validation errors for %s %s without mutating data", async (method, route) => {
+    await login(3);
+    const before = await api.getTicket(1);
+    for (const id of ["abc", "0", "-1", "1.5"]) {
+      const response = await mock.responder({ method, path: route.replace("{id}", id), json: { active: false } });
+      expect(response!.status).toBe(422);
+      expect((await response!.json()).error).toMatchObject({
+        code: "VALIDATION_ERROR", request_id: response!.headers.get("X-Request-ID"),
+        field_errors: [{ field: "path.id", message: expect.any(String), type: expect.any(String) }],
+      });
+    }
+    expect(await api.getTicket(1)).toEqual(before);
+  });
+
+  it("keeps unknown routes, unsupported methods and absent valid IDs as 404", async () => {
+    await login(3);
+    for (const [method, path] of [
+      ["GET", "/api/tickets/999999"], ["GET", "/api/attachments/999999"],
+      ["PATCH", "/api/admin/locations/999999"], ["PATCH", "/api/admin/users/999999/active"],
+      ["POST", "/api/tickets/abc/not-an-action"], ["GET", "/api/tickets/abc/review"], ["DELETE", "/api/tickets/abc"],
+    ]) expect((await mock.responder({ method, path }))!.status).toBe(404);
   });
 });
 

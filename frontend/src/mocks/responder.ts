@@ -71,18 +71,24 @@ function formBody(request: MockRequest) {
   return body;
 }
 
+function pathId(value: string): number {
+  const id = Number(value);
+  if (!/^\d+$/.test(value) || !Number.isInteger(id) || id < 1) invalid("path.id", "Use a positive integer ID.");
+  return id;
+}
+
 /** A fresh instance isolates each test or browser boot. No cookies/tokens/localStorage are imitated. */
 export function createMockApi(options: { now?: () => Date; emptyTickets?: boolean } = {}) {
   const now = options.now ?? (() => new Date());
   const store = createFixtures(now());
-  if (options.emptyTickets) store.tickets = [];
+  if (options.emptyTickets) { store.tickets = []; store.blobs.clear(); }
   const paginate = createPaginator();
-  const blobs = new Map<number, { bytes: Uint8Array; mime: string }>();
+  const blobs = store.blobs;
   let userId: number | null = null;
   let expiresAt = 0;
   let nextTicket = Math.max(0, ...store.tickets.map((ticket) => ticket.id)) + 1;
   let nextEntry = 10000;
-  let nextAttachment = 1;
+  let nextAttachment = Math.max(0, ...blobs.keys()) + 1;
   const timestamp = () => now().toISOString();
 
   function currentUser(): User {
@@ -227,9 +233,9 @@ export function createMockApi(options: { now?: () => Date; emptyTickets?: boolea
       return response;
     }
 
-    const ticketMatch = path.match(/^\/api\/tickets\/(\d+)(?:\/(\w+))?$/);
-    if (ticketMatch) {
-      const ticket = findTicket(Number(ticketMatch[1]), user);
+    const ticketMatch = path.match(/^\/api\/tickets\/([^/]+)(?:\/(review|assign|start|resolve|confirm|rework|cancel|comments))?$/);
+    if (ticketMatch && ((!ticketMatch[2] && method === "GET") || (ticketMatch[2] && method === "POST"))) {
+      const ticket = findTicket(pathId(ticketMatch[1]), user);
       const action = ticketMatch[2];
       if (!action && method === "GET") return json(detail(ticket, user));
       if (method === "POST") {
@@ -303,9 +309,9 @@ export function createMockApi(options: { now?: () => Date; emptyTickets?: boolea
       }
     }
 
-    const attachmentMatch = path.match(/^\/api\/attachments\/(\d+)$/);
+    const attachmentMatch = path.match(/^\/api\/attachments\/([^/]+)$/);
     if (method === "GET" && attachmentMatch) {
-      const id = Number(attachmentMatch[1]);
+      const id = pathId(attachmentMatch[1]);
       const ticket = store.tickets.find((item) => [...item.report_photos, ...item.resolution_photos].some((photo) => photo.id === id));
       if (!ticket || !visible(ticket, user) || !blobs.has(id)) throw new MockFailure(404, "NOT_FOUND", "Attachment not found.");
       const blob = blobs.get(id)!;
@@ -322,9 +328,10 @@ export function createMockApi(options: { now?: () => Date; emptyTickets?: boolea
       store.locations.push(location);
       return json(location, 201);
     }
-    const locationMatch = path.match(/^\/api\/admin\/locations\/(\d+)$/);
+    const locationMatch = path.match(/^\/api\/admin\/locations\/([^/]+)$/);
     if (method === "PATCH" && locationMatch) {
-      const location = store.locations.find((item) => item.id === Number(locationMatch[1]));
+      const id = pathId(locationMatch[1]);
+      const location = store.locations.find((item) => item.id === id);
       if (!location) throw new MockFailure(404, "NOT_FOUND", "Location not found.");
       const next = { ...location, ...parse(schemas.locationPatch, request.json) };
       if (store.locations.some((item) => item.id !== next.id && sameLocation(item, next))) throw new MockFailure(409, "CONFLICT", "This location already exists.");
@@ -336,9 +343,10 @@ export function createMockApi(options: { now?: () => Date; emptyTickets?: boolea
       return json(paginate(store.users.filter((item) => item.role !== "ADMIN" && (!query.role || item.role === query.role)
         && (query.active === undefined || item.active === (query.active === "true"))), url, user.id));
     }
-    const userMatch = path.match(/^\/api\/admin\/users\/(\d+)\/active$/);
+    const userMatch = path.match(/^\/api\/admin\/users\/([^/]+)\/active$/);
     if (method === "PATCH" && userMatch) {
-      const target = store.users.find((item) => item.id === Number(userMatch[1]));
+      const id = pathId(userMatch[1]);
+      const target = store.users.find((item) => item.id === id);
       if (!target) throw new MockFailure(404, "NOT_FOUND", "Account not found.");
       if (target.role === "ADMIN") throw new MockFailure(403, "FORBIDDEN", "Admin accounts cannot be managed here.");
       Object.assign(target, parse(schemas.active, request.json), { updated_at: timestamp() });
@@ -354,7 +362,7 @@ export function createMockApi(options: { now?: () => Date; emptyTickets?: boolea
   const responder: MockResponder = (request) => {
     const response = queue.then(() => handle(request)).catch((error: unknown) => {
       if (error instanceof MockFailure) return error.response();
-      throw error;
+      return new MockFailure(500, "INTERNAL_ERROR", "An unexpected error occurred.").response();
     });
     queue = response.catch(() => undefined);
     return response;

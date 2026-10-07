@@ -1,0 +1,35 @@
+{
+  "name": "campusfix-frontend",
+  "private": true,
+  "version": "0.4.0-48",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "gen:api": "node scripts/gen-contract-types.mjs"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.9.1",
+    "@tanstack/react-query": "^5.104.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.89.0",
+    "react-router-dom": "^6.26.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.4.0",
+    "@testing-library/react": "^16.0.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "jsdom": "^25.0.0",
+    "openapi-typescript": "7.10.1",
+    "typescript": "^5.9.3",
+    "vite": "^5.4.0",
+    "vitest": "^2.1.0"
+  }
+}

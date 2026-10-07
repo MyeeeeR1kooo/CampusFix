@@ -1,0 +1,1889 @@
+/**
+ * Component layer (logical component inventory).
+ * Order follows the inventory so the stylesheet can be audited against it.
+ *
+ * Visual language: linear strokes, one accent, no decorative icon use.
+ *
+ * The stylesheet ships complete with the scaffold: the shared component
+ * library's TSX (#48's other half, 舒玺悦 — CONVENTIONS.md §1) is built against
+ * these class names, so a section whose component does not exist yet (status
+ * rail, ticket card, …) is pre-provisioned, not dead code.
+ */
+
+/* -------------------------------------------------------------------- icons */
+
+/* One icon system: 1.5px linear strokes on a 24 grid, inheriting currentColor.
+   Icons never carry meaning alone — they always sit next to a text label. */
+.icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.icon-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* -------------------------------------------------------------------- card */
+
+.card {
+  background: var(--n-0);
+  border: 1px solid var(--n-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.card > h2 {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--n-500);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--n-200);
+}
+
+/* ------------------------------------------------------------ status badges */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--muted-line);
+  background: var(--muted-bg);
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
+}
+
+.badge .icon {
+  width: 0.75rem;
+  height: 0.75rem;
+  stroke-width: 2;
+}
+
+.badge-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+.badge-info {
+  background: var(--info-bg);
+  color: var(--info);
+  border-color: var(--info-line);
+}
+
+.badge-elevated {
+  background: var(--amber-bg);
+  color: var(--amber);
+  border-color: var(--amber-line);
+}
+
+.badge-indigo {
+  background: var(--indigo-bg);
+  color: var(--indigo);
+  border-color: var(--indigo-line);
+}
+
+.badge-teal {
+  background: var(--teal-bg);
+  color: var(--teal);
+  border-color: var(--teal-line);
+}
+
+.badge-success {
+  background: var(--green-bg);
+  color: var(--green);
+  border-color: var(--green-line);
+}
+
+.badge-muted {
+  background: var(--muted-bg);
+  color: var(--muted);
+  border-color: var(--muted-line);
+}
+
+.badge-danger {
+  background: var(--red-bg);
+  color: var(--red);
+  border-color: var(--red-line);
+}
+
+.badge-priority-high {
+  background: var(--amber-bg);
+  color: var(--amber);
+  border-color: var(--amber-line);
+}
+
+.badge-priority-medium,
+.badge-priority-low {
+  background: var(--muted-bg);
+  color: var(--n-600);
+  border-color: var(--muted-line);
+}
+
+.badge-unreviewed {
+  background: transparent;
+  color: var(--n-500);
+  border-style: dashed;
+}
+
+/* ----------------------------------------------------------------- banners */
+
+.banner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  border: 1px solid var(--n-200);
+  background: var(--n-0);
+}
+
+.banner-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.banner-title {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.9;
+}
+
+.banner-ref {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  opacity: 0.75;
+}
+
+.banner-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: none;
+}
+
+/* In flow, not ::after: inside .banner-actions this button can sit directly
+   beside Retry (Banner.tsx renders both as siblings), and an outward hit area
+   would overlap and steal that button's clicks. Growing the box moves the
+   neighbour instead of covering it — flex handles it. */
+.banner-dismiss {
+  border: 0;
+  background: transparent;
+  min-height: 1.75rem;
+  min-width: 1.75rem;
+  font-size: 1.125rem;
+  line-height: 1;
+  padding: 0 var(--space-2);
+  color: inherit;
+  cursor: pointer;
+}
+
+.banner-error {
+  background: var(--red-bg);
+  border-color: var(--red-line);
+  color: var(--banner-error-ink);
+}
+
+/* A 409 is not an error the user caused, so it reads as a caution and states
+   what happened — never a bare "something went wrong" (§13.3). */
+.banner-conflict {
+  background: var(--amber-bg);
+  border-color: var(--amber-line);
+  color: var(--banner-warn-ink);
+}
+
+.banner-notice-info {
+  background: var(--info-bg);
+  border-color: var(--info-line);
+  color: var(--banner-info-ink);
+}
+
+.banner-notice-warning {
+  background: var(--amber-bg);
+  border-color: var(--amber-line);
+  color: var(--banner-warn-ink);
+}
+
+.banner-terminal {
+  background: var(--n-100);
+  border-color: var(--n-300);
+  color: var(--n-600);
+}
+
+.banner-terminal-rejected {
+  background: var(--red-bg);
+  border-color: var(--red-line);
+  color: var(--banner-error-ink);
+}
+
+/* A discard is not one of the eight statuses (§4.1), so it gets no status
+   colour — the semantic set stays closed to those eight.
+   Neutral is also the honest read: the ticket was set aside, nothing failed. */
+.banner-discarded {
+  background: var(--n-100);
+  border-color: var(--n-300);
+  color: var(--n-600);
+}
+
+.banner-reason {
+  font-weight: var(--fw-semibold);
+}
+
+/* ------------------------------------------------------------- empty states */
+
+.empty-state {
+  background: var(--n-25);
+  border: 1px dashed var(--n-300);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.empty-icon {
+  color: var(--n-300);
+}
+
+.empty-icon .icon {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.empty-title {
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-body);
+}
+
+.empty-body {
+  color: var(--n-500);
+  font-size: var(--fs-sm);
+  max-width: 34rem;
+}
+
+/* `EmptyState` takes one `action` slot and wraps it here; with no rule the slot
+   was a plain block and a second action would have stacked instead of sitting
+   beside the first. */
+.empty-action {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+/* --------------------------------------------------------------- skeletons */
+
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.skeleton-row {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--n-0);
+  border: 1px solid var(--n-200);
+  border-radius: var(--radius-lg);
+}
+
+.skeleton-cell {
+  display: block;
+  height: 0.85rem;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, var(--skeleton-a) 25%, var(--skeleton-b) 37%, var(--skeleton-a) 63%);
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.4s ease infinite;
+}
+
+/* Placeholder width ladder for the shared skeleton component. That component
+   belongs to #48's component library (舒玺悦) and is not in this branch
+   yet, so nothing consumes these eight today. An inline `style={{ width: ... }}`
+   is invisible to any stylesheet census, so the widths the design used are
+   named here instead — rows 55/65/75/85, cards 40/70, block 90/75/60 — ready
+   for the component to pick up by name rather than re-derive as literals. */
+.skeleton-cell-w40 { width: 40%; }
+.skeleton-cell-w55 { width: 55%; }
+.skeleton-cell-w60 { width: 60%; }
+.skeleton-cell-w65 { width: 65%; }
+.skeleton-cell-w70 { width: 70%; }
+.skeleton-cell-w75 { width: 75%; }
+.skeleton-cell-w85 { width: 85%; }
+.skeleton-cell-w90 { width: 90%; }
+
+/* The card title row stands taller than a text row. */
+.skeleton-cell-lg { height: 1.6rem; }
+
+.skeleton-cards {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.skeleton-card {
+  flex: 1 1 14rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--n-0);
+  border: 1px solid var(--n-200);
+  border-radius: var(--radius-lg);
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-cell {
+    animation: none;
+  }
+}
+
+/* -------------------------------------------------------------- pagination */
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  color: var(--n-500);
+  font-size: var(--fs-sm);
+}
+
+.pagination-summary {
+  /* The other two parts of this row have rules; this one was simply missed.
+     "1–10 of 10 tickets" carries digits that change per page, so it takes the
+     same tabular treatment every other count in this row gets. */
+  font-variant-numeric: tabular-nums;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pagination-page {
+  min-width: 7rem;
+  text-align: center;
+}
+
+/* ---------------------------------------------------------------- controls */
+
+button,
+.button {
+  font: inherit;
+  font-size: var(--fs-control);
+  font-weight: var(--fw-semibold);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 2.5rem;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius);
+  border: 1px solid var(--n-300);
+  background: var(--n-0);
+  color: var(--n-800);
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease),
+    transform var(--dur-fast) var(--ease), filter var(--dur-fast) var(--ease);
+}
+
+button:hover:not(:disabled),
+.button:hover {
+  background: var(--n-50);
+  border-color: var(--n-400);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+button.primary,
+.button.primary {
+  background: linear-gradient(140deg, var(--brand-500), var(--brand-600));
+  border-color: transparent;
+  color: var(--n-0);
+}
+
+button.primary:hover:not(:disabled),
+.button.primary:hover {
+  background: linear-gradient(140deg, var(--brand-500), var(--brand-600));
+  filter: brightness(0.94);
+}
+
+/* Destructive actions are filled, not outlined: a reversible-looking control
+   on an irreversible action is the wrong affordance. */
+button.danger {
+  background: var(--red);
+  border-color: transparent;
+  color: var(--n-0);
+}
+
+button.danger:hover:not(:disabled) {
+  background: var(--red);
+  filter: brightness(0.92);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ------------------------------------------------------------------- forms */
+
+.form {
+  /* `gap` alone was inert here: a <form> is a block container, and gap only
+     applies in flex/grid. So `.form form-inline` rendered its three
+     fields and their action row as four stacked blocks with **zero** separation
+     at every width above 720px, and `.field { margin: 0 }` removed the only
+     thing that could have saved it. Making the base a column flex is what the
+     rule has always claimed to want. `.card.form` already got this from `.card`. */
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* The row variant: three facts about one object (Building · Floor · Room) read
+   across, not down. `flex-end` because the floor field carries an
+   `hint="Optional"` and is therefore a line taller than its two neighbours —
+   without bottom alignment the three controls sit at different heights.
+   responsive.css's phone block already flips this back to a stretched column;
+   until now it was overriding nothing. */
+.form-inline {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+.form-inline .field {
+  flex: 1 1 10rem;
+  max-width: 16rem;
+}
+
+.form-inline > .form-actions {
+  flex: 0 0 auto;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  border: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.field > label,
+.field > legend {
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-sm);
+  color: var(--n-800);
+  padding: 0;
+}
+
+.field-required {
+  color: var(--red);
+}
+
+.field-hint {
+  color: var(--n-500);
+  font-size: var(--fs-sm);
+}
+
+.field-hint-inline {
+  font-weight: var(--fw-regular);
+  color: var(--n-500);
+}
+
+.field-error {
+  color: var(--red);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  font-size: var(--fs-control);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--n-300);
+  border-radius: var(--radius);
+  background: var(--n-0);
+  color: var(--n-900);
+  min-height: 2.5rem;
+  transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--brand-600);
+  box-shadow: var(--ring);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 4.5rem;
+  line-height: var(--lh-body);
+}
+
+input[type="file"] {
+  padding: var(--space-2);
+  background: var(--n-50);
+}
+
+input[type="radio"] {
+  width: auto;
+  min-height: 0;
+  margin-right: var(--space-2);
+}
+
+.field-invalid input,
+.field-invalid select,
+.field-invalid textarea {
+  border-color: var(--red);
+  background: var(--field-invalid-bg);
+}
+
+.field-group {
+  border: 1px solid var(--n-200);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.field-group > legend {
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-sm);
+  padding: 0 var(--space-2);
+}
+
+.visibility-choice {
+  gap: var(--space-2);
+}
+
+.radio {
+  display: flex;
+  align-items: center;
+  font-weight: var(--fw-regular);
+  font-size: var(--fs-control);
+}
+
+.location-picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.file-selected,
+.file-empty {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-control);
+}
+
+.file-name {
+  font-weight: var(--fw-semibold);
+}
+
+/* -------------------------------------------------------------------- tabs */
+
+/* Quick views are tabs, not pill buttons: they are alternate views of one
+   list, and the count is part of the label. */
+.quick-views {
+  display: flex;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--n-200);
+}
+
+.quick-view {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.5rem;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--n-500);
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-sm);
+}
+
+.quick-view:hover:not(:disabled) {
+  background: transparent;
+  border-color: transparent;
+  border-bottom-color: var(--n-300);
+  color: var(--n-900);
+}
+
+/* The three views cover three of the eight statuses, so a finer choice in the
+   Status filter leaves no view lit. Saying which status that is beats an
+   unlit strip that reads as a broken control. */
+.quick-views-note {
+  margin-left: auto;
+  align-self: center;
+  padding-bottom: var(--space-2);
+  font-size: var(--fs-xs);
+}
+
+.quick-view-active {
+  background: transparent;
+  border-bottom-color: var(--brand-600);
+  color: var(--brand-700);
+}
+
+.quick-view-active:hover:not(:disabled) {
+  background: transparent;
+  border-bottom-color: var(--brand-600);
+  color: var(--brand-700);
+}
+
+.quick-view-label {
+  /* `.quick-view` is an inline-flex row of label + count. A flex item defaults
+     to `min-width: auto`, so a long status label refuses to shrink and pushes
+     the count badge out of the tab instead of using the width the tab has. */
+  min-width: 0;
+}
+
+.quick-view-count {
+  background: var(--n-100);
+  border-radius: var(--radius-pill);
+  padding: 0 0.45rem;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  color: var(--n-600);
+  font-variant-numeric: tabular-nums;
+}
+
+.quick-view-active .quick-view-count {
+  background: var(--brand-100);
+  color: var(--brand-700);
+}
+
+/* -------------------------------------------------------------- filter bar */
+
+.filter-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  background: var(--n-0);
+  border: 1px solid var(--n-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  box-shadow: var(--shadow-sm);
+}
+
+.filter-bar .field {
+  flex: 1 1 10rem;
+  max-width: 14rem;
+}
+
+.filter-actions {
+  margin-left: auto;
+}
+
+/* Not a `.field`: it takes no label-above-control treatment, and it must not
+   inherit the 14rem cap, or the checkbox would stretch to the width of a select. */
+.filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap-target);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--n-600);
+  white-space: nowrap;
+}
+
+.filter-toggle input {
+  width: 1.125rem;
+  height: 1.125rem;
+  accent-color: var(--brand-600);
+}
+
+/* ------------------------------------------------------------------ tables */
+
+.table-wrap {
+  border: 1px solid var(--n-200);
+  border-radius: var(--radius-lg);
+  background: var(--n-0);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-control);
+}
+
+.data-table th,
+.data-table td {
+  text-align: left;
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--n-200);
+  vertical-align: middle;
+  height: 2.75rem;
+}
+
+.data-table th {
+  background: var(--n-100);
+  height: 2.5rem;
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--n-500);
+  white-space: nowrap;
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.data-table tbody tr:hover td {
+  background: var(--n-25);
+}
+
+/* Applied only where the table is actually wired to open the ticket: a pointer
+   cursor on a row that does nothing is a lie about what is clickable. */
+.data-table .row-activatable {
+  cursor: pointer;
+}
+
+.data-table a {
+  font-weight: var(--fw-semibold);
+  text-decoration: none;
+}
+
+.data-table a:hover {
+  text-decoration: underline;
+}
+
+.cell-nowrap {
+  white-space: nowrap;
+}
+
+.cell-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+/* ------------------------------------------------------------------- modal */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: var(--overlay);
+  display: flex;
+  /* flex-start, not center. With `align-items: center` a panel taller than the
+     viewport overflows equally above and below, and the overflow above is
+     unreachable: scrolling cannot go past the container's start edge, so the
+     dialog's own title and reason field sit permanently off-screen. The
+     Reject / Rework / Discard dialogs carry a mandatory multiline reason
+     which is exactly what makes them tall. Centring is
+     restored by `margin: auto` on the panel, which centres when there is room
+     and collapses to zero when there is not — scrollable in both cases. */
+  align-items: flex-start;
+  justify-content: center;
+  padding: var(--space-4);
+  overflow-y: auto;
+}
+
+.modal {
+  background: var(--n-0);
+  border: 1px solid var(--n-200);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 30rem;
+  /* Auto margins, on the same reasoning as align-items: flex-start above.
+     The phone override must restate this (responsive.css), because auto
+     margins beat align-items. */
+  margin: auto;
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.modal-danger {
+  border-top: 3px solid var(--red);
+}
+
+.modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.modal-head h2 {
+  font-size: var(--fs-h3);
+}
+
+.modal-close {
+  position: relative;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 1.25rem;
+  line-height: 1;
+  min-height: 0;
+  padding: 0 var(--space-1);
+  cursor: pointer;
+  color: var(--n-500);
+}
+
+/* The × glyph is ~20px on screen, which is under WCAG 2.2 SC 2.5.8's 24×24
+   target floor and far under the 48px the tap-target tokens set for touch.
+   Expanding
+   the hit area outward is free here and nothing is stolen: the only other
+   element in .modal-head is the title, which is not interactive. */
+.modal-close::after {
+  content: "";
+  position: absolute;
+  inset: -12px;
+}
+
+.modal-close:hover:not(:disabled) {
+  background: transparent;
+  color: var(--n-900);
+}
+
+.modal-description {
+  color: var(--n-600);
+  font-size: var(--fs-sm);
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--n-200);
+}
+
+/* -------------------------------------------------------------- status rail
+   Renders the binding header rule (Baseline §13.3) as a six-step progress
+   track instead of a line of text:
+   what happened, what is happening, and what has not happened yet are three
+   different visual states, so "where am I" is answered by shape, not reading.
+
+   Semantics: <ol> with aria-current="step" on the live step. Colour is always
+   reinforced by the step name and, for the live step, by the owner. */
+
+.status-rail {
+  background: var(--n-0);
+  border: 1px solid var(--n-200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.rail {
+  display: flex;
+  align-items: flex-start;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rail-step {
+  flex: 1 1 0;
+  min-width: 0;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  text-align: center;
+  position: relative;
+}
+
+.rail-line {
+  position: absolute;
+  top: 0.625rem;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: var(--n-200);
+}
+
+.rail-step:last-child .rail-line {
+  display: none;
+}
+
+.rail-step-done .rail-line {
+  background: var(--brand-200);
+}
+
+.rail-dot {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  border-radius: 50%;
+  border: 2px solid var(--n-300);
+  background: var(--n-0);
+  color: var(--n-500);
+  font-size: 0.625rem;
+  font-weight: var(--fw-bold);
+}
+
+.rail-dot .icon {
+  width: 0.75rem;
+  height: 0.75rem;
+  stroke-width: 2.5;
+}
+
+.rail-step-done .rail-dot {
+  background: var(--brand-600);
+  border-color: var(--brand-600);
+  color: var(--n-0);
+}
+
+/* The live step is the accent's one job: "this is where the ticket is". */
+.rail-step-current .rail-dot {
+  background: var(--accent-50);
+  border-color: var(--accent-500);
+  color: var(--accent-700);
+  box-shadow: 0 0 0 4px var(--ring-current);
+}
+
+.rail-name {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--n-500);
+  line-height: 1.3;
+}
+
+.rail-step-done .rail-name,
+.rail-step-current .rail-name {
+  color: var(--n-900);
+}
+
+.rail-who {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--n-500);
+  line-height: 1.3;
+}
+
+.rail-step-current .rail-who {
+  color: var(--accent-700);
+  font-weight: var(--fw-semibold);
+}
+
+/* The timestamp sits under the actor so the six columns stay narrow. */
+.rail-when {
+  display: block;
+  color: var(--n-500);
+  font-weight: var(--fw-regular);
+}
+
+/* Terminal branches: the rail stops where the ticket stopped and the steps it
+   can never reach are struck through, so "no further action" is structural. */
+.rail-step-failed .rail-dot {
+  background: var(--red);
+  border-color: var(--red);
+  color: var(--n-0);
+}
+
+.rail-step-failed .rail-name {
+  color: var(--red);
+}
+
+.rail-step-cancelled .rail-dot {
+  background: var(--muted);
+  border-color: var(--muted);
+  color: var(--n-0);
+}
+
+.rail-step-dead {
+  opacity: 0.45;
+}
+
+.rail-step-dead .rail-name {
+  text-decoration: line-through;
+}
+
+/* Rework is an event, not a status: it shows as a badge on the repair step. */
+.rail-rework {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0 0.35rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--amber-line);
+  background: var(--amber-bg);
+  color: var(--amber);
+  font-size: 0.625rem;
+  font-weight: var(--fw-bold);
+  white-space: nowrap;
+}
+
+/* The compact variant is the list-row form. */
+.rail-compact .rail-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-width: 2px;
+}
+
+.rail-compact .rail-dot .icon {
+  display: none;
+}
+
+.rail-compact .rail-line {
+  top: 0.25rem;
+}
+
+.rail-compact .rail-name {
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-medium);
+}
+
+/* Owner / next-actor row, beneath the track (§13.3). */
+.rail-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding-top: var(--space-3);
+  border-top: 1px dashed var(--n-200);
+}
+
+.rail-summary-badges {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.strip-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.strip-key {
+  font-size: var(--fs-micro);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--n-500);
+  font-weight: var(--fw-bold);
+}
+
+.strip-value {
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-sm);
+}
+
+.strip-next {
+  margin-left: auto;
+}
+
+.strip-next .strip-value {
+  color: var(--n-900);
+  font-weight: var(--fw-semibold);
+}
+
+/* The viewer's turn is called out, so the action zone beneath needs no search
+   (Baseline §13.3's next-responsibility rule). */
+.next-you {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--accent-200);
+  background: var(--accent-50);
+  color: var(--accent-700);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------- action zone */
+
+.action-zone {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.action-panel {
+  background: var(--n-0);
+  border: 1px solid var(--n-200);
+  border-left: 3px solid var(--accent-500);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  box-shadow: var(--shadow-sm);
+}
+
+/* The comment box: a textarea field, a visibility fieldset and the Post button.
+   The class had no rule at all, so this was one plain block container and its
+   three children touched each other with zero separation — the only defect in
+   this wave that was visible at every viewport width, not just wide ones. */
+.composer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.action-panel-verdict {
+  border-left-color: var(--green);
+}
+
+.action-panel h2 {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--n-500);
+}
+
+.action-hint {
+  color: var(--n-600);
+  font-size: var(--fs-sm);
+}
+
+.action-buttons {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.action-zone .action-panel button.primary {
+  align-self: flex-start;
+}
+
+/* ----------------------------------------------------------------- detail */
+
+.detail-description {
+  white-space: pre-wrap;
+}
+
+.detail-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.detail-facts dt {
+  font-size: var(--fs-micro);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--n-500);
+  font-weight: var(--fw-bold);
+}
+
+.detail-facts dd {
+  margin: var(--space-1) 0 0;
+}
+
+/* --------------------------------------------------------------- timeline */
+
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-item {
+  display: grid;
+  grid-template-columns: 1rem 1fr;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px dashed var(--n-200);
+}
+
+.timeline-item:last-child {
+  border-bottom: 0;
+}
+
+.timeline-marker {
+  width: 0.6rem;
+  height: 0.6rem;
+  margin-top: 0.35rem;
+  border-radius: 50%;
+  background: var(--n-300);
+  justify-self: center;
+}
+
+/* `.timeline-item` is a `1rem 1fr` grid, and a grid item's `min-width` defaults
+   to `auto` — so one long unbreakable token in a comment body (a URL, a path)
+   would widen the `1fr` track past the card instead of overflowing inside it.
+   This class had no rule at all until the class census caught it. */
+.timeline-content {
+  min-width: 0;
+}
+
+.timeline-comment .timeline-marker {
+  background: var(--brand-600);
+}
+
+.timeline-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-xs);
+  color: var(--n-500);
+  flex-wrap: wrap;
+}
+
+.timeline-actor {
+  font-weight: var(--fw-semibold);
+  color: var(--n-600);
+}
+
+.timeline-text {
+  font-size: var(--fs-control);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.timeline-transition {
+  color: var(--n-600);
+  font-size: var(--fs-sm);
+}
+
+.timeline-note {
+  color: var(--n-700);
+  background: var(--n-50);
+  border: 1px solid var(--n-200);
+  border-radius: var(--radius);
+  padding: var(--space-2);
+  white-space: pre-wrap;
+}
+
+.timeline-comment-body {
+  background: var(--brand-50);
+  border: 1px solid var(--brand-100);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+}
+
+/* Internal notes are admin-only (DM-03); the tint plus the explicit tag means
+   an admin can never mistake one for something the reporter can see. */
+.timeline-internal {
+  background: var(--muted-bg);
+  border: 1px solid var(--muted-line);
+  border-radius: var(--radius);
+  padding-left: var(--space-3);
+  padding-right: var(--space-3);
+}
+
+.tag {
+  display: inline-block;
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.1rem 0.4rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid currentColor;
+}
+
+.tag-internal {
+  color: var(--muted);
+}
+
+.tag-active {
+  color: var(--green);
+  border-color: var(--green-line);
+  background: var(--green-bg);
+}
+
+.tag-inactive {
+  color: var(--n-500);
+  border-color: var(--n-300);
+  background: var(--n-100);
+}
+
+/* ---------------------------------------------------------------- gallery */
+
+.gallery-groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* The design notes documented the container but never the group inside it, so the
+   group's heading sat directly on top of its thumbnail grid. */
+.gallery-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.gallery {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: var(--space-3);
+}
+
+.photo {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.photo img,
+.photo-missing {
+  width: 100%;
+  height: 7rem;
+  object-fit: cover;
+  border-radius: var(--radius);
+  border: 1px solid var(--n-200);
+  background: var(--n-100);
+}
+
+.photo-missing {
+  display: grid;
+  place-items: center;
+  color: var(--n-500);
+  font-size: var(--fs-sm);
+  text-align: center;
+  padding: var(--space-2);
+}
+
+.photo figcaption {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--fs-xs);
+}
+
+/* -------------------------------------------------------------- analytics */
+
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: var(--space-4);
+  /* This row opts out of the wide band, and the reason is a count, not a taste:
+     ANA-01 funds exactly two cards, `auto-fit` collapses the empty tracks, so two
+     items always fill whatever row they are given — 944px each at a 1920px band,
+     which is the same defect at a larger radius. Inventing a third card to fill
+     the row is barred by the 0-unjustified-elements rule, so the row declines
+     it instead. The width relief goes to
+     `.distribution-grid`, which has three widgets and a 1fr bar that genuinely
+     reads better longer. */
+  max-width: var(--page-max);
+  margin-inline: auto;
+}
+
+.stat-card {
+  background: var(--n-0);
+  border: 1px solid var(--n-200);
+  border-bottom: 3px solid var(--brand-600);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-card-closed {
+  border-bottom-color: var(--green);
+}
+
+.stat-card-duration {
+  border-bottom-color: var(--accent-500);
+}
+
+.stat-card-backlog {
+  border-bottom-color: var(--red);
+}
+
+/* The card's label keeps its heading semantics but reads as a caption, so the
+   number is the only thing competing for attention. */
+.stat-card > h2 {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--n-500);
+}
+
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: 1.875rem;
+  font-weight: var(--fw-bold);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: var(--space-2) 0 0;
+  font-variant-numeric: tabular-nums;
+  color: var(--n-900);
+}
+
+.stat-note {
+  font-size: var(--fs-xs);
+  color: var(--n-500);
+  margin-top: var(--space-1);
+}
+
+.distribution-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: var(--space-4);
+}
+
+.distribution {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.distribution-row {
+  display: grid;
+  /* 9rem was one status label short: "Pending Confirmation" wrapped at 0.875rem,
+     which made the tallest bar in the distribution the only two-line one. */
+  grid-template-columns: minmax(7rem, 11rem) 1fr 2.5rem;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--fs-sm);
+}
+
+.distribution-label {
+  min-width: 0;
+}
+
+.distribution-bar {
+  display: block;
+  height: 0.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--n-100);
+  overflow: hidden;
+}
+
+.distribution-fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--brand-500);
+  min-width: 2px;
+}
+
+.distribution-count {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--fw-semibold);
+  color: var(--n-600);
+}
+
+/* ----------------------------------------------------------------- toasts */
+
+.toast-region {
+  position: fixed;
+  right: var(--space-4);
+  bottom: var(--space-4);
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: min(24rem, calc(100vw - 2rem));
+}
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--n-200);
+  border-left: 3px solid var(--brand-600);
+  background: var(--n-0);
+  color: var(--n-800);
+  font-size: var(--fs-control);
+  animation: toast-in var(--dur) var(--ease);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.4rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none;
+  }
+}
+
+.toast-success {
+  border-color: var(--n-200);
+  border-left-color: var(--green);
+  background: var(--n-0);
+  color: var(--n-800);
+}
+
+.toast-info {
+  border-color: var(--n-200);
+  /* Was --accent-500, which the token sheet reserves for "this is the current
+     step / your turn". An informational toast carries no turn meaning, so
+     painting it with the accent spent the one colour the system keeps unspent.
+     --info is the tone assigned to general notice here, the same ink the info
+     banner and the SUBMITTED badge already use. */
+  border-left-color: var(--info);
+  background: var(--n-0);
+  color: var(--n-800);
+}
+
+.toast-error {
+  border-color: var(--n-200);
+  border-left-color: var(--red);
+  background: var(--n-0);
+  color: var(--n-800);
+}
+
+/* Grown in flow rather than expanded with a ::after, unlike .modal-close:
+   a toast is position:fixed over the page, so a hit area reaching past its
+   own edge would capture clicks from whatever content sits underneath it.
+   28px clears WCAG 2.2 SC 2.5.8's 24px target floor, and the toast is already
+   taller than this because of its message text. */
+.toast-close {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  min-height: 1.75rem;
+  min-width: 1.75rem;
+  padding: 0 var(--space-1);
+  font-size: 1rem;
+  line-height: 1;
+  color: inherit;
+  cursor: pointer;
+}
+
+.toast-close:hover:not(:disabled) {
+  background: transparent;
+}
+
+/* ------------------------------------------------------------------ login */
+
+/* Two panels: the brand narrative answers "what is this system for" before the
+   form asks for anything, which is the only onboarding the first page offers
+   (§13.1 lists no welcome screen). */
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  background: var(--n-50);
+  /* The 50/50 split stays; what goes is the unbounded scaling. With no
+     cap anywhere on the ancestor chain the two panels widened linearly with the
+     viewport forever while the card inside stayed pinned to a rem measure, so the
+     empties grew on both sides of both panels.
+     `--page-max` is reused rather than a new token: one login band is one page
+     width, and the two numbers would have to move together anyway. No border or
+     shadow — `.login-panel`'s gradient already draws the edge, and --shadow-lg is
+     reserved for 浮层. */
+  max-width: var(--page-max);
+  margin-inline: auto;
+}
+
+.login-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-4);
+  /* Inset from the band's outer edge (was --space-6): the block was flush left
+     in a panel twice its width, which is the same asymmetric-dead-space read this
+     whole wave is about. */
+  padding: var(--space-7);
+  background: linear-gradient(150deg, var(--brand-50), var(--n-50) 55%, var(--accent-50));
+}
+
+.login-panel h1 {
+  font-size: var(--fs-display);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.02em;
+  /* The left panel was measures-starved, not content-starved: a 22ch headline
+     cannot fill a 600px half no matter how wide the window gets, so the panel
+     read as empty while the text was correctly set. This pass raises both
+     measures to what the capped panel can actually hold. */
+  max-width: 28ch;
+}
+
+.login-lede {
+  color: var(--n-600);
+  max-width: 46ch;
+}
+
+.login-points {
+  list-style: none;
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--fs-sm);
+  color: var(--n-700);
+}
+
+.login-points li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.login-points .icon {
+  color: var(--brand-600);
+}
+
+.login-side {
+  display: grid;
+  place-items: center;
+  padding: var(--space-6) var(--space-4);
+}
+
+.login-card {
+  width: 100%;
+  /* 28rem from 24. `place-items: center` on `.login-side`
+     means the card's measure *is* the panel's empties: at 24rem in a 1920px
+     right half it floated with 272px of nothing on each side. */
+  max-width: 28rem;
+  background: var(--n-0);
+  border: 1px solid var(--n-200);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.login-head h2 {
+  font-size: var(--fs-h2);
+}
+
+.login-sub {
+  color: var(--n-600);
+  font-size: var(--fs-sm);
+  margin-top: var(--space-1);
+}
+
+.login-card form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.login-submit {
+  width: 100%;
+  min-height: var(--tap-target-lg);
+  font-size: var(--fs-body);
+  margin-top: var(--space-1);
+}
+
+/* ----------------------------------------------------------- ticket card
+   The reporter's and technician's list form. It replaces a table row where the
+   reader has few rows and one question ("where is it now?"), so the card can
+   afford to answer that question inline instead of in another column. */
+
+.ticket-card {
+  background: var(--n-0);
+  border: 1px solid var(--n-200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  transition: box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+.ticket-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+/* Reduced motion for the two transform-based affordances that are NOT
+   animations — the 1px button press and the 1px card lift. The earlier
+   reduced-motion blocks cover only the toast and the shimmer, so this block
+   is a strengthening, not a fix.
+   It zeroes the duration rather than the transform: a 1px displacement is not
+   a vestibular trigger, and `transform: none` here would delete the only press
+   feedback a button has (nothing else changes on :active), trading a motion
+   nobody is harmed by for feedback the keyboard- and pointer-impaired rely on.
+   Snapping means the state still reads, just without travel. */
+@media (prefers-reduced-motion: reduce) {
+  button,
+  .button,
+  .ticket-card {
+    transition-duration: 0.01ms;
+  }
+}
+
+/* Work that is actively moving gets the accent edge — it is the row the
+   technician should open first, the "your turn" meaning the token sheet
+   reserves the accent for. */
+.ticket-card-active {
+  border-left: 3px solid var(--accent-500);
+}
+
+.ticket-card-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.ticket-card-code {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--n-500);
+}
+
+.ticket-card-title {
+  font-size: var(--fs-h3);
+  font-weight: var(--fw-semibold);
+  color: var(--n-900);
+  text-decoration: none;
+}
+
+a.ticket-card-title:hover {
+  color: var(--brand-600);
+  text-decoration: underline;
+}
+
+.ticket-card-meta {
+  font-size: var(--fs-sm);
+  color: var(--n-600);
+}
+
+.ticket-card-rail {
+  padding-top: var(--space-3);
+  border-top: 1px dashed var(--n-200);
+}
+
+.ticket-card-next {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--accent-700);
+}
+
+.ticket-card-foot {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  padding-top: var(--space-2);
+}
+
+.ticket-card-foot .button,
+.ticket-card-foot button {
+  /* An action is as wide as its label. `flex: 1 1 12rem` let a lone "Open work
+     order" claim the whole card, which in a single-column wide band was a
+     1296px solid blue bar. No `max-width` here: it would
+     survive responsive.css's phone override of `width: 100%` and stop these
+     buttons being thumb-reachable between 400 and 480px. */
+  flex: 0 1 auto;
+  min-width: 12rem;
+}
+
+/* `.group-heading` used to sit here. It had no consumer and never had one: the
+   technician workbench's *ordering* (active first, then outcomes) is a server
+   decision the page deliberately does not repeat, and the visual grouping this
+   rule belonged to came from a local draft that its own later notes treat as
+   superseded. Deleted rather than wired up — client-side grouping would be the
+   page re-deriving a server decision. */
+
+.ticket-cards {
+  /* Multi-column, deliberately expressed as an
+     intrinsic track size rather than as a media query: it adds no breakpoint, so
+     it cannot collide with the two rail bands in responsive.css. 2-up from
+     ~944px, 3-up from ~1648, 4-up from ~1888.
+     The max is `1fr`, not a fixed cap, and that is load-bearing: with a 36rem
+     ceiling the row stops growing before the container does, so a ~700px content
+     box would hold one 576px card and 124px of dead space on its right — this
+     report's own defect, reintroduced at tablet width. Equal-width tracks always
+     fill their row.
+     `min(100%, 28rem)` is what keeps a 375px viewport from overflowing
+     horizontally — a bare `28rem` minimum is wider than the page.
+     Recovering width is only worth doing if content moves into it. */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 28rem), 1fr));
+  gap: var(--space-4);
+}

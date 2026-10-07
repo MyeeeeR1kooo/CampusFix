@@ -1,0 +1,530 @@
+/**
+ * Responsive behaviour.
+ *
+ * All breakpoints live in this one file so the behaviour can be audited
+ * against the spec in a single read:
+ *
+ *   >=1280px  wide desktop — the workbench and analytics get the wide column,
+ *                           and the nav rail shows its labels
+ *   >=1024px  desktop      — nav rail (collapsed to icons below 1280), full
+ *                           tables, two-column detail, sticky timeline
+ *   720-1023  tablet       — the header's task tier carries the destinations,
+ *                           secondary columns collapse, panels stack
+ *   <720px    phone        — bottom tab bar, lists become cards, one column,
+ *                            primary actions are full-width and thumb-reachable
+ *
+ * The mobile layout is a real layout switch, not horizontal scrolling — the
+ * spec calls overflow "the last resort, never the default".
+ */
+
+/* ------------------------------------------------------- wide desktop (1280) */
+
+@media (min-width: 1280px) {
+  /* Two tracks, as the earlier pass fixed them. The rail is not re-styled in
+     this block any more: it inherits `base.css`'s full-height flush spine at
+     every width from 1024px up, which is what makes it read as a region of the
+     page rather than as an object parked in the corner. A compact card and a
+     four-track centring were both tried here and withdrawn: the seam was never
+     the complaint, and fixing the one dimension that could be measured left the
+     silhouette untouched. */
+  .app-shell {
+    grid-template-columns: var(--nav-rail) minmax(0, 1fr);
+  }
+
+  /* These two move together or not at all. `.app-nav` is the header's content
+     box and `.app-main` is the page's; sharing one band is what puts the brand
+     mark and the page `<h1>` at the same x. A one-sided change desynchronises
+     them at every width, not just this one.
+     Kept as two rules rather than one grouped selector, because a grouped
+     selector hides which element carries which declaration. A `margin-left: 0`
+     was tried here and is gone: the band centres again, and the spine no longer
+     needs to travel with it because the spine is the page's left edge. */
+  .app-main {
+    max-width: var(--page-band);
+  }
+
+  .app-nav {
+    max-width: var(--page-band);
+  }
+
+  /* The 8fr/4fr this block used to carry here was base.css's 2fr/1fr in
+     disguise — mathematically identical, so it had never changed a pixel.
+     Deleting it removes a rule that read as a made decision. */
+}
+
+/* ------------------------------------------------------------ desktop (1024) */
+
+@media (min-width: 1024px) {
+  /* The rail takes over the destinations, so the task tier is gone — and with
+     it the 48px that `--header-height` still added. `.detail-side` sticks at
+     `--header-height + space-4`, so leaving the token alone would park the
+     timeline a phantom bar's worth below the header that is actually there. */
+  :root {
+    --header-height: var(--identity-bar);
+  }
+
+  .nav-rail {
+    display: block;
+  }
+
+  .task-bar {
+    display: none;
+  }
+
+  /* The timeline is the reference the reader keeps glancing back at, so on
+     desktop it stays in place while the content column scrolls. */
+  .detail-side {
+    align-self: stretch;
+  }
+
+  .detail-side > .card {
+    position: sticky;
+    top: calc(var(--header-height) + var(--space-4));
+  }
+
+  .app-main {
+    padding-top: var(--space-6);
+  }
+
+  /* A toolbar is as wide as what it holds. The filter bar carries one select,
+     so a band-wide white card was mostly band. This lives in the >=1024 block
+     rather than in components.css on purpose: below this the bar is a stretched
+     column, and `fit-content` there would size it to the intrinsic width of a
+     `width: 100%` <input> (~20 characters) and collapse the reporter's filter
+     on a phone. Scoping it to a band means the base and phone rules are simply
+     never overridden, so there is no specificity race to lose — the trap a
+     layered rail rule falls into.
+     Note `.filter-actions`'s `margin-left: auto` never applied at all:
+     its Clear-filter button is a direct child of `.filter-bar`. */
+  .filter-bar {
+    width: fit-content;
+    max-width: 100%;
+  }
+}
+
+/* -------------------------------------------- collapsed rail (1024-1279) */
+
+/* Hard rule: 240px here would leave 784px for a detail page built on
+   a 2fr/1fr split, so the rail is icons only in this band. The label is removed
+   from the visual layout and not from the accessibility tree — a destination
+   that reads as an unnamed glyph fails the colour-not-alone rule, which is the
+   same reason the active state carries weight and a bar rather than a colour.
+
+   The two width rules are disjoint ranges rather than a `min-width:1024` default
+   overridden later: at equal specificity the 1024 block wins on source order,
+   which silently made the ≥1280 rail 64px wide with clipped labels. */
+@media (min-width: 1024px) and (max-width: 1279.98px) {
+  .app-shell {
+    grid-template-columns: var(--nav-rail-collapsed) minmax(0, 1fr);
+  }
+
+  .nav-rail {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .nav-rail-link {
+    justify-content: center;
+    padding: 0 var(--space-2);
+  }
+
+  .nav-rail-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+/* -------------------------------------------------- tablet and below (1023) */
+
+@media (max-width: 1023px) {
+  /* Secondary columns (ids, dates, reporter/assignee) move to the detail page */
+  .data-table .col-secondary {
+    display: none;
+  }
+
+  .detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .detail-side > .card {
+    position: static;
+  }
+
+  .filter-bar .field {
+    flex: 1 1 12rem;
+    max-width: none;
+  }
+
+  /* The rail keeps all six steps but drops the owner line: the summary row
+     below already names the owner in words. */
+  .rail-who {
+    display: none;
+  }
+
+  .rail-summary {
+    align-items: flex-start;
+  }
+
+  .strip-next {
+    margin-left: 0;
+  }
+}
+
+/* ------------------------------------------------------------------ phone */
+
+@media (max-width: 719px) {
+  /* ---- shell: the task tier moves to the bottom tab bar ---- */
+  .task-bar {
+    display: none;
+  }
+
+  .tab-bar {
+    display: flex;
+  }
+
+  .app-nav {
+    padding: 0 var(--space-3);
+  }
+
+  .identity-bar {
+    min-height: 3.25rem;
+  }
+
+  /* The account block would crowd the identity bar on a phone, so the role
+     pill carries "who am I" and the display name is dropped. */
+  .nav-identity {
+    display: none;
+  }
+
+  .app-main {
+    padding: var(--space-4) var(--space-3)
+      calc(var(--tab-bar) + var(--space-5) + env(safe-area-inset-bottom, 0));
+  }
+
+  .page-head h1 {
+    font-size: var(--fs-h2);
+  }
+
+  /* ---- the rail becomes a vertical checklist: at 375px six horizontal
+     labels cannot be read, and a vertical track answers "where is it"
+     better anyway. ---- */
+  .rail {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rail-step {
+    grid-template-columns: 1.375rem minmax(0, 1fr);
+    justify-items: start;
+    text-align: left;
+    gap: var(--space-1) var(--space-3);
+    padding-bottom: var(--space-2);
+  }
+
+  .rail-step:last-child {
+    padding-bottom: 0;
+  }
+
+  .rail-line {
+    top: 1.375rem;
+    left: 0.625rem;
+    width: 2px;
+    height: calc(100% - 1.375rem);
+  }
+
+  .rail-dot {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .rail-name {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    font-size: var(--fs-sm);
+  }
+
+  .rail-who {
+    grid-column: 2;
+    grid-row: 2;
+    display: block;
+  }
+
+  /* The compact (list-row) rail stays horizontal but drops its labels: the
+     card states the current step in words directly beneath it. */
+  .rail-compact {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .rail-compact .rail-step {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-items: center;
+    padding-bottom: 0;
+  }
+
+  .rail-compact .rail-name {
+    display: none;
+  }
+
+  .rail-compact .rail-line {
+    top: 0.25rem;
+    left: 50%;
+    width: 100%;
+    height: 2px;
+  }
+
+  /* ---- tables become cards: the header row is hidden and each cell shows
+     its own label, so no column information is lost. ---- */
+  .table-wrap {
+    border: 0;
+    background: transparent;
+    overflow: visible;
+    box-shadow: none;
+  }
+
+  .data-table,
+  .data-table tbody,
+  .data-table tr,
+  .data-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .data-table thead {
+    display: none;
+  }
+
+  .data-table tr {
+    background: var(--n-0);
+    border: 1px solid var(--n-200);
+    border-radius: var(--radius-lg);
+    padding: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-3);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .data-table td {
+    border: 0;
+    padding: var(--space-1) 0;
+    height: auto;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    text-align: right;
+  }
+
+  .data-table td::before {
+    content: attr(data-label);
+    flex: none;
+    font-size: var(--fs-micro);
+    font-weight: var(--fw-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--n-500);
+    text-align: left;
+  }
+
+  /* Leading cells read as the card's title, not as labelled rows */
+  .data-table td.cell-primary {
+    text-align: left;
+    font-weight: var(--fw-semibold);
+  }
+
+  .data-table td.cell-primary::before {
+    display: none;
+  }
+
+  .data-table td.cell-actions {
+    justify-content: flex-start;
+    padding-top: var(--space-2);
+  }
+
+  .data-table td.cell-actions::before {
+    display: none;
+  }
+
+  .data-table td.cell-actions button {
+    flex: 1 1 auto;
+  }
+
+  /* ---- controls: field use means gloves and one hand ---- */
+  button,
+  .button {
+    min-height: var(--tap-target-lg);
+  }
+
+  .action-zone .action-panel button.primary,
+  .action-zone .action-panel button.danger,
+  .action-zone .action-panel button,
+  .form-actions button,
+  .login-submit,
+  .ticket-card-foot button,
+  .ticket-card-foot .button {
+    width: 100%;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .action-zone .action-panel button.primary {
+    align-self: stretch;
+  }
+
+  /* The submit action stays reachable without scrolling back down. */
+  .form-actions {
+    position: sticky;
+    bottom: calc(var(--tab-bar) + env(safe-area-inset-bottom, 0));
+    z-index: 5;
+    margin: 0 calc(-1 * var(--space-4));
+    padding: var(--space-3) var(--space-4);
+    background: var(--n-0);
+    border-top: 1px solid var(--n-200);
+    box-shadow: 0 -4px 12px var(--shadow-bar);
+  }
+
+  /* ---- filters and tabs ---- */
+  .filter-bar,
+  .form-inline {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-bar .field {
+    max-width: none;
+  }
+
+  .filter-actions {
+    margin-left: 0;
+  }
+
+  .filter-actions button {
+    width: 100%;
+  }
+
+  .quick-views {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .quick-views::-webkit-scrollbar {
+    display: none;
+  }
+
+  .quick-view {
+    flex: none;
+  }
+
+  .detail-facts {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+  }
+
+  /* ---- modal: a bottom sheet keeps the confirm inside the thumb zone ---- */
+  .modal {
+    max-width: none;
+    padding: var(--space-4);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    /* Restated because components.css gives the panel `margin: auto` to
+       re-centre it under align-items: flex-start. Auto on all four sides would
+       pull the sheet off the bottom edge and float it mid-screen, defeating the
+       thumb-zone placement this block exists for. Bottom margin 0 keeps it
+       flush; the top auto is what still lets a tall sheet scroll into view. */
+    margin: auto auto 0;
+    /* dvh, not vh: on mobile Chrome and Safari `vh` is the *large* viewport,
+       so with the URL bar visible the 92vh sheet runs that bar's height past
+       the screen and the footer holding Confirm/Cancel sits under the chrome.
+       The first line is the fallback for engines without dvh. */
+    max-height: 92vh;
+    max-height: 92dvh;
+    overflow-y: auto;
+  }
+
+  .modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal-footer {
+    flex-direction: column-reverse;
+  }
+
+  .modal-footer button {
+    width: 100%;
+  }
+
+  /* ---- toasts clear the tab bar ---- */
+  .toast-region {
+    left: var(--space-3);
+    right: var(--space-3);
+    bottom: calc(var(--tab-bar) + var(--space-3) + env(safe-area-inset-bottom, 0));
+    max-width: none;
+  }
+
+  .pagination {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pagination-controls {
+    justify-content: space-between;
+  }
+
+  .gallery {
+    grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+  }
+
+  .distribution-row {
+    grid-template-columns: minmax(5rem, 7rem) 1fr 2rem;
+    gap: var(--space-2);
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+
+  /* ---- login: the narrative panel becomes a short header ---- */
+  .login-page {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+  }
+
+  .login-panel {
+    padding: var(--space-6) var(--space-4) var(--space-4);
+  }
+
+  .login-panel h1 {
+    font-size: var(--fs-h1);
+  }
+
+  .login-points {
+    display: none;
+  }
+
+  .login-side {
+    padding: var(--space-4) var(--space-4) var(--space-6);
+    align-items: start;
+  }
+}
+
+/* Landscape phones and very short viewports: keep the sticky action bar from
+   eating the form. */
+@media (max-height: 480px) {
+  .form-actions {
+    position: static;
+    box-shadow: none;
+  }
+}

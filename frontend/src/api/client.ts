@@ -60,7 +60,10 @@ export class ApiError extends Error {
     return this.status === 404;
   }
 
-  /** §13.3: any 409 means the ticket moved under the user — both contract codes do. */
+  /**
+   * Any 409 is a conflict, whichever contract code carries it. Whether §13.3's ticket
+   * wording applies is the v1.1 scoping decision, and it lives in lib/queryClient.ts.
+   */
   get isConflict(): boolean {
     return this.status === 409;
   }

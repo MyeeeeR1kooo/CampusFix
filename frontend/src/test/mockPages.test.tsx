@@ -18,7 +18,24 @@ beforeEach(() => {
 afterEach(() => { cleanup(); installMock(null); vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 
 describe("two developer pages reuse the public components", () => {
-  it("disables stale cancellation after a 409 refresh removes the permitted action", async () => {
+  it.each([
+    ["TICKET_VERSION_CONFLICT", "The ticket has already been updated."],
+    ["CONFLICT", "This action is not available in the current ticket state."],
+  ] as const)("disables stale cancellation after %s refreshes the permitted actions", async (code, message) => {
+    if (code === "CONFLICT") {
+      const { responder } = createMockApi({ now: () => new Date("2026-10-03T10:00:00Z") });
+      // Exercise the contract's state-conflict response too: the normal mock checks
+      // version first, so this concurrent review otherwise only covers version conflicts.
+      installMock(async (request) => {
+        const response = await responder(request);
+        if (request.path === "/api/tickets/1/cancel" && response?.status === 409) {
+          return new Response(JSON.stringify({
+            error: { code, message, request_id: "state-conflict", field_errors: [] },
+          }), { status: 409, headers: { "Content-Type": "application/json" } });
+        }
+        return response;
+      });
+    }
     window.history.replaceState({}, "", "/mock-preview.html#/detail/1");
     render(<PreviewApp />);
     await userEvent.click(await screen.findByRole("button", { name: "Use Demo reporter A" }));
@@ -28,7 +45,7 @@ describe("two developer pages reuse the public components", () => {
     await api.login({ email: "reporter01@campusfix.test", password: MOCK_PASSWORD });
     const dialog = screen.getByRole("dialog");
     await userEvent.click(within(dialog).getByRole("button", { name: "Cancel report" }));
-    expect(await within(dialog).findByRole("alert")).toHaveTextContent("already been updated");
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent(message);
     await waitFor(() => expect(within(dialog).getByRole("button", { name: "Cancel report" })).toBeDisabled());
     expect(within(dialog).getByRole("button", { name: "Cancel" })).toBeEnabled();
     expect(await api.getTicket(1)).toMatchObject({ status: "PENDING_ASSIGNMENT", version: 2 });

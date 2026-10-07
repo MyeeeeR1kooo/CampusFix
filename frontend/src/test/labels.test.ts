@@ -17,7 +17,9 @@ import {
   CATEGORY_LABELS,
   CATEGORY_ORDER,
   EVENT_LABELS,
+  NEXT_ACTION_LABELS,
   NEXT_ACTOR,
+  PHOTO_PURPOSE_LABELS,
   PRIORITY_LABELS,
   PRIORITY_ORDER,
   RAIL_STEPS,
@@ -29,6 +31,7 @@ import {
   STATUS_TONES,
   TERMINAL_STATUSES,
   TERMINAL_STEP,
+  VISIBILITY_LABELS,
   hasAction,
   isTerminal,
   statusStep,
@@ -43,6 +46,17 @@ function enumMembers(alias: string): string[] {
   return [...line.matchAll(/"([A-Z_]+)"/g)].map((m) => m[1]);
 }
 
+/**
+ * Members of a union written inline on a field rather than as a top-level alias —
+ * `next_action` is one, which is why `enumMembers` above cannot see it. `| null` is the
+ * terminal-state absence the contract declares, not a member to label, so it is dropped.
+ */
+function fieldEnumMembers(field: string): string[] {
+  const line = schema.match(new RegExp(`^\\s+${field}: (.*);\\s*$`, "m"))?.[1];
+  if (!line) throw new Error(`${field} not found in the generated schema`);
+  return [...line.matchAll(/"([A-Z_]+)"/g)].map((m) => m[1]);
+}
+
 const ENUMS = {
   TicketStatus: enumMembers("TicketStatus"),
   Category: enumMembers("Category"),
@@ -50,6 +64,9 @@ const ENUMS = {
   Role: enumMembers("Role"),
   EventType: enumMembers("EventType"),
   TicketAction: enumMembers("TicketAction"),
+  AttachmentPurpose: enumMembers("AttachmentPurpose"),
+  Visibility: enumMembers("Visibility"),
+  NextAction: fieldEnumMembers("next_action"),
 };
 
 describe("the census itself", () => {
@@ -61,6 +78,9 @@ describe("the census itself", () => {
     expect(ENUMS.Role).toHaveLength(3);
     expect(ENUMS.EventType).toHaveLength(9);
     expect(ENUMS.TicketAction).toHaveLength(9);
+    expect(ENUMS.AttachmentPurpose).toHaveLength(2);
+    expect(ENUMS.Visibility).toHaveLength(2);
+    expect(ENUMS.NextAction).toHaveLength(5);
   });
 });
 
@@ -75,6 +95,9 @@ const MAPS: Record<EnumAlias, Record<string, string>> = {
   Role: ROLE_LABELS,
   EventType: EVENT_LABELS,
   TicketAction: ACTION_LABELS,
+  AttachmentPurpose: PHOTO_PURPOSE_LABELS,
+  Visibility: VISIBILITY_LABELS,
+  NextAction: NEXT_ACTION_LABELS,
 };
 
 describe("label maps cover the contract enums", () => {

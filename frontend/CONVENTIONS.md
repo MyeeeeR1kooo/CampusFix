@@ -74,6 +74,10 @@ Issue，不在页面 PR 里顺手做。
   因此请求里**不得**手工塞 actor、role 或 `X-Actor`。
 - 成功体就是契约声明的那个对象，**没有** `{ user }` / `{ data }` 之类的包裹：登录返回裸 `User`，
   统计返回裸 `Analytics`。`logout` 是 204，不解析正文。
+- `TicketFields.code` 是服务端生成的展示用编号 `CF-YYYYMMDD-NNNNNN`。前 8 位是**创建时刻的
+  Asia/Shanghai 本地日期**（`841a011` 把这条写进了契约，与统计趋势同一时区），不是 UTC，也不保证与
+  `created_at` 换算后的 UTC 日相同。前端**只原样渲染**：不切片、不反推日期、不做时区换算、不拿它排序
+  当日工单。要显示时间请用 `created_at` / `closed_at`。
 - 失败一律是 `ApiError`，带 `code`（八选一）、`message`、`requestId`、`fieldErrors[]`。判断用
   `isConflict` / `isNotFound` / `isDenied` / `isUnauthorized`，不要比字符串。
 - 分页只有 `cursor` + `limit`，响应只有 `items` + `next_cursor`（没有 `total`、没有 `page`、没有
@@ -116,9 +120,18 @@ installMock(async (req) => {
 
 - **401**：`client.ts` 是唯一看见所有响应的地方，它调用 `AuthContext` 注册的 `clearSession()`；
   清空后 `RequireSession` 自然把用户带回 `/login`。页面不需要、也不应该自己写跳转。
-- **409**：`lib/queryClient.ts` 的 `MutationCache.onError` 统一提示"工单已被他人更新"并
-  `invalidateQueries(detail(id))`。约定：**动作类 mutation 的 variables 里必须带 `id` 或 `ticketId`**，
-  否则只能提示、无法自动重取。
+- **409**（§13.3 v1.1 澄清，已随 #71 评审记录进基线）：`lib/queryClient.ts` 的 `MutationCache.onError`
+  按这条 mutation **是不是工单状态动作**分流，而"是不是"由 mutation 自己声明：携带 `expected_version` 的状态动作必须带
+  `meta: ticketActionMeta`（从 `lib/queryClient.ts` 导入），命中则提示 §13.3 的"工单已被他人更新"
+  并 `invalidateQueries(detail(id))`。`TICKET_VERSION_CONFLICT` 即便漏带 meta 也按工单处理——只有
+  工单状态动作产出它。其他资源（例如地点创建/编辑的唯一组合冲突，契约同样声明 409 / CONFLICT）：
+  **直接展示服务端 `message`**，不冒充工单文案、不重取工单详情。
+  工单创建（如地点停用）和终态留言的 409 也展示服务端 `message`，不触发此处的详情刷新；
+  创建和留言不得携带 `ticketActionMeta`。当前 `DetailPreviewPage` 的取消操作已携带该标记。
+  **禁止**按 variables 里有没有 `id`/`ticketId` 来猜资源类型——地点编辑也带 `id`（地点的），
+  猜把它当成工单，#71 评审修的就是这个。约定不变：工单动作的 variables 必须带 `id` 或 `ticketId`
+  （指明是哪个工单），否则只能提示、无法自动重取。
+  也不许改成按 `field_errors` 分流：共享的 `Conflict` 组件里 `field_errors` 示例是空数组，那条分支永远不执行。
 - `VALIDATION_ERROR` 的 `field_errors` 显示在对应控件旁边，页面级摘要另给一条；不要混成一个红条。
 - 分类只有契约里的八个 code。以前的 `VERSION_CONFLICT`、`ACCESS_DENIED`、`INVALID_STATE_TRANSITION`
   都不是契约值，看到它们说明有人在手写。

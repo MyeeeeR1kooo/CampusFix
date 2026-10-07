@@ -2,14 +2,14 @@
  * Error classification and user-facing copy (P0 Baseline §11.1, §13.3).
  *
  * The contract declares exactly one error body and exactly eight `ErrorCode` values, so
- * this file keys off those codes rather than off strings it made up. Two of the eight
- * share one presentation: `TICKET_VERSION_CONFLICT` and `CONFLICT` are both "the ticket
- * moved", which is why §13.3 describes one behaviour for 409.
+ * this file keys off those codes rather than off strings it made up. `TICKET_VERSION_CONFLICT`
+ * and `CONFLICT` share a classification; the mutation cache uses operation metadata to
+ * decide whether ticket-state copy and detail refresh apply (§13.3).
  *
  *   validation → inline field errors, input preserved
  *   permission → denial, no partial data
  *   notfound   → generic "not available", no existence hints
- *   conflict   → notice + re-fetch of the authoritative ticket (§13.3)
+ *   conflict   → server message, or ticket-state notice + detail refresh (§13.3)
  *   system     → banner with a retry affordance
  *
  * A request that never produced an HTTP response is not a contract error: it stays a
@@ -34,8 +34,13 @@ export interface ClassifiedError {
   requestId?: string;
 }
 
-const CONFLICT_CODES: readonly string[] = ["TICKET_VERSION_CONFLICT", "CONFLICT"];
-const PERMISSION_CODES: readonly string[] = ["FORBIDDEN", "ORIGIN_NOT_ALLOWED"];
+/**
+ * Groupings over the contract's own `ErrorCode`, so a rename or removal fails the build here
+ * instead of leaving a code silently unclassified. Classification does not decide
+ * whether a conflict belongs to a ticket state action.
+ */
+const CONFLICT_CODES: readonly ErrorCode[] = ["TICKET_VERSION_CONFLICT", "CONFLICT"];
+const PERMISSION_CODES: readonly ErrorCode[] = ["FORBIDDEN", "ORIGIN_NOT_ALLOWED"];
 
 const SYSTEM_FALLBACK = "The service is temporarily unavailable. Please try again.";
 

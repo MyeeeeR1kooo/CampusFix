@@ -299,6 +299,44 @@ describe("Shanghai ticket dates — FR-02; updated #46 contract", () => {
 });
 
 describe("mutable workflow — FR-02, FR-05–09; UC-01–04", () => {
+  it("rejects a location disabled after selection with a conflict and no creation side effects", async () => {
+    installMock(createMockApi({ now: () => instant, emptyTickets: true }).responder);
+    await login(1);
+    expect((await api.listActiveLocations()).items.some((location) => location.id === report.location_id)).toBe(true);
+    await login(3);
+    await api.updateLocation(report.location_id, { active: false });
+    await login(1);
+
+    await expect(api.createTicket({ ...report, photos: [photo()] })).rejects.toMatchObject({
+      status: 409, code: "CONFLICT", requestId: expect.stringMatching(/^req_/), fieldErrors: [],
+    });
+    expect(await api.listTickets()).toEqual({ items: [], next_cursor: null });
+    await expect(api.getTicket(1)).rejects.toMatchObject({ status: 404 });
+    await expect(api.downloadAttachment(1)).rejects.toMatchObject({ status: 404 });
+    expect(URL.createObjectURL).not.toHaveBeenCalled();
+
+    await login(3);
+    await api.updateLocation(report.location_id, { active: true });
+    await login(1);
+    const ticket = await api.createTicket({ ...report, photos: [photo()] });
+    expect(ticket).toMatchObject({ id: 1, status: "SUBMITTED", version: 1 });
+    const detail = await api.getTicket(ticket.id);
+    expect(detail.timeline).toHaveLength(1);
+    expect(detail.timeline[0]).toMatchObject({ kind: "EVENT", type: "TICKET_SUBMITTED" });
+    expect(detail.report_photos).toHaveLength(1);
+    expect(detail.report_photos[0].id).toBe(1);
+    expect((await api.downloadAttachment(1)).size).toBe(pngBytes.length);
+  });
+
+  it("keeps a nonexistent location as a field validation error without creating a ticket", async () => {
+    await login(1);
+    const before = await api.listTickets();
+    await expect(api.createTicket({ ...report, location_id: 999 })).rejects.toMatchObject({
+      status: 422, code: "VALIDATION_ERROR", fields: { location_id: expect.any(String) },
+    });
+    expect(await api.listTickets()).toEqual(before);
+  });
+
   it("preserves valid text and enforces length before any whitespace normalization", async () => {
     await login(1);
     const title = "  Library window latch  ";
@@ -463,7 +501,7 @@ describe("comments, files, locations and accounts — FR-03, FR-10, FR-12", () =
     expect((await api.getTicket(1)).location_label_snapshot).toBe(before.location_label_snapshot);
     expect((await api.listTickets({ building: "Renamed A" })).items.some((ticket) => ticket.id === 1)).toBe(true);
     await login(1);
-    await expect(api.createTicket({ ...report, location_id: 1 })).rejects.toMatchObject({ status: 422, fields: { location_id: expect.any(String) } });
+    await expect(api.createTicket({ ...report, location_id: 1 })).rejects.toMatchObject({ status: 409, code: "CONFLICT", fieldErrors: [] });
   });
 
   it("lists managed accounts and disallows Admin management and inactive logins", async () => {

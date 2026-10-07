@@ -214,8 +214,9 @@ export function createMockApi(options: { now?: () => Date; emptyTickets?: boolea
     if (path === "/api/tickets" && method === "POST") {
       requireRole(user, "REPORTER");
       const body = parse(schemas.create, formBody(request));
-      const location = store.locations.find((item) => item.id === body.location_id && item.active);
+      const location = store.locations.find((item) => item.id === body.location_id);
       if (!location) invalid("location_id", "Select an active location.");
+      if (!location.active) throw new MockFailure(409, "CONFLICT", "The selected location is inactive. Select an active location.");
       const files = await photos(request);
       const id = nextTicket++;
       const created = timestamp();

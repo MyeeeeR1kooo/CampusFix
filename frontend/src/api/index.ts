@@ -12,9 +12,16 @@
  * whole point of the seam.
  */
 
-import type { components } from "./generated/schema";
+import type { components, operations } from "./generated/schema";
 
 type Schema = components["schemas"];
+
+/**
+ * `GET /api/tickets`'s query shape, taken from the contract's own operation rather than
+ * retyped here. The generator writes it for every operation, so a hand-written filter list
+ * is a second source of truth that stays silently green when #46 renames a parameter.
+ */
+export type TicketListQuery = NonNullable<operations["listTickets"]["parameters"]["query"]>;
 
 export type Id = Schema["Id"];
 export type Version = Schema["Version"];

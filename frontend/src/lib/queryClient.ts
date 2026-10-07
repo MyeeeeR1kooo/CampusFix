@@ -7,8 +7,10 @@
  *
  *   1. One query-key factory. Cache keys are the only place a resource is named, and two
  *      pages that spell the same key differently silently fail to invalidate each other.
- *   2. One 409 rule. §13.3 says a conflict tells the user and re-fetches the authoritative
- *      ticket — so that happens in the mutation cache, not in whichever page remembers.
+ *   2. One 409 rule. §13.3 (v1.1) scopes "tell the user and re-fetch the authoritative
+ *      ticket" to ticket state actions, declared by `ticketActionMeta`; other resources'
+ *      conflicts show the server's own message. That decision happens in the mutation
+ *      cache, not in whichever page remembers.
  *
  * The notification is injected rather than imported: toasts belong to React's tree, and
  * taking the callback as an argument keeps this file testable without rendering anything.
@@ -41,9 +43,11 @@ export const queryKeys = {
 };
 
 /**
- * Which ticket a mutation was acting on. Every action endpoint takes the id as its first
- * argument, so the convention is that its variables carry `id` or `ticketId`; anything
- * else still gets the message, it just cannot be re-fetched automatically.
+ * Which ticket a confirmed ticket action was acting on: the convention is that a ticket
+ * action's variables carry the id as `id` or `ticketId`. Whether the mutation is a
+ * ticket action at all is decided by `ticketActionMeta`, never by guessing from the
+ * shape of the variables (#71 review, §13.3 v1.1): a location edit carries an `id` too,
+ * and reading it as a ticket both lies to the user and refreshes an unrelated ticket.
  */
 function ticketIdOf(variables: unknown): Id | null {
   if (typeof variables !== "object" || variables === null) return null;
@@ -54,6 +58,14 @@ function ticketIdOf(variables: unknown): Id | null {
   }
   return null;
 }
+
+/**
+ * Attaches to ticket state actions carrying expected_version, so the mutation cache
+ * distinguishes them without inspecting variables. Do not attach to creation or comments.
+ * §13.3 (v1.1) scopes the ticket copy and the detail re-fetch to ticket state actions;
+ * other resources' `409 / CONFLICT` renders the server's own message.
+ */
+export const ticketActionMeta = { ticketAction: true } as const;
 
 export interface QueryClientOptions {
   /** Render §13.3's conflict copy where the app shows notices. */
@@ -76,7 +88,14 @@ export function createAppQueryClient({ notify }: QueryClientOptions): QueryClien
       const submitted = submittedIn.get(mutation);
       if (submitted !== undefined && submitted !== currentSessionVersion()) return;
 
-      notify(conflictMessage(classify(error)));
+      const classified = classify(error);
+      // Only current-session failures reach #71's operation-type handling.
+      const ticketAction = error.code === "TICKET_VERSION_CONFLICT" || mutation.meta?.ticketAction === true;
+      if (!ticketAction) {
+        notify(classified.message);
+        return;
+      }
+      notify(conflictMessage(classified));
 
       const id = ticketIdOf(variables);
       if (id === null) return;

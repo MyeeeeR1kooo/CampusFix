@@ -56,8 +56,10 @@ from app.models import (
 | 关联项 | 本次提供 | 后续验收依赖 |
 | --- | --- | --- |
 | FR-01 登录与角色 | 三类账户及 Argon2id 密码，users/sessions 模型 | #47 的真实登录、会话与授权 Router |
-| NFR-06 可重建 | Alembic、种子、固定依赖、Compose 与 README | Docker Engine 上实启验证 |
+| NFR-06 可重建 | Alembic、种子、固定依赖、Compose 与 README | 已在 Docker Engine 实启、重建并验证卷持久化，见 2026-10-07 验收记录 |
 | NFR-08 隐私 | 虚构账户/邮箱/地点，无真实照片 | 业务附件授权由相关任务验证 |
 | #48 前端同源 | Nginx `/api/` 代理、可选静态构建目录 | React 页面和浏览器登录联调 |
 
-三角色 HTTP 登录和完整报修流程未实现时，不能将“散列验证通过”表述为“真实登录验收通过”。Docker 实启、前端和 Auth 联调通过后，再将 #45 相应验收项标记完成。
+2026-10-07 已补齐 Docker 四服务实启、容器内 135 项后端测试、同源代理及卷持久化验证，详见 [Docker 实际运行验收](2026-10-07-docker-runtime-verification.md)。#45 的全新环境启动及 README 运行项可确认。
+
+三角色 HTTP 登录和完整报修流程未实现时，不能将“散列验证通过”表述为“真实登录验收通过”。正式前端和 Auth 联调仍由对应任务完成后，再确认这些验收项。

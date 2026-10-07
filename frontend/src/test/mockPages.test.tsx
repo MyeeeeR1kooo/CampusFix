@@ -32,6 +32,8 @@ describe("two developer pages reuse the public components", () => {
     await waitFor(() => expect(within(dialog).getByRole("button", { name: "Cancel report" })).toBeDisabled());
     expect(within(dialog).getByRole("button", { name: "Cancel" })).toBeEnabled();
     expect(await api.getTicket(1)).toMatchObject({ status: "PENDING_ASSIGNMENT", version: 2 });
+    await userEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
+    expect(screen.getByRole("heading", { level: 1 })).toHaveFocus();
   });
 
   it("uses queue filters, pagination, detail timeline and a real cancellation through the shared dialog", async () => {
@@ -48,6 +50,10 @@ describe("two developer pages reuse the public components", () => {
     await userEvent.click(within(dialog).getByRole("button", { name: "Cancel report" }));
     expect(await screen.findByText("No further action — this ticket was cancelled")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Cancel report" })).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    expect(screen.getByRole("heading", { level: 1 })).toHaveFocus();
+    await userEvent.tab({ shift: true });
+    expect(screen.getByRole("link", { name: "Back to queue" })).toHaveFocus();
     await userEvent.click(screen.getByRole("link", { name: "Back to queue" }));
     await userEvent.selectOptions(await screen.findByRole("combobox", { name: "Status" }), "CANCELLED");
     await userEvent.click(screen.getByRole("button", { name: "Apply filters" }));

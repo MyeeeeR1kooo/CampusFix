@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 import { api, type TicketSummary } from "../../api";
@@ -16,16 +16,18 @@ const columns: TableColumn<TicketSummary>[] = [
 export function DetailPreviewPage() {
   const id = Number(useParams().id);
   const [open, setOpen] = useState(false);
+  const heading = useRef<HTMLHeadingElement>(null);
   const client = useQueryClient();
   const query = useQuery({ queryKey: queryKeys.tickets.detail(id), queryFn: ({ signal }) => api.getTicket(id, signal) });
   const cancel = useMutation({
     mutationFn: ({ id: ticketId, version }: { id: number; version: number }) => api.cancelTicket(ticketId, { expected_version: version }),
-    onSuccess: async () => { setOpen(false); await client.invalidateQueries({ queryKey: queryKeys.tickets.all }); },
+    // Refresh before restoring focus, since the updated actions can remove the trigger.
+    onSuccess: async () => { await client.invalidateQueries({ queryKey: queryKeys.tickets.all }); setOpen(false); },
   });
   const ticket = query.data;
   return <>
     <Link to="/queue">Back to queue</Link>
-    <h1>Ticket detail · component preview</h1>
+    <h1 ref={heading} tabIndex={-1}>Ticket detail · component preview</h1>
     <DataTable rows={ticket ? [ticket] : []} columns={columns} rowKey={(item) => item.id} caption="Ticket summary" loading={query.isPending} error={query.error?.message} onRetry={() => { void query.refetch(); }} />
     {ticket && !query.error && <>
       <section className="card"><h2>{ticket.title}</h2><p>{ticket.description}</p><p>{ticket.location_label_snapshot}</p><p>{NEXT_ACTOR[ticket.status]}</p>
@@ -41,6 +43,7 @@ export function DetailPreviewPage() {
         confirmLabel="Cancel report"
         danger
         pending={cancel.isPending}
+        fallbackFocusRef={heading}
         disabled={query.isFetching || !ticket.allowed_actions.includes("CANCEL")}
         onCancel={() => setOpen(false)}
         onConfirm={() => cancel.mutateAsync({ id, version: ticket.version })}

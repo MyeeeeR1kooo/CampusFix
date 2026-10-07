@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode, type RefObject } from "react";
 import { createPortal } from "react-dom";
 
 export interface ConfirmDialogProps {
@@ -11,6 +11,7 @@ export interface ConfirmDialogProps {
   pending?: boolean;
   disabled?: boolean;
   danger?: boolean;
+  fallbackFocusRef?: RefObject<HTMLElement>;
   children?: ReactNode;
 }
 
@@ -23,8 +24,8 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>();
   const busy = pending || submitting;
-  const latest = useRef({ busy, onCancel });
-  latest.current = { busy, onCancel };
+  const latest = useRef({ busy, onCancel, fallbackFocusRef: props.fallbackFocusRef });
+  latest.current = { busy, onCancel, fallbackFocusRef: props.fallbackFocusRef };
 
   useEffect(() => {
     if (!open) return;
@@ -57,7 +58,10 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
       document.removeEventListener("focusin", keepFocus);
       siblings.forEach((element, index) => { if (!previousInert[index]) element.removeAttribute("inert"); });
       document.body.style.overflow = overflow;
-      previousFocus?.focus();
+      if (previousFocus?.isConnected && previousFocus !== document.body) previousFocus.focus();
+      if (!previousFocus || previousFocus === document.body || document.activeElement !== previousFocus) {
+        latest.current.fallbackFocusRef?.current?.focus();
+      }
     };
   }, [open]);
 

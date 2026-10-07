@@ -41,7 +41,7 @@ Mock 往哪里挂。改任何一条都要在 Issue 里说，不要直接改代�
 | `FilterBar.tsx` / `FilterBar` | 有名称的筛选表单，`children`, `onSubmit`, `onReset`, `busy`；字段由调用页用现有 Field + RHF/Zod 提供 |
 | `StatusBadge.tsx` / `StatusBadge`, `PriorityBadge` | 接收生成类型中的 status/priority，沿用 labels 的文字、图标和色调 |
 | `Timeline.tsx` / `Timeline` | 接收 API 已授权过滤的 `TimelineEntry[]`，按时间/kind/id 排序；事件和留言不混用 key |
-| `ConfirmDialog.tsx` / `ConfirmDialog` | 受控 `open`, `onConfirm`, `onCancel`, `pending`；确认期间防重复、焦点约束、Escape、关闭后恢复焦点；业务表单通过 children 注入 |
+| `ConfirmDialog.tsx` / `ConfirmDialog` | 受控 `open`, `onConfirm`, `onCancel`, `pending`；确认期间防重复、焦点约束、Escape、关闭后优先恢复原触发元素；原元素无法聚焦时使用可选 `fallbackFocusRef`（目标应支持编程聚焦）；业务表单通过 children 注入 |
 | `Pagination.tsx` / `Pagination` | `nextCursor`, `hasPrevious`, `onNext(cursor)`, `onPrevious`, `busy`；只认识游标，不虚构总数/页数 |
 | `src/mocks/preview/` | #48 开发演示：两个独立页面消费同一公共库，不替代后续业务页面 |
 

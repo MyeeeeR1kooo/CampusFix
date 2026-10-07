@@ -1,6 +1,6 @@
 import { act, cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ConfirmDialog, DataTable, FilterBar, Pagination, PriorityBadge, StatusBadge, Timeline } from "../components";
 import { TextField } from "../components/Field";
@@ -118,6 +118,28 @@ describe("confirmation dialog keyboard and pending behavior", () => {
     expect(screen.getByRole("dialog")).toHaveAttribute("aria-busy", "true");
     await act(async () => resolve());
     expect(screen.getByRole("button", { name: "Confirm" })).toBeEnabled();
+  });
+
+  it.each(["retained", "removed", "disabled"] as const)("restores focus after confirmation when the trigger is %s", async (triggerState) => {
+    function CompletionExample() {
+      const [open, setOpen] = useState(false);
+      const [done, setDone] = useState(false);
+      const heading = useRef<HTMLHeadingElement>(null);
+      return <>
+        <h1 ref={heading} tabIndex={-1}>Ticket detail</h1>
+        {!(done && triggerState === "removed") && <button disabled={done && triggerState === "disabled"} onClick={() => setOpen(true)}>Open confirmation</button>}
+        <ConfirmDialog open={open} title="Confirm action" description="This updates the demo ticket."
+          fallbackFocusRef={heading} onCancel={() => setOpen(false)} onConfirm={() => { setDone(true); setOpen(false); }} />
+      </>;
+    }
+    render(<CompletionExample />);
+    const trigger = screen.getByRole("button", { name: "Open confirmation" });
+    await userEvent.click(trigger);
+    await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(triggerState === "retained" ? trigger : screen.getByRole("heading", { name: "Ticket detail" })).toHaveFocus();
+    expect(document.querySelector("[inert]")).toBeNull();
+    expect(document.body.style.overflow).toBe("");
   });
 
   it("keeps errors reviewable and allows a retry", async () => {

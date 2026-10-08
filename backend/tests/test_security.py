@@ -67,7 +67,8 @@ def test_session_cookie_has_secure_defaults_and_expiry():
     assert "Max-Age=3600" in cookie
 
 
-def test_same_origin_rejects_missing_or_untrusted_origin():
+@pytest.mark.parametrize("method", ["POST", "PUT", "PATCH", "DELETE"])
+def test_same_origin_rejects_missing_or_untrusted_origin(method):
     from app.core.config import Settings
     from app.core.security import require_same_origin
 
@@ -79,10 +80,10 @@ def test_same_origin_rejects_missing_or_untrusted_origin():
     )
 
     with pytest.raises(Exception, match="Origin"):
-        require_same_origin(make_request(), settings)
+        require_same_origin(make_request(method=method), settings)
     with pytest.raises(Exception, match="Origin"):
         require_same_origin(
-            make_request(headers={"Origin": "https://attacker.example"}),
+            make_request(method=method, headers={"Origin": "https://attacker.example"}),
             settings,
         )
 

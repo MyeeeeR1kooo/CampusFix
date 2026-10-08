@@ -1,4 +1,3 @@
-
 """Idempotent anonymous demo data. Run after `alembic upgrade head`.
 
 Existing accounts keep their passwords, roles, active flags and timestamps.

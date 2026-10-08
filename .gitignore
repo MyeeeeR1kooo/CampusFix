@@ -1,7 +1,23 @@
+# macOS
 .DS_Store
+
+# Python / contract tooling
 .venv/
 __pycache__/
 .pytest_cache/
 *.egg-info/
 .contract-artifacts/
+
+# Node / frontend build artefacts
 node_modules/
+dist/
+frontend/dist/
+frontend/tsconfig.tsbuildinfo
+
+# Local env overrides
+.env
+.env.*
+!.env.example
+
+# Local data
+data/

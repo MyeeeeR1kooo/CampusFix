@@ -1,0 +1,228 @@
+/**
+ * Design tokens — CampusFix UI redesign v1.
+ *
+ * Everything visual resolves through these variables, so the palette, the type
+ * scale and the geometry can be tuned in one place without touching component
+ * rules.
+ *
+ * Layout of this file: one :root block, sections 1-7, named by role
+ * (brand / n / accent / tone / fs / geometry / motion / layout).
+ *
+ * There used to be a section 8 of v0.2 aliases, kept so component rules written
+ * against the old names would survive the redesign. It was scheduled for removal
+ * "once components.css has been migrated"; a reference census found 31 of its 32
+ * names had no reader anywhere in src, and the one live name (--primary-ink, 8
+ * uses) pointed at #ffffff, which is --n-0. So the migration condition was
+ * already met and the block is gone. Do not re-add aliases to bridge a rename:
+ * rename the consumers instead, because an alias hides the second component from
+ * any census of what a token is actually used for.
+ *
+ * The palette is contrast-checked, not contrast-asserted: every text pair
+ * measured 2026-09-28 is tabulated in the notes below, and the floor is that
+ * no text colour is lighter than --n-500. Colour is never the sole carrier of
+ * a status (Baseline §13.3) — that part is enforced by labels, not here.
+ */
+
+:root {
+  /* ------------------------------------------------------------- 1. brand */
+  --brand-50: #eef3ff;
+  --brand-100: #dce6ff;
+  --brand-200: #bcceff;
+  --brand-500: #3968ec; /* gradient light stop — white labels sit on this: 4.81:1 */
+  --brand-600: #2450d8; /* primary — buttons, active nav, links */
+  --brand-700: #1b3ca8; /* pressed state, headings on brand tint */
+
+  /* Accent (amber) — reserved for "this is the current step" / "your turn".
+     The reservation is what keeps it meaningful, so the check is a census of the
+     declarations that use it rather than trust: some of them carry "turn" and
+     some are tolerated violations. --accent-50 is near-identical to --amber-bg
+     (RGB 0,1,3 apart); both exist because the surfaces they were picked for
+     differ, and the difference is one no tool would catch. */
+  --accent-50: #fff8eb;
+  --accent-200: #f3d6a0;
+  --accent-500: #f59e0b;
+  --accent-700: #b45309;
+
+  /* ---------------------------------------------------------- 2. neutrals */
+  /* n-400 and lighter are NOT text colours. They fail WCAG 1.4.3 on every
+     surface in this palette (n-400 on n-0 = 2.46:1), so they are legal only
+     on borders, rules and disabled decoration. Any new dimmed *label* starts
+     at n-500 — dimming is carried by size and weight, never by dropping
+     below the contrast the text already promises. */
+  --n-0: #ffffff;
+  --n-25: #fbfcfe;
+  --n-50: #f6f8fb;
+  --n-100: #eff2f7;
+  --n-200: #e1e6ef;
+  --n-300: #cbd3e0;
+  --n-400: #9aa6b8;
+  --n-500: #646e80; /* text floor: 5.14 on n-0, 4.58 on n-100 — the worst real surface */
+  --n-600: #4c5972;
+  --n-700: #333f55;
+  --n-800: #1e2839;
+  --n-900: #111a28;
+
+  /* ------------------------------------------------- 3. semantic tone pairs
+     Each tone is a triple (ink / background / border). The same triple is used
+     by badges, banners, tags and statistic accents, so one semantic meaning
+     never renders in two different colours. */
+  --info: #1d4ed8;
+  --info-bg: #eef3ff;
+  --info-line: #c3d3fa;
+
+  --indigo: #3730a3;
+  --indigo-bg: #eef0ff;
+  --indigo-line: #c7c9f5;
+
+  --teal: #0f766e;
+  --teal-bg: #e9f7f5;
+  --teal-line: #a9dcd6;
+
+  --amber: #b45309;
+  --amber-bg: #fff7e8;
+  --amber-line: #f3d6a0;
+
+  --green: #15803d;
+  --green-bg: #edfaf2;
+  --green-line: #b7e4c7;
+
+  --muted: #5b6880;
+  --muted-bg: #f1f3f8;
+  --muted-line: #d6dce7;
+
+  --red: #c2261f;
+  --red-bg: #fdecea;
+  --red-line: #f5c0bc;
+
+  /* Banner headline inks. These are deliberately darker than the tone inks
+     above: a banner carries a whole sentence of text, so it needs the body
+     floor rather than the badge floor. Measured on their own backgrounds:
+     error 8.76, warning 7.02, info 10.00. */
+  --banner-error-ink: #7f1d1d;
+  --banner-warn-ink: #7a4a05;
+  --banner-info-ink: #173a73;
+
+  /* One-off surfaces that prose had already sanctioned but never named.
+     --skeleton-a is NOT --n-100: it is #eef2f7 against --n-100's #eff2f7, a
+     one-unit difference in red nobody can see and no tool would catch. It is
+     preserved at its exact value because promoting a literal must not quietly
+     move a pixel; the near-duplicate is noted here instead. */
+  --skeleton-a: #eef2f7;
+  --skeleton-b: #e3e9f1;
+  --field-invalid-bg: #fffcfc;
+  --overlay: rgba(17, 26, 40, 0.45);
+  --ring-current: rgba(245, 158, 11, 0.16);
+
+  /* ------------------------------------------------------------- 4. type */
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Microsoft YaHei", "Noto Sans SC", "Source Han Sans SC", sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", ui-monospace, Menlo, Consolas, monospace;
+
+  --fs-display: 1.875rem; /* 30 — login brand */
+  --fs-h1: 1.5rem; /* 24 — page title */
+  --fs-h2: 1.25rem; /* 20 — section title */
+  --fs-h3: 1.0625rem; /* 17 — card / ticket title */
+  --fs-body: 0.9375rem; /* 15 — body copy */
+  --fs-sm: 0.8125rem; /* 13 — meta, hints, table headers */
+  --fs-xs: 0.75rem; /* 12 — badges, counts */
+  /* Form controls sit at 14px, one deliberate step under --fs-body, and do not
+     scale with the ramp. The size was sanctioned while it was left unnamed, so
+     seven declarations carried the literal. */
+  --fs-control: 0.875rem; /* 14 — buttons, inputs, selects, textarea, toast, timeline prose */
+  /* The micro-label tier: .data-table th, .strip-key and .data-table td::before
+     named it first; six more declarations were already at 11px. */
+  --fs-micro: 0.6875rem; /* 11 — uppercase labels, pills, rail names, tags */
+
+  --lh-tight: 1.3;
+  --lh-body: 1.6;
+
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  /* -------------------------------------------------------- 5. geometry */
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 16px;
+  --radius-pill: 999px;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+
+  --shadow-sm: 0 1px 2px rgba(17, 26, 40, 0.06);
+  --shadow-md: 0 4px 14px rgba(17, 26, 40, 0.09);
+  --shadow-lg: 0 18px 44px rgba(17, 26, 40, 0.16);
+  /* The sticky phone action bar casts upward, because it is pinned to the
+     bottom edge and the thing it must separate from is above it. The
+     sm/md/lg ladder is a depth ladder, not a direction ladder, so it has no
+     slot for this; naming the role keeps the literal out of responsive.css. */
+  --shadow-bar: 0 -4px 12px rgba(17, 26, 40, 0.06);
+
+  /* Keyboard focus ring. It is a two-band shadow, not one translucent band:
+     `input:focus` sets `outline: none` (components.css), which overrides the
+     global `:focus-visible` outline by specificity, so on text controls this
+     ring is the whole indicator. A single alpha band could not clear 3:1 —
+     rgba(36,80,216,.28) blends to #c2cef4 on white, 1.56:1, and even .7 alpha
+     only reaches 3.48. The opaque inner band separates the outer one from the
+     surface it lands on, holding 5.71:1 or better on every background in this
+     palette (worst: --red-bg) and 6.53:1 on cards. */
+  --ring: 0 0 0 2px var(--n-0), 0 0 0 4px var(--brand-600);
+
+  /* -------------------------------------------------------- 6. motion */
+  --dur-fast: 120ms;
+  --dur: 180ms;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* -------------------------------------------------------- 7. layout */
+  --page-max: 1200px;
+  /* This was 1360px and was the whole whitespace report: the
+     rail is a 240px grid track and track 2 is elastic, so a *constant* column
+     inside an elastic track turns every viewport pixel past ~1600 into two dead
+     gutters instead of content. 1600px is now the floor of the band below, not
+     its ceiling. */
+  --page-max-wide: 1600px;
+  --page-max-2xl: 1920px; /* the band's absolute ceiling */
+  --page-gutter: 3rem; /* 48px — the most the band may close in from each side */
+  /* The shell's content band, shared by `.app-main` and `.app-nav` so the header
+     and the page always start at the same x.
+     A floor, deliberately not a `min()`: `min(1600px, 100% - 128px)` would
+     *narrow* the column at 1280/1440/1600, which is the opposite of the fix.
+     CAUTION: this value contains a percentage, so it is only valid on a
+     top-level band element whose containing block is a shell grid track. Put it
+     on a card and it resolves against the card, and the result has no name.
+     (It cannot be used as a grid *track sizing function* either — a track's `100%`
+     resolves against the grid container, not the content track. That is what the
+     short-lived `--shell-band` was for, and why it could be dropped once the
+     rail sat flush to the viewport again: nothing needs to know
+     the band's width from the shell's side.) */
+  --page-band: clamp(
+    var(--page-max-wide),
+    100% - 2 * var(--page-gutter),
+    var(--page-max-2xl)
+  );
+  --identity-bar: 3.5rem; /* 56 — brand + role + account */
+  --task-bar: 3rem; /* 48 — role task navigation (720-1023px only) */
+  --header-height: calc(var(--identity-bar) + var(--task-bar));
+  /* The rail replaces the task tier from 1024px up, and
+     --header-height is re-derived to --identity-bar there: below that tier the
+     48px it adds is a gap that no longer exists, and .detail-side's sticky
+     offset is measured against it (responsive.css). */
+  --nav-rail: 240px; /* ≥1280px — labels + icons */
+  --nav-rail-collapsed: 64px; /* 1024-1279px — icons only */
+  --tab-bar: 3.5rem; /* 56 — mobile bottom tab bar */
+  --tap-target: 2.75rem; /* 44px — the accessibility minimum */
+  --tap-target-lg: 3rem; /* 48px — field use (gloves, one hand) */
+
+  /* Breakpoints are documented here for auditability; CSS media queries
+     cannot read variables, so the literal values live in responsive.css. */
+  --bp-lg: 1024px;
+  --bp-md: 720px;
+  --bp-sm: 640px;
+}

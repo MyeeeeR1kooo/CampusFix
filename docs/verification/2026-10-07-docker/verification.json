@@ -1,0 +1,574 @@
+{
+  "started_at": "2026-10-07T05:24:38.515558+00:00",
+  "base_source_commit": "f36123e2c962585b9862232821eb20d60f3c0a1c",
+  "base_github_head": "3bbd1ddc9315e4498782a739dd16b6de0c1eb867",
+  "base_source_tree": "e68864d042239b452392e2e9f653a3a0ac12d700",
+  "source_archive_sha256": "3f4dd4e438395665b857050303cb1785463854f118447adba86dec7d7c3f9852",
+  "project": "campusfix-docker-verify-20261007-r3",
+  "steps": [
+    {
+      "name": "stop-previous-attempt",
+      "started_at": "2026-10-07T05:24:38.516715+00:00",
+      "exit_code": 0,
+      "log": "logs/stop-previous-attempt.log"
+    },
+    {
+      "name": "guest-prepare",
+      "started_at": "2026-10-07T05:24:38.898431+00:00",
+      "exit_code": 0,
+      "log": "logs/guest-prepare.log"
+    },
+    {
+      "name": "copy-source",
+      "started_at": "2026-10-07T05:24:38.971965+00:00",
+      "exit_code": 0,
+      "log": "logs/copy-source.log"
+    },
+    {
+      "name": "remove-packaging-sidecars",
+      "started_at": "2026-10-07T05:24:39.103376+00:00",
+      "exit_code": 0,
+      "log": "logs/remove-packaging-sidecars.log"
+    },
+    {
+      "name": "unpack-source",
+      "started_at": "2026-10-07T05:24:39.172953+00:00",
+      "exit_code": 0,
+      "log": "logs/unpack-source.log"
+    },
+    {
+      "name": "copy-env",
+      "started_at": "2026-10-07T05:24:39.242961+00:00",
+      "exit_code": 0,
+      "log": "logs/copy-env.log"
+    },
+    {
+      "name": "private-env",
+      "started_at": "2026-10-07T05:24:39.317723+00:00",
+      "exit_code": 0,
+      "log": "logs/private-env.log"
+    },
+    {
+      "name": "tool-versions",
+      "started_at": "2026-10-07T05:24:39.391151+00:00",
+      "exit_code": 0,
+      "log": "logs/tool-versions.log"
+    },
+    {
+      "name": "compose-config",
+      "started_at": "2026-10-07T05:24:39.567167+00:00",
+      "exit_code": 0,
+      "log": "logs/compose-config.log"
+    },
+    {
+      "name": "fresh-start",
+      "started_at": "2026-10-07T05:24:39.638937+00:00",
+      "exit_code": 0,
+      "log": "logs/fresh-start.log"
+    },
+    {
+      "name": "services-fresh",
+      "started_at": "2026-10-07T05:24:59.617974+00:00",
+      "exit_code": 0,
+      "log": "logs/services-fresh.log"
+    },
+    {
+      "name": "startup-logs",
+      "started_at": "2026-10-07T05:24:59.739981+00:00",
+      "exit_code": 0,
+      "log": "logs/startup-logs.log"
+    },
+    {
+      "name": "container-state",
+      "started_at": "2026-10-07T05:24:59.863950+00:00",
+      "exit_code": 0,
+      "log": "logs/container-state.log"
+    },
+    {
+      "name": "http-before",
+      "started_at": "2026-10-07T05:24:59.991771+00:00",
+      "exit_code": 0,
+      "log": "logs/http-before.log"
+    },
+    {
+      "name": "seed-first",
+      "started_at": "2026-10-07T05:25:00.063979+00:00",
+      "exit_code": 0,
+      "log": "logs/seed-first.log"
+    },
+    {
+      "name": "seed-second",
+      "started_at": "2026-10-07T05:25:00.780053+00:00",
+      "exit_code": 0,
+      "log": "logs/seed-second.log"
+    },
+    {
+      "name": "data-before",
+      "started_at": "2026-10-07T05:25:01.338115+00:00",
+      "exit_code": 0,
+      "log": "logs/data-before.log"
+    },
+    {
+      "name": "volume-mounts",
+      "started_at": "2026-10-07T05:25:01.997057+00:00",
+      "exit_code": 0,
+      "log": "logs/volume-mounts.log"
+    },
+    {
+      "name": "test-build",
+      "started_at": "2026-10-07T05:25:02.125215+00:00",
+      "exit_code": 0,
+      "log": "logs/test-build.log"
+    },
+    {
+      "name": "backend-tests",
+      "started_at": "2026-10-07T05:25:19.338631+00:00",
+      "exit_code": 0,
+      "log": "logs/backend-tests.log"
+    },
+    {
+      "name": "copy-test-results",
+      "started_at": "2026-10-07T05:25:26.874087+00:00",
+      "exit_code": 0,
+      "log": "logs/copy-test-results.log"
+    },
+    {
+      "name": "down-retain-volumes",
+      "started_at": "2026-10-07T05:25:26.947007+00:00",
+      "exit_code": 0,
+      "log": "logs/down-retain-volumes.log"
+    },
+    {
+      "name": "restart-retained-data",
+      "started_at": "2026-10-07T05:25:27.482901+00:00",
+      "exit_code": 0,
+      "log": "logs/restart-retained-data.log"
+    },
+    {
+      "name": "data-after",
+      "started_at": "2026-10-07T05:25:45.006823+00:00",
+      "exit_code": 0,
+      "log": "logs/data-after.log"
+    },
+    {
+      "name": "seed-after-restart",
+      "started_at": "2026-10-07T05:25:45.843484+00:00",
+      "exit_code": 0,
+      "log": "logs/seed-after-restart.log"
+    },
+    {
+      "name": "http-after",
+      "started_at": "2026-10-07T05:25:46.403689+00:00",
+      "exit_code": 0,
+      "log": "logs/http-after.log"
+    },
+    {
+      "name": "api-recreate",
+      "started_at": "2026-10-07T05:25:46.481084+00:00",
+      "exit_code": 0,
+      "log": "logs/api-recreate.log"
+    },
+    {
+      "name": "http-after-api-recreate",
+      "started_at": "2026-10-07T05:25:53.538681+00:00",
+      "exit_code": 0,
+      "log": "logs/http-after-api-recreate.log"
+    },
+    {
+      "name": "data-after-api-recreate",
+      "started_at": "2026-10-07T05:25:53.665056+00:00",
+      "exit_code": 0,
+      "log": "logs/data-after-api-recreate.log"
+    },
+    {
+      "name": "services-final",
+      "started_at": "2026-10-07T05:25:54.331099+00:00",
+      "exit_code": 0,
+      "log": "logs/services-final.log"
+    },
+    {
+      "name": "final-logs",
+      "started_at": "2026-10-07T05:25:54.404963+00:00",
+      "exit_code": 0,
+      "log": "logs/final-logs.log"
+    },
+    {
+      "name": "published-ports",
+      "started_at": "2026-10-07T05:25:54.582501+00:00",
+      "exit_code": 0,
+      "log": "logs/published-ports.log"
+    }
+  ],
+  "tested_fixes": {
+    "backend/Dockerfile": "b02865f1ee0621ce24bb5a0e1361ac629119c20848e0c1c33d3cfeae3d4bc64b",
+    "deploy/docker-compose.test.yml": "bb52fc80faba37740dceb23790f856f52ec47af92c90ce2959b12b7506132df8"
+  },
+  "fresh_states": [
+    {
+      "name": "/campusfix-docker-verify-20261007-r3-api-1",
+      "state": {
+        "Status": "running",
+        "Running": true,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 21745,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2026-10-07T05:24:48.476455762Z",
+        "FinishedAt": "0001-01-01T00:00:00Z",
+        "Health": {
+          "Status": "healthy",
+          "FailingStreak": 0,
+          "Log": [
+            {
+              "Start": "2026-10-07T13:24:53.523345681+08:00",
+              "End": "2026-10-07T13:24:53.684115306+08:00",
+              "ExitCode": 0,
+              "Output": ""
+            },
+            {
+              "Start": "2026-10-07T13:24:58.687432267+08:00",
+              "End": "2026-10-07T13:24:58.836183475+08:00",
+              "ExitCode": 0,
+              "Output": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "/campusfix-docker-verify-20261007-r3-db-1",
+      "state": {
+        "Status": "running",
+        "Running": true,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 21476,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2026-10-07T05:24:42.321228759Z",
+        "FinishedAt": "0001-01-01T00:00:00Z",
+        "Health": {
+          "Status": "healthy",
+          "FailingStreak": 0,
+          "Log": [
+            {
+              "Start": "2026-10-07T13:24:47.376715637+08:00",
+              "End": "2026-10-07T13:24:47.434464387+08:00",
+              "ExitCode": 0,
+              "Output": "/var/run/postgresql:5432 - accepting connections\n"
+            },
+            {
+              "Start": "2026-10-07T13:24:52.436687514+08:00",
+              "End": "2026-10-07T13:24:52.486142972+08:00",
+              "ExitCode": 0,
+              "Output": "/var/run/postgresql:5432 - accepting connections\n"
+            },
+            {
+              "Start": "2026-10-07T13:24:57.491191183+08:00",
+              "End": "2026-10-07T13:24:57.543415058+08:00",
+              "ExitCode": 0,
+              "Output": "/var/run/postgresql:5432 - accepting connections\n"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "/campusfix-docker-verify-20261007-r3-migrate-1",
+      "state": {
+        "Status": "exited",
+        "Running": false,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 0,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2026-10-07T05:24:47.887881595Z",
+        "FinishedAt": "2026-10-07T05:24:48.424825512Z"
+      }
+    },
+    {
+      "name": "/campusfix-docker-verify-20261007-r3-web-1",
+      "state": {
+        "Status": "running",
+        "Running": true,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 21854,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2026-10-07T05:24:54.037802473Z",
+        "FinishedAt": "0001-01-01T00:00:00Z",
+        "Health": {
+          "Status": "healthy",
+          "FailingStreak": 0,
+          "Log": [
+            {
+              "Start": "2026-10-07T13:24:59.105145059+08:00",
+              "End": "2026-10-07T13:24:59.13671635+08:00",
+              "ExitCode": 0,
+              "Output": ""
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "http_before": {
+    "health": {
+      "status": 200,
+      "body": "{\"status\":\"ok\"}",
+      "content_type": "application/json",
+      "request_id": "req_S6iZXkwO7GiCZJ36"
+    },
+    "static": {
+      "status": 200,
+      "body": "[bootstrap HTML verified]",
+      "content_type": "text/html",
+      "request_id": null
+    },
+    "proxy_get": {
+      "status": 404,
+      "body": "{\"detail\":\"Not Found\"}",
+      "content_type": "application/json",
+      "request_id": "req_2AhW7YvEoktPKz_g"
+    },
+    "proxy_post_allowed": {
+      "status": 404,
+      "body": "{\"detail\":\"Not Found\"}",
+      "content_type": "application/json",
+      "request_id": "req_iO99t2OPVCbmUxd3"
+    },
+    "proxy_post_denied": {
+      "status": 403,
+      "body": "{\"error\":{\"code\":\"ORIGIN_NOT_ALLOWED\",\"message\":\"The request origin is not allowed.\",\"request_id\":\"req_NdiCukuS949ggd6n\",\"field_errors\":[]}}",
+      "content_type": "application/json",
+      "request_id": "req_NdiCukuS949ggd6n"
+    }
+  },
+  "data_before": {
+    "uid": 10001,
+    "postgres_version": "17.11 (Debian 17.11-1.pgdg12+2)",
+    "tables": [
+      "alembic_version",
+      "assignments",
+      "attachments",
+      "comments",
+      "locations",
+      "sessions",
+      "ticket_events",
+      "tickets",
+      "users"
+    ],
+    "revision": "0001",
+    "p0_indexes": {
+      "ix_tickets_reporter_created_id": "CREATE INDEX ix_tickets_reporter_created_id ON public.tickets USING btree (reporter_id, created_at DESC, id DESC)",
+      "ix_tickets_assignee_created_id": "CREATE INDEX ix_tickets_assignee_created_id ON public.tickets USING btree (current_assignee_id, created_at DESC, id DESC)",
+      "ix_tickets_status_created_id": "CREATE INDEX ix_tickets_status_created_id ON public.tickets USING btree (status, created_at DESC, id DESC)",
+      "ix_tickets_location_created_id": "CREATE INDEX ix_tickets_location_created_id ON public.tickets USING btree (location_id, created_at DESC, id DESC)",
+      "ix_ticket_events_ticket_created_id": "CREATE INDEX ix_ticket_events_ticket_created_id ON public.ticket_events USING btree (ticket_id, created_at, id)",
+      "ix_comments_ticket_created_id": "CREATE INDEX ix_comments_ticket_created_id ON public.comments USING btree (ticket_id, created_at, id)"
+    },
+    "counts": {
+      "users": 3,
+      "locations": 3,
+      "tickets": 0
+    },
+    "accounts": [
+      {
+        "id": 3,
+        "email": "demo-admin@example.invalid",
+        "role": "ADMIN",
+        "active": true
+      },
+      {
+        "id": 1,
+        "email": "demo-reporter@example.invalid",
+        "role": "REPORTER",
+        "active": true
+      },
+      {
+        "id": 2,
+        "email": "demo-technician@example.invalid",
+        "role": "TECHNICIAN",
+        "active": true
+      }
+    ],
+    "password_verification": true,
+    "attachment_marker": "campusfix-docker-verification-20261007",
+    "pytest_in_runtime": false
+  },
+  "volume_mounts": [
+    {
+      "name": "/campusfix-docker-verify-20261007-r3-api-1",
+      "mounts": [
+        {
+          "Type": "volume",
+          "Name": "campusfix-docker-verify-20261007-r3_attachments",
+          "Source": "/var/lib/docker/volumes/campusfix-docker-verify-20261007-r3_attachments/_data",
+          "Destination": "/data/attachments",
+          "Driver": "local",
+          "Mode": "rw",
+          "RW": true,
+          "Propagation": ""
+        }
+      ]
+    },
+    {
+      "name": "/campusfix-docker-verify-20261007-r3-db-1",
+      "mounts": [
+        {
+          "Type": "volume",
+          "Name": "campusfix-docker-verify-20261007-r3_database",
+          "Source": "/var/lib/docker/volumes/campusfix-docker-verify-20261007-r3_database/_data",
+          "Destination": "/var/lib/postgresql/data",
+          "Driver": "local",
+          "Mode": "rw",
+          "RW": true,
+          "Propagation": ""
+        }
+      ]
+    },
+    {
+      "name": "/campusfix-docker-verify-20261007-r3-migrate-1",
+      "mounts": []
+    },
+    {
+      "name": "/campusfix-docker-verify-20261007-r3-web-1",
+      "mounts": []
+    }
+  ],
+  "tests": {
+    "passed": 135,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "data_after": {
+    "uid": 10001,
+    "postgres_version": "17.11 (Debian 17.11-1.pgdg12+2)",
+    "tables": [
+      "alembic_version",
+      "assignments",
+      "attachments",
+      "comments",
+      "locations",
+      "sessions",
+      "ticket_events",
+      "tickets",
+      "users"
+    ],
+    "revision": "0001",
+    "p0_indexes": {
+      "ix_tickets_reporter_created_id": "CREATE INDEX ix_tickets_reporter_created_id ON public.tickets USING btree (reporter_id, created_at DESC, id DESC)",
+      "ix_tickets_assignee_created_id": "CREATE INDEX ix_tickets_assignee_created_id ON public.tickets USING btree (current_assignee_id, created_at DESC, id DESC)",
+      "ix_tickets_status_created_id": "CREATE INDEX ix_tickets_status_created_id ON public.tickets USING btree (status, created_at DESC, id DESC)",
+      "ix_tickets_location_created_id": "CREATE INDEX ix_tickets_location_created_id ON public.tickets USING btree (location_id, created_at DESC, id DESC)",
+      "ix_ticket_events_ticket_created_id": "CREATE INDEX ix_ticket_events_ticket_created_id ON public.ticket_events USING btree (ticket_id, created_at, id)",
+      "ix_comments_ticket_created_id": "CREATE INDEX ix_comments_ticket_created_id ON public.comments USING btree (ticket_id, created_at, id)"
+    },
+    "counts": {
+      "users": 3,
+      "locations": 3,
+      "tickets": 0
+    },
+    "accounts": [
+      {
+        "id": 3,
+        "email": "demo-admin@example.invalid",
+        "role": "ADMIN",
+        "active": true
+      },
+      {
+        "id": 1,
+        "email": "demo-reporter@example.invalid",
+        "role": "REPORTER",
+        "active": true
+      },
+      {
+        "id": 2,
+        "email": "demo-technician@example.invalid",
+        "role": "TECHNICIAN",
+        "active": true
+      }
+    ],
+    "password_verification": true,
+    "attachment_marker": "campusfix-docker-verification-20261007",
+    "pytest_in_runtime": false
+  },
+  "http_after": {
+    "health": {
+      "status": 200,
+      "body": "{\"status\":\"ok\"}",
+      "content_type": "application/json",
+      "request_id": "req_BWcFCGndc9YX10pU"
+    },
+    "static": {
+      "status": 200,
+      "body": "[bootstrap HTML verified]",
+      "content_type": "text/html",
+      "request_id": null
+    },
+    "proxy_get": {
+      "status": 404,
+      "body": "{\"detail\":\"Not Found\"}",
+      "content_type": "application/json",
+      "request_id": "req_3-VP1K6da4CO3KIu"
+    },
+    "proxy_post_allowed": {
+      "status": 404,
+      "body": "{\"detail\":\"Not Found\"}",
+      "content_type": "application/json",
+      "request_id": "req_XRuSgGNMwxDJGeEb"
+    },
+    "proxy_post_denied": {
+      "status": 403,
+      "body": "{\"error\":{\"code\":\"ORIGIN_NOT_ALLOWED\",\"message\":\"The request origin is not allowed.\",\"request_id\":\"req_9s5H-lKVoy2degD1\",\"field_errors\":[]}}",
+      "content_type": "application/json",
+      "request_id": "req_9s5H-lKVoy2degD1"
+    }
+  },
+  "http_after_api_recreate": {
+    "health": {
+      "status": 200,
+      "body": "{\"status\":\"ok\"}",
+      "content_type": "application/json",
+      "request_id": "req_ghXYaUznQy0xcrYy"
+    },
+    "static": {
+      "status": 200,
+      "body": "[bootstrap HTML verified]",
+      "content_type": "text/html",
+      "request_id": null
+    },
+    "proxy_get": {
+      "status": 404,
+      "body": "{\"detail\":\"Not Found\"}",
+      "content_type": "application/json",
+      "request_id": "req_tkwKXNY5kKNIRcca"
+    },
+    "proxy_post_allowed": {
+      "status": 404,
+      "body": "{\"detail\":\"Not Found\"}",
+      "content_type": "application/json",
+      "request_id": "req_f8nRM5WqZKvha6UZ"
+    },
+    "proxy_post_denied": {
+      "status": 403,
+      "body": "{\"error\":{\"code\":\"ORIGIN_NOT_ALLOWED\",\"message\":\"The request origin is not allowed.\",\"request_id\":\"req__UpSWdHRSxzkLntY\",\"field_errors\":[]}}",
+      "content_type": "application/json",
+      "request_id": "req__UpSWdHRSxzkLntY"
+    }
+  },
+  "finished_at": "2026-10-07T05:25:54.655251+00:00",
+  "status": "passed"
+}

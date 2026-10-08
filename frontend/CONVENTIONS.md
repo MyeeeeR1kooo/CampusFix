@@ -162,6 +162,10 @@ installMock(async (req) => {
   与角色，**不印密码**——密码由 `SEED_REPORTER_PASSWORD` / `SEED_TECHNICIAN_PASSWORD` /
   `SEED_ADMIN_PASSWORD` 注入，`.env.example` 故意留空并要求自行虚构，任何固定密码都不存在。
 - 紧急渠道提示按基线 §2.2「第一版不处理的事项」那句写：紧急安全事故、医疗事件和报警使用学校现有紧急渠道，不由 CampusFix 处理。
-  登录页以种子邮箱为准：契约 example 里的 `reporter@example.invalid` 与种子的
-  `demo-reporter@example.invalid` 不一致，那是 #46 的文档缺陷，不由前端迁就。
+  登录页按方案 A 只列 #45 种子创建的那三个邮箱。另有一处差异**留给 #46 决定**：冻结契约的
+  example 用 `reporter@example.invalid`（`docs/api/openapi.yaml:72`），种子用
+  `demo-reporter@example.invalid`（`backend/app/seed.py:21-23`）。前端不裁定谁为准，也不
+  擅自迁就；按 CONVENTIONS 的规矩，这条要由 #46 的负责人在 Issue 里说一声再改。
+  Mock 模式是另一套账号（`src/mocks/fixtures.ts` 的 `*@campusfix.test`），
+  `README.md` 与 `ISSUE-48-HANDOFF.md` 已写明它与种子凭据无关。
 - Mock 数据与公共组件库：舒玺悦已接入；使用方法与验证范围见 [ISSUE-48-HANDOFF.md](./ISSUE-48-HANDOFF.md)。

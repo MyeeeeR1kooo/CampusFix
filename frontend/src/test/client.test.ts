@@ -171,7 +171,9 @@ describe("buildQuery", () => {
   });
 });
 
-describe("session credentials (#47)", () => {
+// #47's third frontend item. The wrapper itself is #48's; this pins the session half of
+// what #47 accepts, because nothing else in the suite looked at the request init.
+describe("session credentials", () => {
   it("carries the cookie and invents no token of its own", async () => {
     const fetchMock = vi.fn(async () => jsonResponse(userPayload(), 200));
     vi.stubGlobal("fetch", fetchMock);
@@ -184,7 +186,12 @@ describe("session credentials (#47)", () => {
       // Identity is an HttpOnly cookie, so the wrapper's whole job here is to ask the
       // browser to attach it — and to not smuggle an actor, a role or a bearer token.
       expect(init.credentials).toBe("same-origin");
-      expect(new Headers(init.headers).has("authorization")).toBe(false);
+      const headers = new Headers(init.headers);
+      // CONVENTIONS §3 forbids all three: identity is the cookie's business, so a request
+      // that names an actor or a role is a second, client-controlled truth.
+      for (const forbidden of ["authorization", "x-actor", "x-role"]) {
+        expect(headers.has(forbidden)).toBe(false);
+      }
     }
   });
 });

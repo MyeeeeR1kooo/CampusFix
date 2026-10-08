@@ -10,10 +10,14 @@
  * session means) is issue #47's; this file's job is to show the pairing wired.
  *
  * §13.1 gives this page two more blocks besides the form: 演示账户说明 and 紧急渠道提示. The
- * accounts are #45's real seed (`backend/app/seed.py`), and their passwords exist only as
- * `SEED_*_PASSWORD` at deploy time, so the panel names them and prints no credential — 张越's
- * ruling of 2026-10-08. The emergency notice is Baseline §2.2's rule, and §13.1 gives it to
- * this page and to no other, so it sits above the form rather than in a footer.
+ * accounts are #45's real seed (`backend/app/seed.py`), and their passwords exist only in the
+ * deployment's demo configuration, so the panel names the accounts and prints no credential —
+ * 张越's ruling of 2026-10-08. The emergency notice carries Baseline §2.2's rule; §13.1 gives
+ * that notice to this page, and putting it above the form rather than in a footer is ours.
+ *
+ * Mock mode is a different account set on purpose: `src/mocks/fixtures.ts` serves the
+ * `*@campusfix.test` demo users, which `README.md` and `ISSUE-48-HANDOFF.md` document. The
+ * panel below lists only the accounts a real backend actually creates.
  *
  * Layout: two panels. The narrative panel answers "what is this system for" before the
  * form asks for anything, and the form panel stays narrow so the fields keep a measure.
@@ -30,6 +34,7 @@ import { Icon } from "../../components/Icon";
 import { TextField } from "../../components/Field";
 import { ApiError } from "../../api/client";
 import { classify } from "../../lib/errors";
+import { ROLE_LABELS } from "../../lib/labels";
 
 const loginSchema = z.object({
   email: z.email(),
@@ -117,7 +122,7 @@ export function LoginPage() {
           </header>
 
           {/* Baseline §2.2: these events are not this system's to handle. */}
-          <div className="banner banner-notice banner-notice-warning">
+          <div className="banner banner-notice-warning">
             <div className="banner-body">
               <strong className="banner-title">Emergencies</strong>
               <span>
@@ -162,19 +167,18 @@ export function LoginPage() {
             <h2>Demo accounts</h2>
             <ul>
               <li>
-                <code>demo-admin@example.invalid</code> — Administrator
+                <code>demo-admin@example.invalid</code> — {ROLE_LABELS.ADMIN}
               </li>
               <li>
-                <code>demo-technician@example.invalid</code> — Technician
+                <code>demo-technician@example.invalid</code> — {ROLE_LABELS.TECHNICIAN}
               </li>
               <li>
-                <code>demo-reporter@example.invalid</code> — Reporter
+                <code>demo-reporter@example.invalid</code> — {ROLE_LABELS.REPORTER}
               </li>
             </ul>
             <p className="muted">
-              Created by the seed script. Their passwords are set in the deployment's
-              SEED_ADMIN_PASSWORD, SEED_TECHNICIAN_PASSWORD and SEED_REPORTER_PASSWORD
-              variables, and no password is ever printed on this page.
+              Created by the deployment's seed script. Its passwords are configured there and
+              are never printed on this page.
             </p>
           </aside>
         </main>

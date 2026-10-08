@@ -19,6 +19,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import App from "../app/App";
+import { ROLE_LABELS } from "../lib/labels";
 import { stubApi, userPayload } from "../test-helpers";
 
 type TestRole = "REPORTER" | "TECHNICIAN" | "ADMIN";
@@ -240,33 +241,54 @@ describe("the login form (RHF + Zod, §13.2)", () => {
 });
 
 describe("the login page's side content (§13.1)", () => {
-  it("names the three accounts the seed really creates", async () => {
-    anonymous();
-    renderAt("/login");
-    for (const email of [
-      "demo-admin@example.invalid",
-      "demo-technician@example.invalid",
-      "demo-reporter@example.invalid",
-    ]) {
-      expect(await screen.findByText(email)).toBeTruthy();
-    }
-  });
+  // This table is a *copy* of `backend/app/seed.py:20-24` (DEMO_ACCOUNTS). Reading the real
+  // thing would be the stronger guard, but this package has no @types/node, so importing
+  // node:fs is a TS2307 and the fix would be a new shared dependency. Consequence to keep
+  // honest: if the seed renames an account, panel and test stay green together. #59 联调 is
+  // where that pair is supposed to be caught, by logging in for real.
+  const SEEDED: Array<{ role: TestRole; email: string }> = [
+    { role: "ADMIN", email: "demo-admin@example.invalid" },
+    { role: "TECHNICIAN", email: "demo-technician@example.invalid" },
+    { role: "REPORTER", email: "demo-reporter@example.invalid" },
+  ];
 
-  it("points at the env vars instead of printing a credential", async () => {
+  it("lists exactly the accounts the seed creates, with their roles", async () => {
+    expect(SEEDED).toHaveLength(3);
     anonymous();
     renderAt("/login");
     const panel = (await screen.findByText("Demo accounts")).closest(".demo-hint");
-    expect(panel?.textContent).toMatch(/SEED_ADMIN_PASSWORD/);
-    // The two passwords that float around this repository — the Mock layer's and the
-    // contract example's. Neither is a real credential, and printing either would send
-    // users to a login page that cannot work.
-    expect(panel?.textContent).not.toMatch(/campusfix-mock|demo-password/);
+    const shown = [...(panel?.querySelectorAll("li") ?? [])].map((li) => li.textContent);
+    for (const { role, email } of SEEDED) {
+      expect(shown.some((row) => row === `${email} — ${ROLE_LABELS[role]}`)).toBe(true);
+    }
+    expect(shown).toHaveLength(SEEDED.length);
   });
 
-  it("sends emergencies to the university's own channels", async () => {
+  it("prints no credential in the demo panel", async () => {
     anonymous();
     renderAt("/login");
-    expect(await screen.findByText(/emergency channels/i)).toBeTruthy();
+    const panel = (await screen.findByText("Demo accounts")).closest(".demo-hint");
+    const text = panel?.textContent ?? "";
+    // Guarded by shape, not by a list of known passwords: the only monospaced things on
+    // the panel are the account addresses, and nothing may look like `key: value`.
+    // The panel lists admin first, the seed declares reporter first: compare as sets.
+    expect([...(panel?.querySelectorAll("code") ?? [])].map((c) => c.textContent).sort()).toEqual(
+      SEEDED.map((a) => a.email).sort(),
+    );
+    expect(text).toMatch(/never printed/i);
+    expect(text).not.toMatch(/campusfix-mock|demo-password/i);
+    expect(text).not.toMatch(/password[^.\n]{0,20}[:=]\s*\S/i);
+  });
+
+  it("sends each emergency class to the university's own channels", async () => {
+    anonymous();
+    renderAt("/login");
+    // §2.2's sentence names three classes; a rewrite that quietly drops one is exactly
+    // the failure mode that would reach a reviewer as "the notice is there".
+    const notice = await screen.findByText(/emergency channels/i);
+    expect(notice.textContent).toMatch(/safety/i);
+    expect(notice.textContent).toMatch(/medical/i);
+    expect(notice.textContent).toMatch(/police/i);
   });
 });
 

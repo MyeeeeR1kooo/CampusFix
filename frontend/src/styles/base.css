@@ -1,0 +1,521 @@
+/**
+ * Base layer: reset, typography, focus, utilities and the application shell.
+ *
+ * The shell is a two-tier header:
+ *   tier 1 — identity: brand, current role, account, logout
+ *   tier 2 — tasks:    the role's navigation, with the reporter's primary
+ *                      action rendered as a call to action rather than a link
+ * On phones the task tier is replaced by a bottom tab bar, so the
+ * primary actions stay inside the thumb zone.
+ *
+ * Both tiers live inside the same <nav aria-label="Main"> because they are one
+ * navigation model; the mobile tab bar is a separate <nav> and only one of the
+ * two is ever visible.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  /* Modal opens by setting overflow:hidden on the root (components/Modal.tsx).
+     On a classic-scrollbar platform that removes the ~15px gutter the page was
+     laid out inside, so the column under the dialog jumps sideways at the exact
+     moment it should be static. Reserving the gutter makes the lock free. */
+  scrollbar-gutter: stable;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--n-900);
+  background: var(--n-50);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  line-height: var(--lh-tight);
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+h1 {
+  font-size: var(--fs-h1);
+  font-weight: var(--fw-bold);
+}
+
+h2 {
+  font-size: var(--fs-h2);
+  font-weight: var(--fw-semibold);
+}
+
+h3 {
+  font-size: var(--fs-h3);
+  font-weight: var(--fw-semibold);
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--brand-600);
+}
+
+/* Ticket codes and statistic values are the two places where aligned digits
+   matter, so they are the only places the monospace face is used. */
+code,
+.ticket-code,
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+code {
+  font-size: 0.85em;
+}
+
+/* Visible focus for every keyboard user (§13.3) */
+:focus-visible {
+  outline: 2px solid var(--brand-600);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ---------------------------------------------------------------- utilities */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.muted {
+  color: var(--n-500);
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  background: var(--brand-600);
+  color: var(--n-0);
+  padding: var(--space-2) var(--space-4);
+  border-radius: 0 0 var(--radius) 0;
+}
+
+.skip-link:focus {
+  left: 0;
+}
+
+/* -------------------------------------------------------------------- shell */
+
+/* Two tracks from 1024px up: the rail takes the first and the identity bar +
+   content share the other. Below that the grid has one track
+   and the rail is display:none, so nothing reserves width for an element that is
+   not rendered — the reason this is a grid rather than a margin on `.app-main`.
+   This is the **only** definition of the rail's shape at desktop widths:
+   An older `responsive.css` override at ≥1280 was removed so that the
+   full-height flush spine below is inherited rather than re-styled per band. Add a
+   wide-band rail rule here and you have rebuilt the override that was deleted. */
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.app-column {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ------------------------------------------------------- nav rail (≥1024px) */
+
+/* Hidden by default and switched on by the band rules in responsive.css, which
+   is where every breakpoint in this app is auditable from. */
+.nav-rail {
+  display: none;
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  padding: var(--identity-bar) var(--space-2) var(--space-4);
+  background: var(--n-0);
+  border-right: 1px solid var(--n-200);
+}
+
+.nav-rail-links {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-rail-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap-target);
+  padding: 0 var(--space-3);
+  border-left: 2px solid transparent;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  color: var(--n-600);
+  text-decoration: none;
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  transition: color var(--dur-fast) var(--ease);
+}
+
+.nav-rail-link:hover {
+  color: var(--n-900);
+}
+
+.nav-rail-link svg {
+  flex: none;
+}
+
+/* Active = weight + left bar + icon, never colour alone (Baseline §13.3). */
+.nav-rail-link-active {
+  color: var(--brand-700);
+  border-left-color: var(--brand-600);
+  font-weight: var(--fw-bold);
+}
+
+/* The rail's copy of the reporter's CTA keeps the brand gradient
+   but not the task tier's geometry: `margin-left: auto` pins an item to the end
+   of a horizontal row, and 2rem is under the tap-target minimum. */
+.nav-rail .nav-link-cta {
+  margin-left: 0;
+  height: auto;
+  border-radius: var(--radius);
+  color: var(--n-0);
+}
+
+.nav-rail .nav-link-cta:hover {
+  color: var(--n-0);
+}
+
+.nav-rail .nav-link-cta.nav-rail-link-active {
+  color: var(--n-0);
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--n-0);
+  border-bottom: 1px solid var(--n-200);
+}
+
+.app-nav {
+  display: block;
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+}
+
+/* tier 1 — identity */
+.identity-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--identity-bar);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-h3);
+  letter-spacing: -0.01em;
+  color: var(--n-900);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 1.625rem;
+  height: 1.625rem;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(140deg, var(--brand-500), var(--brand-700));
+  color: var(--n-0);
+  flex: none;
+}
+
+.brand-mark svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* The role is stated explicitly, not implied: "who am I here" is the question
+   that prevents most wrong-role confusion. */
+.role-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.55rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--brand-200);
+  background: var(--brand-50);
+  color: var(--brand-700);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
+}
+
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-left: auto;
+}
+
+.nav-identity {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.2;
+}
+
+.nav-name {
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-sm);
+}
+
+.nav-role {
+  font-size: var(--fs-xs);
+  color: var(--n-500);
+}
+
+/* tier 2 — role tasks */
+.task-bar {
+  display: flex;
+  align-items: center;
+  min-height: var(--task-bar);
+  border-top: 1px solid var(--n-200);
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  height: var(--task-bar);
+  padding: 0 var(--space-3);
+  border-bottom: 2px solid transparent;
+  color: var(--n-600);
+  text-decoration: none;
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+  transition: color var(--dur-fast) var(--ease);
+}
+
+.nav-link:hover {
+  color: var(--n-900);
+}
+
+/* Active state is a weight + underline change, not colour alone (§13.3). */
+.nav-link-active {
+  color: var(--brand-700);
+  border-bottom-color: var(--brand-600);
+}
+
+/* The reporter's primary action is a call to action, not a peer link: the
+   page has one obvious next step and it should not look like navigation. */
+.nav-link-cta {
+  margin-left: auto;
+  height: 2rem;
+  padding: 0 var(--space-4);
+  border-bottom: 0;
+  border-radius: var(--radius);
+  background: linear-gradient(140deg, var(--brand-500), var(--brand-600));
+  color: var(--n-0);
+  box-shadow: var(--shadow-sm);
+}
+
+.nav-link-cta:hover {
+  color: var(--n-0);
+  filter: brightness(0.94);
+}
+
+.nav-link-cta.nav-link-active {
+  border-bottom: 0;
+  color: var(--n-0);
+}
+
+.app-main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-4) var(--space-7);
+}
+
+.boot {
+  display: grid;
+  place-items: center;
+  min-height: 60vh;
+  color: var(--n-600);
+}
+
+/* ------------------------------------------------- mobile bottom tab bar */
+
+/* Rendered always, shown only below the compact breakpoint (responsive.css).
+   The fixed bottom bar needs the main column to reserve its height, so the
+   layout never hides content behind it. */
+.tab-bar {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  background: var(--n-0);
+  border-top: 1px solid var(--n-200);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.tab-link {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: var(--tab-bar);
+  color: var(--n-500);
+  text-decoration: none;
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-semibold);
+}
+
+.tab-link svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.tab-link-active {
+  color: var(--brand-700);
+}
+
+/* --------------------------------------------------------------- page frame */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.page-narrow {
+  /* Capped *and* centred. A cap without `margin-inline: auto`
+     puts all of the leftover on the right, which reads as a column that failed
+     to finish — the exact thing this class used to be mistaken for. */
+  max-width: 48rem;
+  margin-inline: auto;
+}
+
+.page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.page-sub {
+  color: var(--n-600);
+  font-size: var(--fs-sm);
+  margin-top: var(--space-1);
+}
+
+.back-link {
+  font-size: var(--fs-sm);
+}
+
+.back-link a {
+  text-decoration: none;
+  font-weight: var(--fw-medium);
+}
+
+.back-link a:hover {
+  text-decoration: underline;
+}
+
+.ticket-identity {
+  margin-top: var(--space-1);
+  color: var(--n-600);
+  font-size: var(--fs-sm);
+}
+
+.ticket-identity strong {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--n-700);
+}
+
+/* --------------------------------------------------------------- detail grid */
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.detail-main,
+.detail-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.state-page {
+  /* Three free-floating lines in a 32rem band at 12vh read as a page that
+     failed to load, which is a poor way to answer "this does not exist". It is
+     now a surface with an edge, using the same card treatment the empty states
+     get. The old `12vh` was an undeclared magic number; this derives the same
+     ~48px×4 from the spacing scale. */
+  max-width: 44rem;
+  margin: calc(var(--space-7) * 4) auto 0;
+  background: var(--n-0);
+  border: 1px solid var(--n-200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-6);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: center;
+}

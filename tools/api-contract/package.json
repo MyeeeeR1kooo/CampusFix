@@ -1,0 +1,12 @@
+{
+  "name": "campusfix-api-contract-checks",
+  "private": true,
+  "scripts": {
+    "generate": "openapi-typescript ../../docs/api/openapi.yaml -o ../../.contract-artifacts/schema.d.ts",
+    "typecheck": "tsc --strict --noEmit --lib ES2022,DOM smoke.ts"
+  },
+  "devDependencies": {
+    "openapi-typescript": "7.10.1",
+    "typescript": "5.9.3"
+  }
+}

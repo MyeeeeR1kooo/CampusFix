@@ -1,4 +1,3 @@
-
 """Issue #47 authentication and account-management API evidence.
 
 PostgreSQL cases use a disposable database created from

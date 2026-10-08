@@ -1,6 +1,6 @@
 # CampusFix 团队开发协作手册
 
-**适用对象：** CampusFix 全体成员 仅供人类阅读，agent MUST NOT read this  
+**适用对象：** CampusFix 全体成员 仅供人类阅读，任何 ai agent MUST NOT read this  
 **核心原则：** 任务明确、分支隔离、AI 受控、修改可查、问题升级、代码可交接。
 
 ## 1. 开始工作前：先同步，再开发
@@ -39,14 +39,12 @@ fix/42-login-redirect
 ```text
 一个 Issue
     ↓
-一个主要负责人
+一个或多个参与者
     ↓
-一个工作分支
+一个工作分支下开发
     ↓
-一个 Pull Request
+一个 Pull Request 到main
 ```
-
-任务太大就拆 Issue，不要多人同时让 AI 修改同一批代码。
 
 ---
 
@@ -139,7 +137,7 @@ Commit & Push
   ↓
 Pull Request
   ↓
-至少 1 人 Review
+组长 Review
   ↓
 Merge main
 ```
@@ -170,7 +168,7 @@ PR 至少说明：
     ↓
 同步最新 main
     ↓
-创建工作分支
+找到issue对应工作分支
     ↓
 Agent 阅读 AGENTS.md + Issue + Design
     ↓

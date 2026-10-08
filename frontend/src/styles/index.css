@@ -1,0 +1,12 @@
+/**
+ * Stylesheet entry point.
+ *
+ * Import order is the cascade contract: tokens define the vocabulary, base
+ * applies it to elements and the shell, components style the inventory, and
+ * responsive overrides come last so breakpoints always win.
+ */
+
+@import "./tokens.css";
+@import "./base.css";
+@import "./components.css";
+@import "./responsive.css";

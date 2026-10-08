@@ -158,4 +158,10 @@ installMock(async (req) => {
 - `Dockerfile` / `nginx.conf` / compose：归 #45（那条分支已经在跑了）。
 - 登录行为本身（哪些账户能进、会话语义）：归 #47。这里只把 RHF + Zod 的表单接法立起来。§13.1
   给登录页列的演示账户说明与紧急渠道提示，等 #45 的种子账户和 #47 的文案就位后补上。
+- 演示账户说明的口径（张越 2026-10-08 定，方案 A）：登录页只列 `backend/app/seed.py` 的三个种子邮箱
+  与角色，**不印密码**——密码由 `SEED_REPORTER_PASSWORD` / `SEED_TECHNICIAN_PASSWORD` /
+  `SEED_ADMIN_PASSWORD` 注入，`.env.example` 故意留空并要求自行虚构，任何固定密码都不存在。
+- 紧急渠道提示按基线 §2.2「第一版不处理的事项」那句写：紧急安全事故、医疗事件和报警使用学校现有紧急渠道，不由 CampusFix 处理。
+  登录页以种子邮箱为准：契约 example 里的 `reporter@example.invalid` 与种子的
+  `demo-reporter@example.invalid` 不一致，那是 #46 的文档缺陷，不由前端迁就。
 - Mock 数据与公共组件库：舒玺悦已接入；使用方法与验证范围见 [ISSUE-48-HANDOFF.md](./ISSUE-48-HANDOFF.md)。

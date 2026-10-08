@@ -247,9 +247,9 @@ describe("the login page's side content (§13.1)", () => {
   // honest: if the seed renames an account, panel and test stay green together. #59 联调 is
   // where that pair is supposed to be caught, by logging in for real.
   const SEEDED: Array<{ role: TestRole; email: string }> = [
-    { role: "ADMIN", email: "demo-admin@example.invalid" },
-    { role: "TECHNICIAN", email: "demo-technician@example.invalid" },
-    { role: "REPORTER", email: "demo-reporter@example.invalid" },
+    { role: "ADMIN", email: "admin@example.invalid" },
+    { role: "TECHNICIAN", email: "technician@example.invalid" },
+    { role: "REPORTER", email: "reporter@example.invalid" },
   ];
 
   it("lists exactly the accounts the seed creates, with their roles", async () => {

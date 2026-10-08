@@ -178,7 +178,7 @@ describe("session credentials", () => {
     const fetchMock = vi.fn(async () => jsonResponse(userPayload(), 200));
     vi.stubGlobal("fetch", fetchMock);
     await http.get("/api/me", undefined);
-    await http.post("/api/auth/login", { email: "demo-reporter@example.invalid", password: "x" });
+    await http.post("/api/auth/login", { email: "reporter@example.invalid", password: "x" });
 
     const calls = fetchMock.mock.calls as unknown as Array<[string, RequestInit]>;
     expect(calls.map((c) => c[0])).toEqual(["/api/me", "/api/auth/login"]);

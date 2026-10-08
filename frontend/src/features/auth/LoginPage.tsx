@@ -167,13 +167,13 @@ export function LoginPage() {
             <h2>Demo accounts</h2>
             <ul>
               <li>
-                <code>demo-admin@example.invalid</code> — {ROLE_LABELS.ADMIN}
+                <code>admin@example.invalid</code> — {ROLE_LABELS.ADMIN}
               </li>
               <li>
-                <code>demo-technician@example.invalid</code> — {ROLE_LABELS.TECHNICIAN}
+                <code>technician@example.invalid</code> — {ROLE_LABELS.TECHNICIAN}
               </li>
               <li>
-                <code>demo-reporter@example.invalid</code> — {ROLE_LABELS.REPORTER}
+                <code>reporter@example.invalid</code> — {ROLE_LABELS.REPORTER}
               </li>
             </ul>
             <p className="muted">

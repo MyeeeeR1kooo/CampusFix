@@ -35,9 +35,9 @@ PASSWORDS = {
     "ADMIN": "fixture-admin",
 }
 EMAILS = {
-    "REPORTER": "demo-reporter@example.invalid",
-    "TECHNICIAN": "demo-technician@example.invalid",
-    "ADMIN": "demo-admin@example.invalid",
+    "REPORTER": "reporter@example.invalid",
+    "TECHNICIAN": "technician@example.invalid",
+    "ADMIN": "admin@example.invalid",
 }
 BACKEND = Path(__file__).resolve().parents[1]
 

@@ -239,6 +239,37 @@ describe("the login form (RHF + Zod, §13.2)", () => {
   });
 });
 
+describe("the login page's side content (§13.1)", () => {
+  it("names the three accounts the seed really creates", async () => {
+    anonymous();
+    renderAt("/login");
+    for (const email of [
+      "demo-admin@example.invalid",
+      "demo-technician@example.invalid",
+      "demo-reporter@example.invalid",
+    ]) {
+      expect(await screen.findByText(email)).toBeTruthy();
+    }
+  });
+
+  it("points at the env vars instead of printing a credential", async () => {
+    anonymous();
+    renderAt("/login");
+    const panel = (await screen.findByText("Demo accounts")).closest(".demo-hint");
+    expect(panel?.textContent).toMatch(/SEED_ADMIN_PASSWORD/);
+    // The two passwords that float around this repository — the Mock layer's and the
+    // contract example's. Neither is a real credential, and printing either would send
+    // users to a login page that cannot work.
+    expect(panel?.textContent).not.toMatch(/campusfix-mock|demo-password/);
+  });
+
+  it("sends emergencies to the university's own channels", async () => {
+    anonymous();
+    renderAt("/login");
+    expect(await screen.findByText(/emergency channels/i)).toBeTruthy();
+  });
+});
+
 describe("signing out", () => {
   it("posts to the contract's logout and returns to the login page", async () => {
     const api = stubApi([

@@ -9,9 +9,11 @@
  * example rather than inventing their own. Login *behaviour* (which accounts exist, what a
  * session means) is issue #47's; this file's job is to show the pairing wired.
  *
- * §13.1 also puts 演示账户说明 and 紧急渠道提示 on this page. Neither is rendered here, because
- * the account list is #45's seed data and the copy is #47's — printing accounts that do not
- * exist sends users to a login page that cannot work.
+ * §13.1 gives this page two more blocks besides the form: 演示账户说明 and 紧急渠道提示. The
+ * accounts are #45's real seed (`backend/app/seed.py`), and their passwords exist only as
+ * `SEED_*_PASSWORD` at deploy time, so the panel names them and prints no credential — 张越's
+ * ruling of 2026-10-08. The emergency notice is Baseline §2.2's rule, and §13.1 gives it to
+ * this page and to no other, so it sits above the form rather than in a footer.
  *
  * Layout: two panels. The narrative panel answers "what is this system for" before the
  * form asks for anything, and the form panel stays narrow so the fields keep a measure.
@@ -114,6 +116,17 @@ export function LoginPage() {
             <p className="login-sub">Use the email address of your account.</p>
           </header>
 
+          {/* Baseline §2.2: these events are not this system's to handle. */}
+          <div className="banner banner-notice banner-notice-warning">
+            <div className="banner-body">
+              <strong className="banner-title">Emergencies</strong>
+              <span>
+                Safety incidents, medical events and police reports must use the university's
+                existing emergency channels. CampusFix does not handle them.
+              </span>
+            </div>
+          </div>
+
           {banner ? (
             <div className="banner banner-error" role="alert">
               <div className="banner-body">
@@ -144,6 +157,26 @@ export function LoginPage() {
               {isSubmitting ? "Logging in…" : "Log in"}
             </button>
           </form>
+
+          <aside className="demo-hint">
+            <h2>Demo accounts</h2>
+            <ul>
+              <li>
+                <code>demo-admin@example.invalid</code> — Administrator
+              </li>
+              <li>
+                <code>demo-technician@example.invalid</code> — Technician
+              </li>
+              <li>
+                <code>demo-reporter@example.invalid</code> — Reporter
+              </li>
+            </ul>
+            <p className="muted">
+              Created by the seed script. Their passwords are set in the deployment's
+              SEED_ADMIN_PASSWORD, SEED_TECHNICIAN_PASSWORD and SEED_REPORTER_PASSWORD
+              variables, and no password is ever printed on this page.
+            </p>
+          </aside>
         </main>
       </div>
     </div>

@@ -170,3 +170,21 @@ describe("buildQuery", () => {
     expect(buildQuery({ active: false })).toBe("?active=false");
   });
 });
+
+describe("session credentials (#47)", () => {
+  it("carries the cookie and invents no token of its own", async () => {
+    const fetchMock = vi.fn(async () => jsonResponse(userPayload(), 200));
+    vi.stubGlobal("fetch", fetchMock);
+    await http.get("/api/me", undefined);
+    await http.post("/api/auth/login", { email: "demo-reporter@example.invalid", password: "x" });
+
+    const calls = fetchMock.mock.calls as unknown as Array<[string, RequestInit]>;
+    expect(calls.map((c) => c[0])).toEqual(["/api/me", "/api/auth/login"]);
+    for (const [, init] of calls) {
+      // Identity is an HttpOnly cookie, so the wrapper's whole job here is to ask the
+      // browser to attach it — and to not smuggle an actor, a role or a bearer token.
+      expect(init.credentials).toBe("same-origin");
+      expect(new Headers(init.headers).has("authorization")).toBe(false);
+    }
+  });
+});

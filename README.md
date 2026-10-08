@@ -2,7 +2,7 @@
 
 CampusFix 是一个面向校园实体设施的 Web 报修与工单管理系统。系统围绕“提交、审核、分派、处理、确认”建立完整业务闭环，并通过角色授权、事件时间线和事务控制保证每张工单可追踪、可验证。
 
-> **当前状态：P0 v1.0 需求与设计已冻结，基础运行环境正在交付。** 已有后端 Core、八表迁移、匿名种子脚本、Docker Compose 和基础测试。当前 API 提供 `/health`；登录和业务 Router、React 页面仍由相应任务实现，尚不能演示完整报修流程。
+> **当前状态：P0 v1.0 需求与设计已冻结，基础运行环境正在交付。** 已有后端 Core、八表迁移、匿名种子脚本、Docker Compose 和基础测试。当前 API 提供 `/health`、登录/退出/当前用户及 Admin 账户查询/启停；其他业务 Router 和前端真实 API 联调仍由相应任务完成，尚不能演示完整报修流程。
 
 本项目是 JC2001 软件工程导论小组项目的 Web 概念验证（PoC），不代表学校正式维修服务。CampusFix 第一版仅处理校园实体设施故障；医疗、消防、报警及其他紧急安全事件应使用学校现有紧急渠道。
 
@@ -170,7 +170,7 @@ docker compose exec -T api python -m app.seed
 | `demo-technician@example.invalid` | TECHNICIAN | `SEED_TECHNICIAN_PASSWORD` |
 | `demo-admin@example.invalid` | ADMIN | `SEED_ADMIN_PASSWORD` |
 
-种子复用 Core 的 Argon2id 工具，仅新增缺失行；不会重设已有密码、启用已停用账户或修改已有角色。角色冲突会导致整个种子事务回滚。三角色真实 HTTP 登录需在 #47 的 Auth Router 接入后验收。
+种子复用 Core 的 Argon2id 工具，仅新增缺失行；不会重设已有密码、启用已停用账户或修改已有角色。角色冲突会导致整个种子事务回滚。#47 的 Auth Router 支持三角色真实 HTTP 登录，写请求须携带 `.env` 中允许的 `Origin`。
 
 当前 Web 使用 `deploy/web/bootstrap` 中的基础环境占位页。#48 完成前端后，先按其依赖锁文件执行前端构建，将 `.env` 中 `FRONTEND_DIST` 改为 `frontend/dist`，然后执行 `docker compose up --build -d web`。Web 保留 SPA 路由并原样代理 `/api/`；前端 API 客户端使用相对路径 `/api`，Cookie 和 Origin 校验继续复用已有后端配置。
 
@@ -181,7 +181,7 @@ docker compose -f docker-compose.yml -f deploy/docker-compose.test.yml build api
 docker compose -f docker-compose.yml -f deploy/docker-compose.test.yml run --rm --no-deps api
 ```
 
-测试覆盖 Core、接口契约、真实 PostgreSQL 迁移与种子。每项数据库测试创建并删除自己的 `campusfix_test_<随机值>` 数据库，测试账户需要 `CREATEDB` 权限；Compose 初始化的账户具备该权限。测试镜像和运行镜像分开，测试不启动新的业务 API。前端、业务权限和端到端测试随对应功能实现补充。
+测试覆盖 Core、接口契约、真实 PostgreSQL 迁移与种子，以及登录、会话和账户权限。每项数据库测试创建并删除自己的 `campusfix_test_<随机值>` 或 `campusfix_auth_test_<随机值>` 数据库，测试账户需要 `CREATEDB` 权限；Compose 初始化的账户具备该权限。测试镜像和运行镜像分开。前端真实 API 联调、工单业务权限和端到端测试随对应功能实现补充。
 
 原生 Python 开发可使用 Python 3.12 与现有 PostgreSQL：
 

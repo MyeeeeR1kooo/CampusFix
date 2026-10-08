@@ -20,7 +20,7 @@ Mock 往哪里挂。改任何一条都要在 Issue 里说，不要直接改代�
 | `src/api/client.ts` | 张越 | 唯一的 `fetch` 调用点；信封解析、`ApiError`、401 回调注册 |
 | `src/api/endpoints.ts` | 张越 | 一个操作一个函数，路径与查询串严格按契约 |
 | `src/api/mockBridge.ts` | 张越 | Mock **挂载点**：开关 + `MockResponder` 接口 |
-| `src/mocks/`（待建） | 舒玺悦 | Mock 数据与 responder 实现；不进 `api/` |
+| `src/mocks/` | 舒玺悦 | Mock 数据、responder、启动挂载和开发演示；不进 `api/` |
 | `src/app/App.tsx` | 张越 | 路由表 + provider 顺序 + 角色门 |
 | `src/app/{ErrorBoundary,ProtectedRoute,StatePages}.tsx` | 张越 | 壳层与状态页 |
 | `src/lib/queryClient.ts` | 张越 | QueryClient、query key 工厂、§13.3 的 409 行为 |
@@ -30,6 +30,23 @@ Mock 往哪里挂。改任何一条都要在 Issue 里说，不要直接改代�
 | `src/features/<domain>/` | 该域的负责人 | `auth`/`tickets` 张越｜`dispatch`/`technician`/`locations`/`analytics`/`users` 舒玺悦 |
 | `src/hooks/` | 谁先需要谁写 | 第二个使用者若要改语义，开 Issue |
 | `src/test/` | 各自测各自 | `AGENTS.md` §6 规定前端证据只放这里 |
+
+### #48 公共组件接口（舒玺悦）
+
+统一从 `src/components/index.ts` 导入；组件不请求接口、不推断权限，不另存服务端状态。
+
+| 文件 / 导出 | 接口与责任 |
+| --- | --- |
+| `DataTable.tsx` / `DataTable<T>` | `rows`, `columns`, `rowKey`, `caption`；支持 loading/error/empty，移动端沿用 `data-label` 卡片样式 |
+| `FilterBar.tsx` / `FilterBar` | 有名称的筛选表单，`children`, `onSubmit`, `onReset`, `busy`；字段由调用页用现有 Field + RHF/Zod 提供 |
+| `StatusBadge.tsx` / `StatusBadge`, `PriorityBadge` | 接收生成类型中的 status/priority，沿用 labels 的文字、图标和色调 |
+| `Timeline.tsx` / `Timeline` | 接收 API 已授权过滤的 `TimelineEntry[]`，按时间/kind/id 排序；事件和留言不混用 key |
+| `ConfirmDialog.tsx` / `ConfirmDialog` | 受控 `open`, `onConfirm`, `onCancel`, `pending`；确认期间防重复、焦点约束、Escape、关闭后优先恢复原触发元素；原元素无法聚焦时使用可选 `fallbackFocusRef`（目标应支持编程聚焦）；业务表单通过 children 注入 |
+| `Pagination.tsx` / `Pagination` | `nextCursor`, `hasPrevious`, `onNext(cursor)`, `onPrevious`, `busy`；只认识游标，不虚构总数/页数 |
+| `src/mocks/preview/` | #48 开发演示：两个独立页面消费同一公共库，不替代后续业务页面 |
+
+开发 Mock 在 `src/main.tsx` 渲染前经 `src/mocks/bootstrap.ts` 挂到现有 bridge；仅 DEV 且
+`VITE_USE_MOCK=1` 时加载。`src/api/`、路由、生成文件和伙伴现有组件保持原有实现。
 
 `src/routes/` 暂时为空：路由表在 `app/App.tsx` 里，它同时是 provider 树。要拆成独立模块由张越提
 Issue，不在页面 PR 里顺手做。
@@ -57,6 +74,10 @@ Issue，不在页面 PR 里顺手做。
   因此请求里**不得**手工塞 actor、role 或 `X-Actor`。
 - 成功体就是契约声明的那个对象，**没有** `{ user }` / `{ data }` 之类的包裹：登录返回裸 `User`，
   统计返回裸 `Analytics`。`logout` 是 204，不解析正文。
+- `TicketFields.code` 是服务端生成的展示用编号 `CF-YYYYMMDD-NNNNNN`。前 8 位是**创建时刻的
+  Asia/Shanghai 本地日期**（`841a011` 把这条写进了契约，与统计趋势同一时区），不是 UTC，也不保证与
+  `created_at` 换算后的 UTC 日相同。前端**只原样渲染**：不切片、不反推日期、不做时区换算、不拿它排序
+  当日工单。要显示时间请用 `created_at` / `closed_at`。
 - 失败一律是 `ApiError`，带 `code`（八选一）、`message`、`requestId`、`fieldErrors[]`。判断用
   `isConflict` / `isNotFound` / `isDenied` / `isUnauthorized`，不要比字符串。
 - 分页只有 `cursor` + `limit`，响应只有 `items` + `next_cursor`（没有 `total`、没有 `page`、没有
@@ -97,11 +118,28 @@ installMock(async (req) => {
 
 ## 6. 错误处理（§13.3，写在两处，不在页面里）
 
-- **401**：`client.ts` 是唯一看见所有响应的地方，它调用 `AuthContext` 注册的 `clearSession()`；
+- **401**：`client.ts` 是唯一看见所有响应的地方，它调用 `AuthContext` 注册的 `endSession()`；
   清空后 `RequireSession` 自然把用户带回 `/login`。页面不需要、也不应该自己写跳转。
-- **409**：`lib/queryClient.ts` 的 `MutationCache.onError` 统一提示"工单已被他人更新"并
-  `invalidateQueries(detail(id))`。约定：**动作类 mutation 的 variables 里必须带 `id` 或 `ticketId`**，
-  否则只能提示、无法自动重取。
+  迟到的 401 只属于发出它的世代：`client.ts` 在请求发出时打会话世代戳，世代已推进（边界已发生）
+  就不再触发 `endSession`——mutation 没有 signal、无法取消，防旧写操作的迟到 401 踢掉新会话
+  全靠这条守卫（#68 评审）。
+- **会话边界**（退出、401、换账户登录）统一走 `AuthContext`：除了登录状态，还要先 `cancelQueries`
+  再 `clear()` 清空查询缓存——上一账户的缓存数据与在途请求不得进入下一个会话（#68 评审）。
+  页面和 Mock 预览不得自带第二套清理；`App.tsx` 里 `QueryClientProvider` 必须包在 `AuthProvider`
+  外面，`AuthContext` 才拿得到 client。
+- **409**（§13.3 v1.1 澄清，已随 #71 评审记录进基线）：`lib/queryClient.ts` 的 `MutationCache.onError`
+  按这条 mutation **是不是工单状态动作**分流，而"是不是"由 mutation 自己声明：携带 `expected_version` 的状态动作必须带
+  `meta: ticketActionMeta`（从 `lib/queryClient.ts` 导入），命中则提示 §13.3 的"工单已被他人更新"
+  并 `invalidateQueries(detail(id))`。`TICKET_VERSION_CONFLICT` 即便漏带 meta 也按工单处理——只有
+  工单状态动作产出它。其他资源（例如地点创建/编辑的唯一组合冲突，契约同样声明 409 / CONFLICT）：
+  **直接展示服务端 `message`**，不冒充工单文案、不重取工单详情。
+  工单创建（如地点停用）和终态留言的 409 也展示服务端 `message`，不触发此处的详情刷新；
+  创建和留言不得携带 `ticketActionMeta`。当前 `DetailPreviewPage` 的取消操作已携带该标记。
+  **禁止**按 variables 里有没有 `id`/`ticketId` 来猜资源类型——地点编辑也带 `id`（地点的），
+  猜把它当成工单，#71 评审修的就是这个。约定不变：工单动作的 variables 必须带 `id` 或 `ticketId`
+  （指明是哪个工单），否则只能提示、无法自动重取。
+  也不许改成按 `field_errors` 分流：共享的 `Conflict` 组件里 `field_errors` 示例是空数组，那条分支永远不执行。
+  上述 409 分流只处理当前会话：上一会话提交的 mutation 迟到失败时，先忽略回调，不提示也不刷新当前会话。
 - `VALIDATION_ERROR` 的 `field_errors` 显示在对应控件旁边，页面级摘要另给一条；不要混成一个红条。
 - 分类只有契约里的八个 code。以前的 `VERSION_CONFLICT`、`ACCESS_DENIED`、`INVALID_STATE_TRANSITION`
   都不是契约值，看到它们说明有人在手写。
@@ -120,4 +158,4 @@ installMock(async (req) => {
 - `Dockerfile` / `nginx.conf` / compose：归 #45（那条分支已经在跑了）。
 - 登录行为本身（哪些账户能进、会话语义）：归 #47。这里只把 RHF + Zod 的表单接法立起来。§13.1
   给登录页列的演示账户说明与紧急渠道提示，等 #45 的种子账户和 #47 的文案就位后补上。
-- Mock 数据与公共组件库：归舒玺悦（样式层已预置在 `components.css`，见 §1）。
+- Mock 数据与公共组件库：舒玺悦已接入；使用方法与验证范围见 [ISSUE-48-HANDOFF.md](./ISSUE-48-HANDOFF.md)。

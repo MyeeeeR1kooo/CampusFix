@@ -11,7 +11,17 @@
  */
 
 import type { IconName } from "../components/Icon";
-import type { Category, EventType, Priority, Role, TicketAction, TicketStatus } from "../api";
+import type {
+  AttachmentPurpose,
+  Category,
+  EventType,
+  NextAction,
+  Priority,
+  Role,
+  TicketAction,
+  TicketStatus,
+  Visibility,
+} from "../api";
 
 /** Status labels — exactly the eight `TicketStatus` members the contract carries. */
 export const STATUS_LABELS: Record<TicketStatus, string> = {
@@ -91,6 +101,25 @@ export const EVENT_LABELS: Record<EventType, string> = {
 };
 
 /**
+ * The two `AttachmentPurpose` members. The detail page shows both photo groups off one
+ * attachment list, so this is the only place their difference gets said in words — which is
+ * exactly why it lives here rather than in whichever page renders it first.
+ */
+export const PHOTO_PURPOSE_LABELS: Record<AttachmentPurpose, string> = {
+  REPORT_PHOTO: "Report photo",
+  RESOLUTION_PHOTO: "Resolution photo",
+};
+
+/**
+ * `Visibility` as a reader sees it under a comment. `ADMIN_ONLY` is the internal note the
+ * contract says a non-admin never receives, so that string only ever renders for an admin.
+ */
+export const VISIBILITY_LABELS: Record<Visibility, string> = {
+  PUBLIC: "Visible to everyone on this ticket",
+  ADMIN_ONLY: "Administrators only",
+};
+
+/**
  * Action labels. The server sends `allowed_actions` on every ticket, so the UI never
  * infers a capability from status; typing this as a full `Record` means an action the
  * frontend has never heard of stops the build instead of silently rendering nothing.
@@ -105,6 +134,20 @@ export const ACTION_LABELS: Record<TicketAction, string> = {
   CANCEL: "Cancel request",
   COMMENT_PUBLIC: "Add comment",
   COMMENT_ADMIN_ONLY: "Add internal note",
+};
+
+/**
+ * `next_action` is its own closed enum, not a subset of `TicketAction`: the contract adds
+ * `CONFIRM_OR_REWORK`, a step the reporter takes that is deliberately not an action token.
+ * The four members that do coincide borrow their wording from `ACTION_LABELS` rather than
+ * retyping it, so one rename cannot leave the header strip and the buttons disagree.
+ */
+export const NEXT_ACTION_LABELS: Record<NextAction, string> = {
+  REVIEW: ACTION_LABELS.REVIEW,
+  ASSIGN: ACTION_LABELS.ASSIGN,
+  START: ACTION_LABELS.START,
+  RESOLVE: ACTION_LABELS.RESOLVE,
+  CONFIRM_OR_REWORK: "Confirm or request rework",
 };
 
 /** "Who acts next" per status, for the detail header strip. */

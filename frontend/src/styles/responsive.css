@@ -402,10 +402,12 @@
 
   .filter-bar .field {
     max-width: none;
+    flex: 0 1 auto;
   }
 
   .filter-actions {
     margin-left: 0;
+    flex-direction: column;
   }
 
   .filter-actions button {

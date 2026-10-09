@@ -33,6 +33,7 @@ import { landingFor, useAuth } from "./AuthContext";
 import { Icon } from "../../components/Icon";
 import { TextField } from "../../components/Field";
 import { ApiError } from "../../api/client";
+import { mockSwitchOn } from "../../api/mockBridge";
 import { classify } from "../../lib/errors";
 import { ROLE_LABELS } from "../../lib/labels";
 
@@ -131,6 +132,19 @@ export function LoginPage() {
               </span>
             </div>
           </div>
+
+          {import.meta.env.DEV && mockSwitchOn() && (
+            <div className="banner banner-notice-warning" role="note" aria-label="Mock development mode">
+              <div className="banner-body">
+                <strong className="banner-title">Mock development mode</strong>
+                <span>
+                  The seed accounts below belong to a real backend and do not work in this
+                  mode. Open the Mock preview to choose an available Mock account.
+                </span>
+                <a href="/mock-preview.html#/queue">Open Mock accounts</a>
+              </div>
+            </div>
+          )}
 
           {banner ? (
             <div className="banner banner-error" role="alert">

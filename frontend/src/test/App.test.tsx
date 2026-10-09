@@ -51,9 +51,23 @@ afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
 });
 
 describe("anonymous visitors", () => {
+  it.each([
+    { dev: true, mock: "0" },
+    { dev: false, mock: "1" },
+  ])("hides Mock guidance with DEV=$dev and VITE_USE_MOCK=$mock", async ({ dev, mock }) => {
+    vi.stubEnv("DEV", dev);
+    vi.stubEnv("VITE_USE_MOCK", mock);
+    anonymous();
+    renderAt("/login");
+    expect(await screen.findByRole("heading", { name: "Demo accounts" })).toBeInTheDocument();
+    expect(screen.queryByRole("note", { name: "Mock development mode" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Open Mock accounts" })).not.toBeInTheDocument();
+  });
+
   it("land on the login page from the root", async () => {
     anonymous();
     renderAt("/");

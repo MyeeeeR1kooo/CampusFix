@@ -18,6 +18,36 @@ beforeEach(() => {
 afterEach(() => { cleanup(); installMock(null); vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 
 describe("two developer pages reuse the public components", () => {
+  it("directs a Mock-mode login visitor to working Mock accounts while retaining the seed panel", async () => {
+    window.history.replaceState({}, "", "/login");
+    const loginPage = render(<App />);
+    const notice = await screen.findByRole("note", { name: "Mock development mode" });
+    expect(notice).toHaveTextContent(/seed accounts.*real backend.*do not work/i);
+    const panel = screen.getByRole("heading", { name: "Demo accounts" }).closest("aside")!;
+    expect(panel.querySelectorAll("code")).toHaveLength(3);
+    expect(panel).not.toHaveTextContent(/campusfix\.test|campusfix-mock/);
+    const link = within(notice).getByRole("link", { name: "Open Mock accounts" });
+    expect(link).toHaveAttribute("href", "/mock-preview.html#/queue");
+    // jsdom cannot perform a full document navigation; mount the linked entry after unmounting.
+    const href = link.getAttribute("href")!;
+    loginPage.unmount();
+    window.history.replaceState({}, "", href);
+    render(<PreviewApp />);
+    await userEvent.click(await screen.findByRole("button", { name: "Use Demo reporter A" }));
+    expect(await screen.findByRole("table", { name: "Visible tickets" })).toBeInTheDocument();
+    expect(await api.getCurrentUser()).toMatchObject({ email: "reporter01@campusfix.test", role: "REPORTER" });
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("includes all three emergency classes in the preview notice", async () => {
+    render(<PreviewApp />);
+    const notice = await screen.findByText(/emergency channels/i);
+    expect(notice).toHaveTextContent(/safety incidents/i);
+    expect(notice).toHaveTextContent(/medical events/i);
+    expect(notice).toHaveTextContent(/police reports/i);
+    expect(notice).toHaveTextContent(/CampusFix does not handle them/i);
+  });
+
   it.each([
     ["TICKET_VERSION_CONFLICT", "The ticket has already been updated."],
     ["CONFLICT", "This action is not available in the current ticket state."],

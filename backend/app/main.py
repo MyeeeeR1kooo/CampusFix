@@ -9,6 +9,7 @@ from app.core.config import get_settings
 from app.core.errors import AppError, ErrorCode, error_payload
 from app.core.security import OriginError, require_same_origin
 from app.modules.auth.router import router as auth_router
+from app.modules.locations.router import router as locations_router
 from app.modules.users.router import router as users_router
 
 
@@ -128,6 +129,7 @@ def create_app() -> FastAPI:
 
     app.include_router(auth_router)
     app.include_router(users_router)
+    app.include_router(locations_router)
 
     return app
 

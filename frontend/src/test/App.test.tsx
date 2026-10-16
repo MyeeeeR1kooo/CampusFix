@@ -84,14 +84,13 @@ describe("anonymous visitors", () => {
   });
 });
 
-describe("the route table — all nine pages declared, one built", () => {
+describe("the route table — all nine pages declared", () => {
   const guarded: Array<[string, TestRole, string]> = [
     ["/reports", "REPORTER", "My reports"],
     ["/reports/new", "REPORTER", "Create a repair report"],
     ["/tickets/7", "REPORTER", "Ticket detail"],
     ["/workbench", "ADMIN", "Dispatch workbench"],
     ["/analytics", "ADMIN", "Statistics"],
-    ["/locations", "ADMIN", "Location management"],
     ["/admin/users", "ADMIN", "Account management"],
     ["/assignments", "TECHNICIAN", "My assignments"],
   ];
@@ -102,6 +101,13 @@ describe("the route table — all nine pages declared, one built", () => {
     expect(await screen.findByRole("heading", { name: notBuilt(label) })).toBeTruthy();
     // "a blank page reads like a working page" — the stand-in must say who fills it.
     expect(document.body.textContent).toMatch(/owned by (张越|舒玺悦)/);
+  });
+
+  it("serves the location management page to Admin", async () => {
+    signedInAs("ADMIN");
+    renderAt("/locations");
+    expect(await screen.findByRole("heading", { name: "Location management" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "New location" })).toBeInTheDocument();
   });
 
   it("refuses a role that does not own the page", async () => {

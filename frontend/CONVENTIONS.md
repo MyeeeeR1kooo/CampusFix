@@ -158,4 +158,16 @@ installMock(async (req) => {
 - `Dockerfile` / `nginx.conf` / compose：归 #45（那条分支已经在跑了）。
 - 登录行为本身（哪些账户能进、会话语义）：归 #47。这里只把 RHF + Zod 的表单接法立起来。§13.1
   给登录页列的演示账户说明与紧急渠道提示，等 #45 的种子账户和 #47 的文案就位后补上。
+- 演示账户说明的口径（张越 2026-10-08 定，方案 A）：登录页只列 `backend/app/seed.py` 的三个种子邮箱
+  与角色，**不印密码**——密码由 `SEED_REPORTER_PASSWORD` / `SEED_TECHNICIAN_PASSWORD` /
+  `SEED_ADMIN_PASSWORD` 注入，`.env.example` 故意留空并要求自行虚构，任何固定密码都不存在。
+- 紧急渠道提示按基线 §2.2「第一版不处理的事项」那句写：紧急安全事故、医疗事件和报警使用学校现有紧急渠道，不由 CampusFix 处理。
+  面板只列种子的邮箱，规则是「跟随 `backend/app/seed.py`」而不是「跟随某个文档」：种子建哪
+  三个地址，面板就列哪三个，`src/test/demoAccounts.test.mjs` 每次运行都拿两侧实文比对。
+  曾有「契约 example 用 `reporter@example.invalid`（`openapi.yaml:72`），种子用
+  `demo-reporter@example.invalid`」的差异，2026-10-08 由人类决定**不动冻结契约**、改种子
+  口径（PR #82，`backend/app/seed.py:21-23`）；根 `README.md:169-171` 的表格随后更新。
+  `docs/verification/2026-10-07-docker/` 里带 `demo-*` 的是当时的实跑记录，不回写。
+  Mock 模式是另一套账号（`src/mocks/fixtures.ts` 的 `*@campusfix.test`），
+  `README.md` 与 `ISSUE-48-HANDOFF.md` 已写明它与种子凭据无关。
 - Mock 数据与公共组件库：舒玺悦已接入；使用方法与验证范围见 [ISSUE-48-HANDOFF.md](./ISSUE-48-HANDOFF.md)。

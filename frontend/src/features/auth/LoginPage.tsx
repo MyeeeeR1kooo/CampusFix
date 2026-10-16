@@ -9,9 +9,15 @@
  * example rather than inventing their own. Login *behaviour* (which accounts exist, what a
  * session means) is issue #47's; this file's job is to show the pairing wired.
  *
- * §13.1 also puts 演示账户说明 and 紧急渠道提示 on this page. Neither is rendered here, because
- * the account list is #45's seed data and the copy is #47's — printing accounts that do not
- * exist sends users to a login page that cannot work.
+ * §13.1 gives this page two more blocks besides the form: 演示账户说明 and 紧急渠道提示. The
+ * accounts are #45's real seed (`backend/app/seed.py`), and their passwords exist only in the
+ * deployment's demo configuration, so the panel names the accounts and prints no credential —
+ * 张越's ruling of 2026-10-08. The emergency notice carries Baseline §2.2's rule; §13.1 gives
+ * that notice to this page, and putting it above the form rather than in a footer is ours.
+ *
+ * Mock mode is a different account set on purpose: `src/mocks/fixtures.ts` serves the
+ * `*@campusfix.test` demo users, which `README.md` and `ISSUE-48-HANDOFF.md` document. The
+ * panel below lists only the accounts a real backend actually creates.
  *
  * Layout: two panels. The narrative panel answers "what is this system for" before the
  * form asks for anything, and the form panel stays narrow so the fields keep a measure.
@@ -27,7 +33,9 @@ import { landingFor, useAuth } from "./AuthContext";
 import { Icon } from "../../components/Icon";
 import { TextField } from "../../components/Field";
 import { ApiError } from "../../api/client";
+import { mockSwitchOn } from "../../api/mockBridge";
 import { classify } from "../../lib/errors";
+import { ROLE_LABELS } from "../../lib/labels";
 
 const loginSchema = z.object({
   email: z.email(),
@@ -114,6 +122,30 @@ export function LoginPage() {
             <p className="login-sub">Use the email address of your account.</p>
           </header>
 
+          {/* Baseline §2.2: these events are not this system's to handle. */}
+          <div className="banner banner-notice-warning">
+            <div className="banner-body">
+              <strong className="banner-title">Emergencies</strong>
+              <span>
+                Safety incidents, medical events and police reports must use the university's
+                existing emergency channels. CampusFix does not handle them.
+              </span>
+            </div>
+          </div>
+
+          {import.meta.env.DEV && mockSwitchOn() && (
+            <div className="banner banner-notice-warning" role="note" aria-label="Mock development mode">
+              <div className="banner-body">
+                <strong className="banner-title">Mock development mode</strong>
+                <span>
+                  The seed accounts below belong to a real backend and do not work in this
+                  mode. Open the Mock preview to choose an available Mock account.
+                </span>
+                <a href="/mock-preview.html#/queue">Open Mock accounts</a>
+              </div>
+            </div>
+          )}
+
           {banner ? (
             <div className="banner banner-error" role="alert">
               <div className="banner-body">
@@ -144,6 +176,25 @@ export function LoginPage() {
               {isSubmitting ? "Logging in…" : "Log in"}
             </button>
           </form>
+
+          <aside className="demo-hint">
+            <h2>Demo accounts</h2>
+            <ul>
+              <li>
+                <code>admin@example.invalid</code> — {ROLE_LABELS.ADMIN}
+              </li>
+              <li>
+                <code>technician@example.invalid</code> — {ROLE_LABELS.TECHNICIAN}
+              </li>
+              <li>
+                <code>reporter@example.invalid</code> — {ROLE_LABELS.REPORTER}
+              </li>
+            </ul>
+            <p className="muted">
+              Created by the deployment's seed script. Its passwords are configured there and
+              are never printed on this page.
+            </p>
+          </aside>
         </main>
       </div>
     </div>

@@ -17,10 +17,10 @@ npm run dev
 - 正式脚手架入口：`http://localhost:5173/login`。登录成功仍进入对应的 `UnbuiltPage`，未替换伙伴的业务路由。
 - 组件列表演示页：`http://localhost:5173/mock-preview.html#/queue`。
 - 组件详情演示页：在列表点击标题，或打开 `http://localhost:5173/mock-preview.html#/detail/1`。
-- 演示页可选择虚构账号登录；普通登录表单则使用下表邮箱。共同密码为 **`campusfix-mock`**，只用于内存 Mock，与后端种子密码无关。
+- 演示页可选择虚构账号登录；在 `VITE_USE_MOCK=1` 时，普通登录表单也使用下表邮箱。下表账号和共同密码 **`campusfix-mock`** 仅供内存 Mock 使用，与后端种子密码无关。登录页此时保留真实后端种子账号面板，另有明确的 Mock 开发提示及预览页入口，不把两套账号混为一套。
 - Reporter A 列表第二页可找到待审核工单，打开详情后可演示确认弹窗和撤销；退出后用其他角色重新登录，能看到当前 Mock 中的更新。
 - 刷新页面会重建数据和清除模拟会话；不使用 localStorage、真实 Cookie 或真实个人数据。
-- 切换真实后端：停止开发进程，执行 `$env:VITE_USE_MOCK='0'; npm run dev`。请求继续通过原有 `/api` 代理。
+- 切换真实后端：停止开发进程，执行 `$env:VITE_USE_MOCK='0'; npm run dev`。请求继续通过原有 `/api` 代理；登录使用该部署实际创建的种子账号及部署时配置的密码，不使用上面的 Mock 凭据。
 
 ### 端口与搭档交接（2026-10-07）
 

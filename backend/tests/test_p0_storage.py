@@ -241,7 +241,7 @@ def test_duplicate_assignment_and_referenced_user_delete_are_rejected(seeded_ses
 
 @pytest.mark.parametrize("table,changes", [
     ("users", {"role": "SUPERUSER"}),
-    ("users", {"email": "demo-reporter@example.invalid"}),
+    ("users", {"email": "reporter@example.invalid"}),
     ("locations", {"building": ""}),
     ("locations", {"floor": ""}),
     ("locations", {"room_or_area": ""}),

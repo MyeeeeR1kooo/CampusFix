@@ -38,6 +38,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AppLayout } from "../components/AppLayout";
 import { AuthProvider, landingFor, useAuth } from "../features/auth/AuthContext";
 import { LoginPage } from "../features/auth/LoginPage";
+import { LocationManagementPage } from "../features/locations/LocationManagementPage";
 import { ToastProvider, useToast } from "../hooks/useToast";
 import { createAppQueryClient } from "../lib/queryClient";
 import { ErrorBoundary } from "./ErrorBoundary";
@@ -128,7 +129,7 @@ export default function App() {
                       path="/locations"
                       element={
                         <RequireRole roles={["ADMIN"]}>
-                          {pending("Location management", "舒玺悦 (features/locations/)")}
+                          <LocationManagementPage />
                         </RequireRole>
                       }
                     />

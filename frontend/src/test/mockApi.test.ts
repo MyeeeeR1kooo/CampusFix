@@ -149,7 +149,13 @@ describe("partner review: seeded details and failure envelopes", () => {
     expect((await original!.arrayBuffer()).byteLength).toBe(seeded[0].size);
     for (const userId of [2, 3]) {
       await login(userId);
-      for (const attachment of seeded) await expect(api.downloadAttachment(attachment.id)).resolves.toBeInstanceOf(Blob);
+      for (const attachment of seeded) {
+        // `response.blob()` yields Node's Blob; jsdom's FileReader only accepts a Blob from its
+        // own realm, so assert on the bytes instead of `instanceof` — the two never match.
+        const blob = await api.downloadAttachment(attachment.id);
+        expect(blob.size).toBe(attachment.size);
+        expect(blob.type).toMatch(/^image\//);
+      }
     }
     await login(4);
     for (const attachment of seeded) await expect(api.downloadAttachment(attachment.id)).rejects.toMatchObject({ status: 404 });
@@ -447,12 +453,9 @@ describe("comments, files, locations and accounts — FR-03, FR-10, FR-12", () =
     const attachment = (await api.getTicket(ticket.id)).report_photos[0];
     expect(attachment).toMatchObject({ purpose: "REPORT_PHOTO", size: pngBytes.length, download_url: `/api/attachments/${attachment.id}` });
     const blob = await api.downloadAttachment(attachment.id);
-    const downloaded = await new Promise<ArrayBuffer>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as ArrayBuffer);
-      reader.onerror = reject;
-      reader.readAsArrayBuffer(blob);
-    });
+    // `blob.arrayBuffer()` accepts both Node's and jsdom's Blob; jsdom's FileReader rejects a
+    // Blob created outside its realm.
+    const downloaded = await blob.arrayBuffer();
     expect(new Uint8Array(downloaded)).toEqual(pngBytes);
     expect(URL.revokeObjectURL).toHaveBeenCalled();
     await login(4);

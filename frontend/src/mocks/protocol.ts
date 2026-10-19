@@ -33,6 +33,8 @@ export function parse<S extends z.ZodType>(schema: S, value: unknown): z.output<
 // Runtime validation of the reviewed draft's constraints; response types remain generated.
 // Validate required text without rewriting it or shortening it before maxLength checks.
 const text = z.string().min(1).refine((value) => value.trim().length > 0, "Enter a non-blank value.");
+// Location names follow minLength only and preserve whitespace/case (frozen contract).
+const locationText = z.string().min(1);
 const id = z.number().int().positive();
 const version = { expected_version: id };
 export const schemas = {
@@ -49,8 +51,8 @@ export const schemas = {
   rework: z.object({ reason: text, ...version }).strict(),
   cancel: z.object({ reason: z.string().optional(), ...version }).strict(),
   comment: z.object({ body: text.max(2000), visibility: z.enum(["PUBLIC", "ADMIN_ONLY"]) }).strict(),
-  location: z.object({ building: text, floor: text, room_or_area: text, active: z.boolean().default(true) }).strict(),
-  locationPatch: z.object({ building: text.optional(), floor: text.optional(), room_or_area: text.optional(), active: z.boolean().optional() }).strict().refine((value) => Object.keys(value).length > 0, "Provide at least one field."),
+  location: z.object({ building: locationText, floor: locationText, room_or_area: locationText, active: z.boolean().default(true) }).strict(),
+  locationPatch: z.object({ building: locationText.optional(), floor: locationText.optional(), room_or_area: locationText.optional(), active: z.boolean().optional() }).strict().refine((value) => Object.keys(value).length > 0, "Provide at least one field."),
   active: z.object({ active: z.boolean() }).strict(),
   filters: z.object({ status: z.enum(STATUS_ORDER).optional(), category: z.enum(CATEGORY_ORDER).optional(), priority: z.enum(PRIORITY_ORDER).optional(), building: text.optional(), q: text.optional(), created_from: z.iso.datetime().optional(), created_before: z.iso.datetime().optional(), current_assignee_id: z.coerce.number().int().positive().optional() }).strict(),
   users: z.object({ role: z.enum(["REPORTER", "TECHNICIAN"]).optional(), active: z.enum(["true", "false"]).optional() }).strict(),

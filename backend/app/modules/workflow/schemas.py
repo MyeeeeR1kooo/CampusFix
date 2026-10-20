@@ -40,3 +40,11 @@ class CancelRequest(ActionRequest):
 
 class AssignRequest(ActionRequest):
     technician_id: Id
+
+
+class StartRequest(ActionRequest):
+    note: Optional[StrictStr] = None
+
+
+class ReworkRequest(ActionRequest):
+    reason: Annotated[StrictStr, Field(min_length=1)]

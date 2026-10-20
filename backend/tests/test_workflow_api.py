@@ -1,9 +1,10 @@
-"""Issue #50 Update 2 workflow actions against disposable PostgreSQL."""
+"""Issue #50 workflow actions against disposable PostgreSQL."""
 
 import importlib
 import os
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
+from io import BytesIO
 from pathlib import Path
 from threading import Barrier
 from uuid import uuid4
@@ -14,6 +15,7 @@ from alembic import command
 from alembic.config import Config
 from fastapi.testclient import TestClient
 from jsonschema import Draft202012Validator, FormatChecker
+from PIL import Image
 from referencing import Registry, Resource
 from referencing.jsonschema import DRAFT202012
 from sqlalchemy import create_engine, func, select, text
@@ -24,9 +26,10 @@ from app.core.config import Settings, get_settings
 from app.core.database import get_db
 from app.core.security import SESSION_COOKIE_NAME, hash_session_token
 from app.main import create_app
-from app.models import Assignment, Location, Session as AuthSession, Ticket, TicketEvent, User
+from app.models import Assignment, Attachment, Comment, Location, Session as AuthSession, Ticket, TicketEvent, User
 from app.seed import SeedPasswords, seed_demo_data
 from app.modules.workflow.rules import TRANSITIONS
+from app.modules.workflow.service import visible_timeline
 
 
 ORIGIN = "http://localhost:5173"
@@ -107,7 +110,7 @@ def login(app, role):
     return client
 
 
-def create_ticket(db, reporter, status="SUBMITTED", version=1, priority=None):
+def create_ticket(db, reporter, status="SUBMITTED", version=1, priority=None, assignee_id=None):
     location = db.scalar(select(Location).order_by(Location.id))
     row = Ticket(
         code=f"CF-20261020-{uuid4().int % 1_000_000:06d}",
@@ -115,17 +118,28 @@ def create_ticket(db, reporter, status="SUBMITTED", version=1, priority=None):
         location_label_snapshot=f"{location.building} / {location.floor} / {location.room_or_area}",
         title="Workflow test ticket", description="Disposable integration fixture",
         category="LIGHTING_ELECTRICAL", priority=priority,
-        status=status, version=version,
+        status=status, version=version, current_assignee_id=assignee_id,
     )
     db.add(row)
     db.flush()
     return row.id
 
 
-def ticket_fixture(engine, status="SUBMITTED", version=1, priority=None):
+def ticket_fixture(engine, status="SUBMITTED", version=1, priority=None, assignee_id=None):
     with Session(engine) as db, db.begin():
         reporter = db.scalar(select(User).where(User.role == "REPORTER"))
-        return create_ticket(db, reporter, status, version, priority)
+        return create_ticket(db, reporter, status, version, priority, assignee_id)
+
+
+def assigned_ticket(engine, status="ASSIGNED", version=3):
+    return ticket_fixture(engine, status, version, "HIGH", assignee_id=2)
+
+
+def png_bytes():
+    image = Image.new("RGB", (2, 2), "red")
+    buffer = BytesIO()
+    image.save(buffer, format="PNG")
+    return buffer.getvalue()
 
 
 def assert_schema(response, schema, registry):
@@ -324,3 +338,212 @@ def test_event_insert_failure_rolls_back_state_and_assignment(app, pg_engine):
     with Session(pg_engine) as db, db.begin():
         db.execute(text("DROP TRIGGER reject_workflow_event ON ticket_events"))
         db.execute(text("DROP FUNCTION reject_workflow_event()"))
+
+
+def test_technician_start_and_resolve_then_reporter_confirm(app, pg_engine, contract_registry):
+    ticket_id = assigned_ticket(pg_engine)
+    technician = login(app, "TECHNICIAN")
+    reporter = login(app, "REPORTER")
+    started = technician.post(
+        f"/api/tickets/{ticket_id}/start", json={"expected_version": 3, "note": "On site"}, headers=HEADERS,
+    )
+    assert started.status_code == 200, started.text
+    assert_schema(started, "TicketSummary", contract_registry)
+    assert started.json()["status"] == "IN_PROGRESS" and started.json()["version"] == 4
+    resolved = technician.post(
+        f"/api/tickets/{ticket_id}/resolve",
+        data={"resolution_note": "Replaced the lamp", "expected_version": "4"}, headers=HEADERS,
+    )
+    assert resolved.status_code == 200, resolved.text
+    assert_schema(resolved, "TicketSummary", contract_registry)
+    assert resolved.json()["status"] == "PENDING_CONFIRMATION"
+    confirmed = reporter.post(
+        f"/api/tickets/{ticket_id}/confirm", json={"expected_version": 5}, headers=HEADERS,
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    assert_schema(confirmed, "TicketSummary", contract_registry)
+    assert confirmed.json()["status"] == "CLOSED" and confirmed.json()["version"] == 6
+    assert confirmed.json()["closed_at"] is not None
+    assert_state(pg_engine, ticket_id, "CLOSED", 6, 3)
+    with Session(pg_engine) as db:
+        events = db.scalars(select(TicketEvent).where(TicketEvent.ticket_id == ticket_id).order_by(TicketEvent.id)).all()
+        assert [event.type for event in events] == ["WORK_STARTED", "RESOLUTION_SUBMITTED", "TICKET_CLOSED"]
+        assert [event.note for event in events] == ["On site", "Replaced the lamp", None]
+        assert db.get(Ticket, ticket_id).current_assignee_id == 2
+
+
+def test_reporter_rework_preserves_assignee_and_can_resolve_again(app, pg_engine):
+    ticket_id = assigned_ticket(pg_engine, "PENDING_CONFIRMATION", 5)
+    reporter = login(app, "REPORTER")
+    technician = login(app, "TECHNICIAN")
+    reworked = reporter.post(
+        f"/api/tickets/{ticket_id}/rework", json={"expected_version": 5, "reason": "Still broken"}, headers=HEADERS,
+    )
+    assert reworked.status_code == 200, reworked.text
+    assert reworked.json()["status"] == "IN_PROGRESS"
+    assert reworked.json()["current_assignee"]["id"] == 2
+    repeated = technician.post(
+        f"/api/tickets/{ticket_id}/resolve",
+        data={"resolution_note": "Checked again", "expected_version": "6"}, headers=HEADERS,
+    )
+    assert repeated.status_code == 200, repeated.text
+    assert_state(pg_engine, ticket_id, "PENDING_CONFIRMATION", 7, 2)
+
+
+@pytest.mark.parametrize("role,path,body,initial_status,version", [
+    ("REPORTER", "start", {"expected_version": 3}, "ASSIGNED", 3),
+    ("ADMIN", "start", {"expected_version": 3}, "ASSIGNED", 3),
+    ("REPORTER", "confirm", {"expected_version": 3}, "ASSIGNED", 3),
+    ("TECHNICIAN", "confirm", {"expected_version": 5}, "PENDING_CONFIRMATION", 5),
+    ("TECHNICIAN", "rework", {"expected_version": 5, "reason": "Still broken"}, "PENDING_CONFIRMATION", 5),
+])
+def test_second_phase_actions_reject_wrong_role_or_state(app, pg_engine, role, path, body, initial_status, version):
+    ticket_id = assigned_ticket(pg_engine, initial_status, version)
+    response = login(app, role).post(f"/api/tickets/{ticket_id}/{path}", json=body, headers=HEADERS)
+    assert response.status_code in {403, 409}
+    assert_state(pg_engine, ticket_id, initial_status, version, 0)
+
+
+@pytest.mark.parametrize("path,body", [
+    ("rework", {"expected_version": 5, "reason": ""}),
+    ("rework", {"expected_version": 5}),
+    ("confirm", {"expected_version": 5, "rating": 5}),
+])
+def test_rework_reason_and_confirm_contract_reject_invalid_input(app, pg_engine, path, body):
+    ticket_id = assigned_ticket(pg_engine, "PENDING_CONFIRMATION", 5)
+    response = login(app, "REPORTER").post(f"/api/tickets/{ticket_id}/{path}", json=body, headers=HEADERS)
+    assert response.status_code == 422
+    assert_state(pg_engine, ticket_id, "PENDING_CONFIRMATION", 5, 0)
+
+
+def test_resolution_photo_is_private_metadata_and_file(app, pg_engine, tmp_path):
+    app.dependency_overrides[get_settings] = lambda: Settings(
+        _env_file=None, allowed_origins=[ORIGIN], environment="test",
+        attachment_storage_path=tmp_path,
+    )
+    ticket_id = assigned_ticket(pg_engine, "IN_PROGRESS", 4)
+    response = login(app, "TECHNICIAN").post(
+        f"/api/tickets/{ticket_id}/resolve",
+        data={"resolution_note": "Replaced lamp", "expected_version": "4"},
+        files=[("photos", ("result.png", png_bytes(), "image/png"))], headers=HEADERS,
+    )
+    assert response.status_code == 200, response.text
+    with Session(pg_engine) as db:
+        photo = db.scalar(select(Attachment).where(Attachment.ticket_id == ticket_id))
+        assert photo.purpose == "RESOLUTION_PHOTO" and photo.mime == "image/png"
+        assert photo.original_name == "result.png" and photo.size == len(png_bytes())
+        assert (tmp_path / photo.storage_key).read_bytes() == png_bytes()
+    assert_state(pg_engine, ticket_id, "PENDING_CONFIRMATION", 5, 1)
+
+
+@pytest.mark.parametrize("files,expected_status", [
+    ([("photos", ("fake.png", b"not an image", "image/png"))], 422),
+    ([("photos", ("fake.svg", b"<svg></svg>", "image/svg+xml"))], 415),
+    ([("photos", ("mismatch.png", png_bytes(), "image/jpeg"))], 415),
+    ([("photos", ("large.png", b"a" * (5 * 1024 * 1024 + 1), "image/png"))], 413),
+])
+def test_invalid_result_photo_leaves_no_file_or_state_change(app, pg_engine, tmp_path, files, expected_status):
+    app.dependency_overrides[get_settings] = lambda: Settings(
+        _env_file=None, allowed_origins=[ORIGIN], environment="test",
+        attachment_storage_path=tmp_path,
+    )
+    ticket_id = assigned_ticket(pg_engine, "IN_PROGRESS", 4)
+    response = login(app, "TECHNICIAN").post(
+        f"/api/tickets/{ticket_id}/resolve",
+        data={"resolution_note": "Replaced lamp", "expected_version": "4"},
+        files=files, headers=HEADERS,
+    )
+    assert response.status_code == expected_status, response.text
+    assert_state(pg_engine, ticket_id, "IN_PROGRESS", 4, 0)
+    with Session(pg_engine) as db:
+        assert db.scalar(select(func.count()).select_from(Attachment).where(Attachment.ticket_id == ticket_id)) == 0
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_timeline_filters_internal_rows_and_sorts_stably(pg_engine, contract_registry):
+    ticket_id = assigned_ticket(pg_engine, "IN_PROGRESS", 4)
+    with Session(pg_engine) as db, db.begin():
+        reporter = db.scalar(select(User).where(User.role == "REPORTER"))
+        admin = db.scalar(select(User).where(User.role == "ADMIN"))
+        db.add_all([
+            TicketEvent(ticket_id=ticket_id, actor_id=admin.id, type="WORK_STARTED", from_status="ASSIGNED", to_status="IN_PROGRESS", visibility="PUBLIC"),
+            TicketEvent(ticket_id=ticket_id, actor_id=admin.id, type="WORK_STARTED", from_status="ASSIGNED", to_status="IN_PROGRESS", visibility="ADMIN_ONLY"),
+            Comment(ticket_id=ticket_id, author_id=admin.id, body="Internal note", visibility="ADMIN_ONLY"),
+            Comment(ticket_id=ticket_id, author_id=reporter.id, body="Public note", visibility="PUBLIC"),
+        ])
+    with Session(pg_engine) as db:
+        ticket = db.get(Ticket, ticket_id)
+        reporter_rows = visible_timeline(db, ticket, db.scalar(select(User).where(User.role == "REPORTER")))
+        admin_rows = visible_timeline(db, ticket, db.scalar(select(User).where(User.role == "ADMIN")))
+        assert len(reporter_rows) == 2 and all(row["visibility"] == "PUBLIC" for row in reporter_rows)
+        assert len(admin_rows) == 4
+        assert [row["kind"] for row in admin_rows] == ["COMMENT", "COMMENT", "EVENT", "EVENT"]
+        for row in admin_rows:
+            schema = "TicketEvent" if row["kind"] == "EVENT" else "Comment"
+            Draft202012Validator(
+                {"$ref": CONTRACT_URI + "#/components/schemas/" + schema},
+                registry=contract_registry, format_checker=FormatChecker(),
+            ).validate(row)
+
+
+@pytest.mark.parametrize("action,role,status,version,body", [
+    ("start", "TECHNICIAN", "ASSIGNED", 3, {"expected_version": 3}),
+    ("resolve", "TECHNICIAN", "IN_PROGRESS", 4, {"expected_version": "4", "resolution_note": "Fixed"}),
+    ("confirm", "REPORTER", "PENDING_CONFIRMATION", 5, {"expected_version": 5}),
+])
+def test_concurrent_second_phase_actions_have_one_winner(
+    app, pg_engine, action, role, status, version, body,
+):
+    ticket_id = assigned_ticket(pg_engine, status, version)
+    workers = 8
+    barrier = Barrier(workers)
+
+    def submit(_):
+        client = login(app, role)
+        barrier.wait(timeout=15)
+        if action == "resolve":
+            return client.post(f"/api/tickets/{ticket_id}/{action}", data=body, headers=HEADERS)
+        return client.post(f"/api/tickets/{ticket_id}/{action}", json=body, headers=HEADERS)
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        results = list(pool.map(submit, range(workers)))
+    assert sorted(response.status_code for response in results) == [200] + [409] * (workers - 1)
+    loser = next(response for response in results if response.status_code == 409)
+    assert loser.json()["error"]["code"] == "TICKET_VERSION_CONFLICT"
+    target = {"start": "IN_PROGRESS", "resolve": "PENDING_CONFIRMATION", "confirm": "CLOSED"}[action]
+    assert_state(pg_engine, ticket_id, target, version + 1, 1)
+
+
+def test_result_photo_and_state_roll_back_when_event_insert_fails(app, pg_engine, tmp_path):
+    app.dependency_overrides[get_settings] = lambda: Settings(
+        _env_file=None, allowed_origins=[ORIGIN], environment="test",
+        attachment_storage_path=tmp_path,
+    )
+    ticket_id = assigned_ticket(pg_engine, "IN_PROGRESS", 4)
+    with Session(pg_engine) as db, db.begin():
+        db.execute(text("""
+            CREATE FUNCTION reject_result_event() RETURNS trigger LANGUAGE plpgsql AS $$
+            BEGIN RAISE EXCEPTION 'test result event failure'; END;
+            $$
+        """))
+        db.execute(text("""
+            CREATE TRIGGER reject_result_event BEFORE INSERT ON ticket_events
+            FOR EACH ROW EXECUTE FUNCTION reject_result_event()
+        """))
+    client = TestClient(app, raise_server_exceptions=False)
+    response = client.post(
+        "/api/auth/login",
+        json={"email": "technician@example.invalid", "password": PASSWORDS["TECHNICIAN"]},
+        headers=HEADERS,
+    )
+    assert response.status_code == 200
+    response = client.post(
+        f"/api/tickets/{ticket_id}/resolve",
+        data={"resolution_note": "Replaced lamp", "expected_version": "4"},
+        files=[("photos", ("result.png", png_bytes(), "image/png"))], headers=HEADERS,
+    )
+    assert response.status_code == 500 and response.json()["error"]["code"] == "INTERNAL_ERROR"
+    assert_state(pg_engine, ticket_id, "IN_PROGRESS", 4, 0)
+    with Session(pg_engine) as db:
+        assert db.scalar(select(func.count()).select_from(Attachment).where(Attachment.ticket_id == ticket_id)) == 0
+    assert list(tmp_path.iterdir()) == []

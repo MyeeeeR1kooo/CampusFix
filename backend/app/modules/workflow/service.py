@@ -6,7 +6,8 @@ from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError, ErrorCode
-from app.models import Assignment, Ticket, TicketEvent, User
+from app.models import Assignment, Comment, Ticket, TicketEvent, User
+from app.modules.attachments.service import PreparedPhoto, discard_photos, publish_photos, stage_photos
 from app.modules.workflow.rules import TERMINAL_STATUSES, TRANSITIONS
 
 
@@ -104,12 +105,51 @@ def ticket_summary(db: Session, ticket: Ticket, actor: User) -> dict:
     }
 
 
+def visible_timeline(db: Session, ticket: Ticket, actor: User) -> list[dict]:
+    """Return visible events and comments for a ticket detail response."""
+    if not _visible(ticket, actor):
+        raise AppError(ErrorCode.NOT_FOUND, 404, "Ticket not found.")
+    allowed_visibility = ("PUBLIC", "ADMIN_ONLY") if actor.role == "ADMIN" else ("PUBLIC",)
+    events = db.scalars(select(TicketEvent).where(
+        TicketEvent.ticket_id == ticket.id,
+        TicketEvent.visibility.in_(allowed_visibility),
+    )).all()
+    comments = db.scalars(select(Comment).where(
+        Comment.ticket_id == ticket.id,
+        Comment.visibility.in_(allowed_visibility),
+    )).all()
+    actor_ids = {event.actor_id for event in events} | {comment.author_id for comment in comments}
+    actors = {
+        user.id: user for user in db.scalars(select(User).where(User.id.in_(actor_ids))).all()
+    }
+    rows = [
+        {
+            "kind": "EVENT", "id": event.id, "ticket_id": ticket.id,
+            "actor": _user_summary(actors[event.actor_id]), "type": event.type,
+            "from_status": event.from_status, "to_status": event.to_status,
+            "note": event.note, "visibility": event.visibility,
+            "created_at": _utc(event.created_at),
+        }
+        for event in events
+    ] + [
+        {
+            "kind": "COMMENT", "id": comment.id, "ticket_id": ticket.id,
+            "author": _user_summary(actors[comment.author_id]), "body": comment.body,
+            "visibility": comment.visibility, "created_at": _utc(comment.created_at),
+        }
+        for comment in comments
+    ]
+    return sorted(rows, key=lambda row: (row["created_at"], row["kind"], row["id"]))
+
+
 def transition(
     db: Session, ticket_id: int, actor: User, action: str, expected_version: int,
     *, category: str = None, priority: str = None, note: str = None,
-    technician_id: int = None,
+    technician_id: int = None, photos: list[PreparedPhoto] = None,
 ) -> dict:
     rule = TRANSITIONS[action]
+    photos = photos or []
+    published = []
     try:
         ticket = db.get(Ticket, ticket_id)
         if ticket is None:
@@ -133,6 +173,8 @@ def transition(
             values.update(category=category, priority=priority)
         elif action == "ASSIGN":
             values["current_assignee_id"] = technician_id
+        elif action == "CONFIRM":
+            values["closed_at"] = now
         changed = db.execute(
             update(Ticket).where(
                 Ticket.id == ticket_id,
@@ -158,11 +200,16 @@ def transition(
             from_status=rule.from_status, to_status=rule.to_status,
             note=note, visibility="PUBLIC",
         ))
+        if action == "RESOLVE":
+            stage_photos(db, ticket_id, actor.id, photos)
         db.flush()
+        if photos:
+            published = publish_photos(photos)
         db.refresh(ticket)
         response = ticket_summary(db, ticket, actor)
         db.commit()
         return response
     except Exception:
         db.rollback()
+        discard_photos(photos, published)
         raise

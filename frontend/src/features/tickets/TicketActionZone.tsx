@@ -12,7 +12,7 @@
  * here instead of silently disappearing from the UI.
  */
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -20,11 +20,12 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { api } from "../../api";
-import type { Category, Priority, TicketAction, TicketDetail } from "../../api";
+import type { Category, Priority, TicketAction, TicketDetail, User } from "../../api";
 import { ConfirmDialog } from "../../components";
 import { SelectField, TextAreaField } from "../../components/Field";
 import { useToast } from "../../hooks/useToast";
 import { classify } from "../../lib/errors";
+import { currentSessionVersion } from "../../lib/session";
 import {
   ACTION_LABELS,
   CATEGORY_LABELS,
@@ -66,6 +67,8 @@ interface ActionRun {
   id: number;
   request: () => Promise<unknown>;
   success: string;
+  /** Session generation at submit time; a stale success must not reach the new session. */
+  session: number;
 }
 
 interface RunOptions {
@@ -87,6 +90,10 @@ function useActionRunner(ticketId: number, close: () => void) {
     meta: ticketActionMeta,
     mutationFn: (run: ActionRun) => run.request(),
     onSuccess: async (_result, run) => {
+      // The component may still be mounted across a login/logout boundary in a
+      // test or a future shell. A success from the previous session must not
+      // toast into, or invalidate, the session now on screen.
+      if (run.session !== currentSessionVersion()) return;
       notify(run.success);
       await client.invalidateQueries({ queryKey: queryKeys.tickets.all });
       close();
@@ -94,9 +101,16 @@ function useActionRunner(ticketId: number, close: () => void) {
   });
 
   async function run(input: RunOptions): Promise<void> {
+    const issuedIn = currentSessionVersion();
     try {
-      await mutation.mutateAsync({ id: ticketId, request: input.request, success: input.success });
+      await mutation.mutateAsync({
+        id: ticketId,
+        request: input.request,
+        success: input.success,
+        session: issuedIn,
+      });
     } catch (error) {
+      if (issuedIn !== currentSessionVersion()) return;
       const classified = classify(error);
       if (classified.kind === "conflict") {
         close();
@@ -132,11 +146,22 @@ export function TicketActionZone({
   /** Where focus goes when a completed action removes its own trigger (#91). */
   focusFallback?: RefObject<HTMLElement>;
 }) {
-  const [open, setOpen] = useState<LifecycleAction | null>(null);
+  const [open, setOpen] = useState<{ action: LifecycleAction; ticketId: number } | null>(null);
   const zone = useRef<HTMLElement>(null);
   const actions = allowedLifecycleActions(ticket.allowed_actions);
   const close = () => setOpen(null);
   const fallback = focusFallback ?? zone;
+
+  // A dialog belongs to one action on one ticket. Navigating to another ticket
+  // or receiving a refetch that no longer allows the action must close the form
+  // instead of letting it submit against the wrong ticket or state.
+  useEffect(() => {
+    if (open && (open.ticketId !== ticket.id || !actions.includes(open.action))) setOpen(null);
+  }, [open, ticket.id, actions]);
+
+  const openAction = open && open.ticketId === ticket.id && actions.includes(open.action)
+    ? open.action
+    : null;
 
   if (actions.length === 0) return null;
 
@@ -153,7 +178,7 @@ export function TicketActionZone({
               key={action}
               type="button"
               className={DANGER_ACTIONS.includes(action) ? "danger" : "primary"}
-              onClick={() => setOpen(action)}
+              onClick={() => setOpen({ action, ticketId: ticket.id })}
             >
               {ACTION_LABELS[action]}
             </button>
@@ -161,13 +186,13 @@ export function TicketActionZone({
         </div>
       </div>
 
-      {open === "REVIEW" ? <ReviewDialog ticket={ticket} close={close} fallback={fallback} /> : null}
-      {open === "ASSIGN" ? <AssignDialog ticket={ticket} close={close} fallback={fallback} /> : null}
-      {open === "START" ? <StartDialog ticket={ticket} close={close} fallback={fallback} /> : null}
-      {open === "RESOLVE" ? <ResolveDialog ticket={ticket} close={close} fallback={fallback} /> : null}
-      {open === "CONFIRM" ? <ConfirmDialogAction ticket={ticket} close={close} fallback={fallback} /> : null}
-      {open === "REWORK" ? <ReworkDialog ticket={ticket} close={close} fallback={fallback} /> : null}
-      {open === "CANCEL" ? <CancelDialog ticket={ticket} close={close} fallback={fallback} /> : null}
+      {openAction === "REVIEW" ? <ReviewDialog ticket={ticket} close={close} fallback={fallback} /> : null}
+      {openAction === "ASSIGN" ? <AssignDialog ticket={ticket} close={close} fallback={fallback} /> : null}
+      {openAction === "START" ? <StartDialog ticket={ticket} close={close} fallback={fallback} /> : null}
+      {openAction === "RESOLVE" ? <ResolveDialog ticket={ticket} close={close} fallback={fallback} /> : null}
+      {openAction === "CONFIRM" ? <ConfirmDialogAction ticket={ticket} close={close} fallback={fallback} /> : null}
+      {openAction === "REWORK" ? <ReworkDialog ticket={ticket} close={close} fallback={fallback} /> : null}
+      {openAction === "CANCEL" ? <CancelDialog ticket={ticket} close={close} fallback={fallback} /> : null}
     </section>
   );
 }
@@ -301,11 +326,36 @@ const assignSchema = z.object({
 
 type AssignValues = z.infer<typeof assignSchema>;
 
+/**
+ * The contract paginates every list. Reading only the first page would make
+ * technicians beyond the first 100 unassignable, so follow next_cursor until
+ * the server says there is none. The seen guard turns a malformed cycle into a
+ * visible error instead of a request loop.
+ */
+async function loadAssignableTechnicians(signal: AbortSignal): Promise<User[]> {
+  const technicians: User[] = [];
+  const seen = new Set<string>();
+  let cursor: string | null = null;
+  do {
+    const page = await api.listUsers(
+      { role: "TECHNICIAN", active: true, limit: 100, cursor },
+      signal,
+    );
+    technicians.push(...page.items);
+    cursor = page.next_cursor;
+    if (cursor && seen.has(cursor)) {
+      throw new Error("The technician list could not be completed.");
+    }
+    if (cursor) seen.add(cursor);
+  } while (cursor);
+  return technicians;
+}
+
 function AssignDialog({ ticket, close, fallback }: DialogProps) {
   const { run, pending } = useActionRunner(ticket.id, close);
   const technicians = useQuery({
-    queryKey: queryKeys.users.list({ role: "TECHNICIAN", active: true, limit: 100 }),
-    queryFn: ({ signal }) => api.listUsers({ role: "TECHNICIAN", active: true, limit: 100 }, signal),
+    queryKey: queryKeys.users.list({ role: "TECHNICIAN", active: true, all: true }),
+    queryFn: ({ signal }) => loadAssignableTechnicians(signal),
   });
   const {
     register,
@@ -317,7 +367,7 @@ function AssignDialog({ ticket, close, fallback }: DialogProps) {
     defaultValues: { technician_id: "" },
   });
 
-  const items = technicians.data?.items ?? [];
+  const items = technicians.data ?? [];
   const unavailable = technicians.isPending || technicians.isError || items.length === 0;
 
   const onConfirm = handleSubmit(async (values) => {

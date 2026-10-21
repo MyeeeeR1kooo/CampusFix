@@ -83,7 +83,7 @@ export function TicketDetailPage() {
       </header>
 
       <TicketStatusStrip ticket={ticket} />
-      <TicketActionZone ticket={ticket} focusFallback={heading} />
+      <TicketActionZone key={ticket.id} ticket={ticket} focusFallback={heading} />
 
       <div className="detail-grid">
         <div className="detail-main">

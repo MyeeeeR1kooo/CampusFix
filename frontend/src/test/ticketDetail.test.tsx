@@ -26,8 +26,10 @@ import type { LifecycleAction } from "../features/tickets/TicketActionZone";
 import { ToastProvider } from "../hooks/useToast";
 import { ACTION_LABELS } from "../lib/labels";
 import { createAppQueryClient } from "../lib/queryClient";
+import { bumpSessionVersion } from "../lib/session";
 import { MOCK_PASSWORD } from "../mocks/fixtures";
 import { createMockApi } from "../mocks/responder";
+import { jsonResponse, userPayload } from "../test-helpers";
 
 const NOW = new Date("2026-10-03T10:00:00Z");
 const ACCOUNTS: Record<Role, string> = {
@@ -53,13 +55,18 @@ async function signIn(role: Role) {
 
 function renderZone(ticket: TicketDetail) {
   const client = createAppQueryClient({ notify: vi.fn() });
-  return render(
+  const tree = (next: TicketDetail) => (
     <ToastProvider>
       <QueryClientProvider client={client}>
-        <TicketActionZone ticket={ticket} />
+        <TicketActionZone ticket={next} />
       </QueryClientProvider>
-    </ToastProvider>,
+    </ToastProvider>
   );
+  const view = render(tree(ticket));
+  return {
+    ...view,
+    rerenderTicket: (next: TicketDetail) => view.rerender(tree(next)),
+  };
 }
 
 function openTicket(id: number) {
@@ -291,5 +298,111 @@ describe("ticket detail page (#91)", () => {
     expect(await screen.findByText(/updated by someone else/i)).toBeInTheDocument();
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
     await expect(api.getTicket(1)).resolves.toMatchObject({ status: "SUBMITTED", version: 1 });
+  });
+});
+
+describe("action dialog ownership (#91 P2)", () => {
+  it("closes an open dialog when the route moves to another ticket", async () => {
+    installStateMock();
+    await signIn("ADMIN");
+    const first = await api.getTicket(1);
+    const second = await api.getTicket(9);
+    expect(first.allowed_actions).toContain("REVIEW");
+    expect(second.allowed_actions).toContain("REVIEW");
+
+    const view = renderZone(first);
+    await userEvent.click(screen.getByRole("button", { name: "Review" }));
+    expect(screen.getByRole("dialog")).toHaveTextContent(first.code);
+
+    view.rerenderTicket(second);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Approve" })).not.toBeInTheDocument();
+  });
+
+  it("closes a dialog whose action is no longer allowed on the same ticket", async () => {
+    installStateMock();
+    await signIn("ADMIN");
+    const ticket = await api.getTicket(1);
+    const view = renderZone(ticket);
+    await userEvent.click(screen.getByRole("button", { name: "Review" }));
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+    view.rerenderTicket({ ...ticket, allowed_actions: ["ASSIGN"] });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Approve" })).not.toBeInTheDocument();
+  });
+});
+
+describe("action success and session generation (#91 P2)", () => {
+  it("does not toast a success that settles after the session ended", async () => {
+    const responder = installStateMock();
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => { release = resolve; });
+    let processed!: () => void;
+    const processedPromise = new Promise<void>((resolve) => { processed = resolve; });
+
+    installMock(async (request) => {
+      if (request.method === "POST" && request.path === "/api/tickets/1/cancel") {
+        const response = await responder(request);
+        processed();
+        await gate;
+        return response;
+      }
+      return responder(request);
+    });
+
+    await signIn("REPORTER");
+    const ticket = await api.getTicket(1);
+    renderZone(ticket);
+    await userEvent.click(screen.getByRole("button", { name: "Cancel request" }));
+    const dialog = screen.getByRole("dialog");
+    const confirm = within(dialog).getByRole("button", { name: "Cancel request" });
+    await userEvent.click(confirm);
+    await processedPromise;
+
+    // End the generation while the already-successful response is in flight.
+    bumpSessionVersion();
+    release();
+
+    await waitFor(() => expect(confirm).toBeEnabled());
+    expect(screen.queryByText(/Ticket .* cancelled\./)).not.toBeInTheDocument();
+  });
+});
+
+describe("assignment candidate pagination (#91 P2)", () => {
+  it("follows every cursor page before offering the technician list", async () => {
+    const responder = installStateMock();
+    installMock(async (request) => {
+      const url = new URL(request.path, "http://mock.invalid");
+      if (request.method === "GET" && url.pathname === "/api/admin/users") {
+        const cursor = url.searchParams.get("cursor");
+        if (!cursor) {
+          return jsonResponse({
+            items: [userPayload({ id: 21, name: "First technician", role: "TECHNICIAN" })],
+            next_cursor: "page-2",
+          });
+        }
+        if (cursor === "page-2") {
+          return jsonResponse({
+            items: [userPayload({ id: 22, name: "Second technician", role: "TECHNICIAN" })],
+            next_cursor: null,
+          });
+        }
+      }
+      return responder(request);
+    });
+
+    await signIn("ADMIN");
+    const ticket = await api.getTicket(2);
+    renderZone(ticket);
+    await userEvent.click(screen.getByRole("button", { name: "Assign" }));
+    const dialog = screen.getByRole("dialog");
+
+    expect(
+      await within(dialog).findByRole("option", { name: "First technician" }),
+    ).toBeInTheDocument();
+    expect(
+      await within(dialog).findByRole("option", { name: "Second technician" }),
+    ).toBeInTheDocument();
   });
 });

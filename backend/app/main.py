@@ -11,6 +11,7 @@ from app.core.security import OriginError, require_same_origin
 from app.modules.auth.router import router as auth_router
 from app.modules.locations.router import router as locations_router
 from app.modules.users.router import router as users_router
+from app.modules.workflow.router import router as workflow_router
 
 
 def _request_id(request: Request) -> str:
@@ -130,6 +131,7 @@ def create_app() -> FastAPI:
     app.include_router(auth_router)
     app.include_router(users_router)
     app.include_router(locations_router)
+    app.include_router(workflow_router)
 
     return app
 

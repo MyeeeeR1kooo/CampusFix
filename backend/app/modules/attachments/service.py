@@ -1,9 +1,10 @@
-"""Validate and stage result photos before the workflow database transaction."""
+"""Validate and stage business photos before their database transaction."""
 
 import os
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Literal
 from uuid import uuid4
 
 from fastapi import UploadFile
@@ -63,6 +64,10 @@ def prepare_photos(files: list[UploadFile], storage_path: Path) -> list[Prepared
                     if mime is None or file.content_type != mime:
                         raise AppError(ErrorCode.VALIDATION_ERROR, 415, "Unsupported image type.")
                     image.verify()
+                # verify() checks structure but does not decode every format
+                # (for example, a truncated JPEG can still pass it).
+                with Image.open(temporary_path) as image:
+                    image.load()
             except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError):
                 raise AppError(ErrorCode.VALIDATION_ERROR, 422, "Invalid image data.") from None
             key = uuid4().hex
@@ -78,21 +83,25 @@ def prepare_photos(files: list[UploadFile], storage_path: Path) -> list[Prepared
         raise
 
 
-def stage_photos(db: Session, ticket_id: int, actor_id: int, photos: list[PreparedPhoto]) -> None:
+def stage_photos(
+    db: Session, ticket_id: int, actor_id: int, photos: list[PreparedPhoto],
+    *, purpose: Literal["REPORT_PHOTO", "RESOLUTION_PHOTO"] = "RESOLUTION_PHOTO",
+) -> None:
     if not photos:
         return
     existing = db.scalar(select(func.count()).select_from(Attachment).where(
-        Attachment.ticket_id == ticket_id, Attachment.purpose == "RESOLUTION_PHOTO",
+        Attachment.ticket_id == ticket_id, Attachment.purpose == purpose,
     ))
     if existing + len(photos) > MAX_PHOTOS:
-        raise AppError(ErrorCode.VALIDATION_ERROR, 422, "Too many result photos.", [
-            {"field": "photos", "message": "At most five result photos are allowed.", "type": "value_error"},
+        label = "result" if purpose == "RESOLUTION_PHOTO" else "report"
+        raise AppError(ErrorCode.VALIDATION_ERROR, 422, f"Too many {label} photos.", [
+            {"field": "photos", "message": f"At most five {label} photos are allowed.", "type": "value_error"},
         ])
     for photo in photos:
         db.add(Attachment(
             ticket_id=ticket_id, uploader_id=actor_id, storage_key=photo.storage_key,
             original_name=photo.original_name, mime=photo.mime, size=photo.size,
-            purpose="RESOLUTION_PHOTO",
+            purpose=purpose,
         ))
 
 

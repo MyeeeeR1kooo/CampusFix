@@ -1,0 +1,133 @@
+# CampusFix · CI 测试流水线（草案）
+#
+# 目标位置：.github/workflows/tests.yml
+#
+# 设计依据（均来自仓库实测，2026-10-18）：
+#   - 后端镜像 python:3.12.12-slim-bookworm，TZ=UTC
+#   - 数据库镜像 postgres:17.11-bookworm
+#   - 依赖锁文件 backend/requirements.lock + requirements-dev.lock
+#   - pytest 配置在 backend/pyproject.toml（pythonpath=["."], testpaths=["tests"]）
+#   - 前端 npm test = vitest run；npm run build = tsc -b && vite build
+#   - 测试会读 docs/api/openapi.yaml，所以必须 checkout 整个仓库
+#
+# 最重要的一条：CAMPUSFIX_TEST_DATABASE_URL 必须设置。
+#   backend/tests/{test_auth_api,test_locations_api,test_p0_storage}.py 里是
+#   `url = os.environ.get("CAMPUSFIX_TEST_DATABASE_URL")`，取不到就 pytest.skip()。
+#   README 原文：「未设置该变量时，数据库集成项会显示 skipped，不能作为验收通过证据」。
+#   —— 漏设的话 CI 会显示全绿，但其实一条数据库测试都没跑，是假绿。
+
+name: tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# 同一个 PR 连推多次时，取消上一次还在跑的，省额度也省等待
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------- 后端
+  backend:
+    name: backend · pytest + PostgreSQL
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:17.11-bookworm
+        env:
+          POSTGRES_DB: campusfix
+          POSTGRES_USER: campusfix
+          POSTGRES_PASSWORD: campusfix
+          TZ: UTC
+          PGTZ: UTC
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U campusfix -d campusfix"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+          --health-start-period 10s
+
+    env:
+      TZ: UTC
+      # 测试会从这个 URL 建临时库（CREATE DATABASE …_<uuid>）→ alembic upgrade head
+      # → 跑完 DROP。所以这个角色必须有 CREATEDB 权限（service 的超级用户满足）。
+      # 注意驱动前缀是 postgresql+psycopg://，不是 postgresql://
+      CAMPUSFIX_TEST_DATABASE_URL: postgresql+psycopg://campusfix:campusfix@localhost:5432/campusfix
+      ALLOWED_ORIGINS: http://localhost:5173
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.lock
+            backend/requirements-dev.lock
+
+      - name: Install dependencies
+        working-directory: backend
+        run: pip install -r requirements.lock -r requirements-dev.lock
+
+      - name: Run pytest
+        working-directory: backend
+        run: pytest -q --tb=short
+
+  # ---------------------------------------------------------------- 前端
+  frontend:
+    name: frontend · vitest + typecheck
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # 契约与前端类型是否同步。
+      # 不跑 npm run gen:api 再 git diff —— 生成物头部有 `generated at` 时间戳，
+      # 每次生成都不同，那样必然误报。脚本 gen-contract-types.mjs 已经把
+      # openapi.yaml 的 sha256 前 12 位写进 schema.d.ts 头部了，直接比这个值：
+      # 秒级、零依赖、不可能误报。
+      - name: Contract types are in sync
+        run: |
+          actual=$(sha256sum docs/api/openapi.yaml | cut -c1-12)
+          recorded=$(grep -oE 'sha256:[0-9a-f]{12}' frontend/src/api/generated/schema.d.ts | head -1 | cut -d: -f2)
+          if [ -z "$recorded" ]; then
+            echo "::error::schema.d.ts 头部找不到 contract digest，文件可能被手改过"
+            exit 1
+          fi
+          if [ "$actual" != "$recorded" ]; then
+            echo "::error::openapi.yaml 已变更，但前端类型没有重新生成"
+            echo "  契约当前 digest : sha256:$actual"
+            echo "  类型记录 digest : sha256:$recorded"
+            echo "  修复：cd frontend && npm run gen:api && 提交 src/api/generated/schema.d.ts"
+            exit 1
+          fi
+          echo "契约与前端类型一致（sha256:$actual）"
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run vitest
+        working-directory: frontend
+        run: npm test
+
+      # build 脚本是 `tsc -b && vite build`，等于顺带做了类型检查
+      - name: Typecheck and build
+        working-directory: frontend
+        run: npm run build

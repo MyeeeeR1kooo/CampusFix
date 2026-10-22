@@ -406,3 +406,59 @@ describe("assignment candidate pagination (#91 P2)", () => {
     ).toBeInTheDocument();
   });
 });
+
+describe("action validation summary (#97 P2)", () => {
+  it("keeps the field error and dialog summary until a corrected assignment succeeds", async () => {
+    const responder = installStateMock();
+    let rejected = false;
+    installMock(async (request) => {
+      if (request.method === "POST" && request.path === "/api/tickets/2/assign" && !rejected) {
+        rejected = true;
+        return jsonResponse({
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Select an active technician.",
+            request_id: "req_assignment_validation",
+            field_errors: [{
+              field: "technician_id",
+              message: "Select an active technician.",
+              type: "value_error",
+            }],
+          },
+        }, 422);
+      }
+      return responder(request);
+    });
+
+    await signIn("ADMIN");
+    const ticket = await api.getTicket(2);
+    renderZone(ticket);
+    await userEvent.click(screen.getByRole("button", { name: "Assign" }));
+    const dialog = screen.getByRole("dialog");
+    await within(dialog).findByRole("option", { name: "Demo technician A" });
+    const technician = within(dialog).getByRole("combobox", { name: /Technician/ });
+    await userEvent.selectOptions(technician, "2");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Assign" }));
+
+    await waitFor(() => {
+      expect(technician).toHaveAttribute("aria-invalid", "true");
+      const alerts = within(dialog).getAllByRole("alert");
+      expect(alerts).toHaveLength(2);
+      expect(alerts.find((alert) => alert.closest(".field"))).toHaveTextContent("Select an active technician.");
+      expect(alerts.find((alert) => !alert.closest(".field"))).toHaveTextContent("Select an active technician.");
+    });
+    expect(technician).toHaveValue("2");
+    await expect(api.getTicket(2)).resolves.toMatchObject({
+      status: "PENDING_ASSIGNMENT", version: ticket.version,
+    });
+
+    await userEvent.selectOptions(technician, "5");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Assign" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.getByText(`Ticket ${ticket.code} assigned.`)).toBeInTheDocument();
+    await expect(api.getTicket(2)).resolves.toMatchObject({
+      status: "ASSIGNED", version: ticket.version + 1, current_assignee: { id: 5 },
+    });
+  });
+});

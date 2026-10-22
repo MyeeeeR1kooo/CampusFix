@@ -117,14 +117,12 @@ function useActionRunner(ticketId: number, close: () => void) {
         return;
       }
       if (classified.kind === "validation" && input.setFieldError) {
-        let matched = false;
         for (const [field, message] of Object.entries(classified.fields)) {
           if (!input.fields?.includes(field)) continue;
           input.setFieldError(field, message);
-          matched = true;
         }
-        if (matched) return;
       }
+      // Keep field hints alongside the dialog's request-level error summary (§13.3).
       throw error;
     }
   }

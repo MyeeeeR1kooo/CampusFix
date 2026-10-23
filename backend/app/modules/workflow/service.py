@@ -223,6 +223,8 @@ def transition(
         db.commit()
         return response
     except Exception:
-        db.rollback()
-        discard_photos(photos, published)
+        try:
+            db.rollback()
+        finally:
+            discard_photos(photos, published)
         raise

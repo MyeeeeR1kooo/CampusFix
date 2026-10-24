@@ -20,6 +20,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import App from "../app/App";
 import { ROLE_LABELS } from "../lib/labels";
+import { createFixtures } from "../mocks/fixtures";
 import { stubApi, userPayload } from "../test-helpers";
 
 type TestRole = "REPORTER" | "TECHNICIAN" | "ADMIN";
@@ -88,7 +89,6 @@ describe("the route table — all nine pages declared", () => {
   const guarded: Array<[string, TestRole, string]> = [
     ["/reports", "REPORTER", "My reports"],
     ["/reports/new", "REPORTER", "Create a repair report"],
-    ["/tickets/7", "REPORTER", "Ticket detail"],
     ["/workbench", "ADMIN", "Dispatch workbench"],
     ["/analytics", "ADMIN", "Statistics"],
     ["/admin/users", "ADMIN", "Account management"],
@@ -101,6 +101,28 @@ describe("the route table — all nine pages declared", () => {
     expect(await screen.findByRole("heading", { name: notBuilt(label) })).toBeTruthy();
     // "a blank page reads like a working page" — the stand-in must say who fills it.
     expect(document.body.textContent).toMatch(/owned by (张越|舒玺悦)/);
+  });
+
+  it("serves the shared ticket detail page to a related actor", async () => {
+    const ticket = createFixtures(new Date("2026-10-03T10:00:00Z")).tickets[0];
+    stubApi([
+      { match: /\/api\/me$/, reply: () => ({ body: userPayload({ id: 3, role: "ADMIN" }) }) },
+      {
+        match: /\/api\/tickets\/1$/,
+        reply: () => ({
+          body: {
+            ...ticket,
+            current_responsible_role: "ADMIN",
+            next_action: "REVIEW",
+            allowed_actions: ["REVIEW", "COMMENT_PUBLIC", "COMMENT_ADMIN_ONLY"],
+          },
+        }),
+      },
+    ]);
+    renderAt("/tickets/1");
+    expect(await screen.findByRole("heading", { name: "Classroom lights flicker" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Ticket status and responsibility" })).toHaveTextContent("Submitted");
+    expect(screen.getByRole("button", { name: "Review" })).toBeInTheDocument();
   });
 
   it("serves the location management page to Admin", async () => {

@@ -50,7 +50,9 @@ export const schemas = {
   confirm: z.object(version).strict(),
   rework: z.object({ reason: text, ...version }).strict(),
   cancel: z.object({ reason: z.string().optional(), ...version }).strict(),
-  comment: z.object({ body: text.max(2000), visibility: z.enum(["PUBLIC", "ADMIN_ONLY"]) }).strict(),
+  // The frozen CommentRequest is minLength 1 / maxLength 2000 and preserves the
+  // text as written; unlike the other text fields it has no non-blank rule.
+  comment: z.object({ body: z.string().min(1).max(2000), visibility: z.enum(["PUBLIC", "ADMIN_ONLY"]) }).strict(),
   location: z.object({ building: locationText, floor: locationText, room_or_area: locationText, active: z.boolean().default(true) }).strict(),
   locationPatch: z.object({ building: locationText.optional(), floor: locationText.optional(), room_or_area: locationText.optional(), active: z.boolean().optional() }).strict().refine((value) => Object.keys(value).length > 0, "Provide at least one field."),
   active: z.object({ active: z.boolean() }).strict(),

@@ -126,7 +126,7 @@ describe("actual scaffold bootstrap and 401 routing", () => {
     await api.login({ email: "reporter01@campusfix.test", password: MOCK_PASSWORD });
     window.history.replaceState({}, "", "/reports");
     render(<App />);
-    expect(await screen.findByRole("heading", { name: /My reports is not built yet/i })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "My repairs" })).toBeInTheDocument();
     // A fresh responder has no session, reproducing server expiry through the same bridge.
     installMock(createMockApi().responder);
     await act(async () => { await api.listTickets().catch(() => undefined); });

@@ -18,14 +18,14 @@ from app.models import Location, User
 
 
 DEMO_ACCOUNTS = (
-    ("REPORTER", "演示报修人", "reporter@example.invalid"),
-    ("TECHNICIAN", "演示维修员", "technician@example.invalid"),
-    ("ADMIN", "演示管理员", "admin@example.invalid"),
+    ("REPORTER", "Demo Reporter", "reporter@example.invalid"),
+    ("TECHNICIAN", "Demo Technician", "technician@example.invalid"),
+    ("ADMIN", "Demo Dispatcher", "admin@example.invalid"),
 )
 DEMO_LOCATIONS = (
-    ("演示楼 A", "1", "示例房间 101"),
-    ("演示楼 A", "2", "示例公共区域"),
-    ("演示楼 B", "1", "示例房间 102"),
+    ("Demo Building A", "1", "Room 101"),
+    ("Demo Building A", "2", "Shared Area"),
+    ("Demo Building B", "1", "Room 102"),
 )
 
 

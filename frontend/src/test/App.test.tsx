@@ -87,8 +87,6 @@ describe("anonymous visitors", () => {
 
 describe("the route table — all nine pages declared", () => {
   const guarded: Array<[string, TestRole, string]> = [
-    ["/reports", "REPORTER", "My reports"],
-    ["/reports/new", "REPORTER", "Create a repair report"],
     ["/workbench", "ADMIN", "Dispatch workbench"],
     ["/analytics", "ADMIN", "Statistics"],
     ["/admin/users", "ADMIN", "Account management"],
@@ -101,6 +99,16 @@ describe("the route table — all nine pages declared", () => {
     expect(await screen.findByRole("heading", { name: notBuilt(label) })).toBeTruthy();
     // "a blank page reads like a working page" — the stand-in must say who fills it.
     expect(document.body.textContent).toMatch(/owned by (张越|舒玺悦)/);
+  });
+
+  it("serves the implemented reporter pages", async () => {
+    signedInAs("REPORTER");
+    renderAt("/reports");
+    expect(await screen.findByRole("heading", { name: "My repairs" })).toBeInTheDocument();
+    cleanup();
+    signedInAs("REPORTER");
+    renderAt("/reports/new");
+    expect(await screen.findByRole("heading", { name: "Create a repair report" })).toBeInTheDocument();
   });
 
   it("serves the shared ticket detail page to a related actor", async () => {
@@ -150,11 +158,16 @@ describe("landing pages", () => {
   it.each<[TestRole, string]>([
     ["ADMIN", "Dispatch workbench"],
     ["TECHNICIAN", "My assignments"],
-    ["REPORTER", "My reports"],
   ])("%s starts at %s", async (role, label) => {
     signedInAs(role);
     renderAt("/");
     expect(await screen.findByRole("heading", { name: notBuilt(label) })).toBeTruthy();
+  });
+
+  it("REPORTER starts at My repairs", async () => {
+    signedInAs("REPORTER");
+    renderAt("/");
+    expect(await screen.findByRole("heading", { name: "My repairs" })).toBeInTheDocument();
   });
 });
 

@@ -8,8 +8,11 @@ from fastapi.responses import JSONResponse
 from app.core.config import get_settings
 from app.core.errors import AppError, ErrorCode, error_payload
 from app.core.security import OriginError, require_same_origin
+from app.modules.attachments.router import router as attachments_router
 from app.modules.auth.router import router as auth_router
+from app.modules.comments.router import router as comments_router
 from app.modules.locations.router import router as locations_router
+from app.modules.tickets.router import router as tickets_router
 from app.modules.users.router import router as users_router
 from app.modules.workflow.router import router as workflow_router
 
@@ -131,6 +134,9 @@ def create_app() -> FastAPI:
     app.include_router(auth_router)
     app.include_router(users_router)
     app.include_router(locations_router)
+    app.include_router(attachments_router)
+    app.include_router(comments_router)
+    app.include_router(tickets_router)
     app.include_router(workflow_router)
 
     return app

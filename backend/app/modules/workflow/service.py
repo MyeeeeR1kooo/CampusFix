@@ -1,6 +1,7 @@
 """Authorized, version-checked ticket transitions and their single transaction."""
 
 from datetime import datetime, timezone
+from typing import Optional
 
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
@@ -59,31 +60,42 @@ def _user_summary(user: User) -> dict:
     return {"id": user.id, "name": user.name, "role": user.role}
 
 
-def ticket_summary(db: Session, ticket: Ticket, actor: User) -> dict:
-    """Serialize the frozen TicketSummary shape for a related actor."""
-    reporter = db.get(User, ticket.reporter_id)
-    assignee = db.get(User, ticket.current_assignee_id) if ticket.current_assignee_id else None
-    role, next_action = RESPONSIBILITY.get(ticket.status, (None, None))
+def ticket_projection(
+    *, status: str, reporter_id: int, current_assignee_id: Optional[int], actor: User,
+) -> dict:
+    """Project responsibility/actions; the caller must establish visibility first."""
+    role, next_action = RESPONSIBILITY.get(status, (None, None))
     allowed = []
-    if ticket.status not in TERMINAL_STATUSES:
+    if status not in TERMINAL_STATUSES:
         if actor.role == "ADMIN":
-            if ticket.status == "SUBMITTED":
+            if status == "SUBMITTED":
                 allowed.append("REVIEW")
-            elif ticket.status == "PENDING_ASSIGNMENT":
+            elif status == "PENDING_ASSIGNMENT":
                 allowed.append("ASSIGN")
-        elif actor.role == "REPORTER" and ticket.reporter_id == actor.id:
-            if ticket.status == "SUBMITTED":
+        elif actor.role == "REPORTER" and reporter_id == actor.id:
+            if status == "SUBMITTED":
                 allowed.append("CANCEL")
-            elif ticket.status == "PENDING_CONFIRMATION":
+            elif status == "PENDING_CONFIRMATION":
                 allowed.extend(("CONFIRM", "REWORK"))
-        elif actor.role == "TECHNICIAN" and ticket.current_assignee_id == actor.id:
-            if ticket.status == "ASSIGNED":
+        elif actor.role == "TECHNICIAN" and current_assignee_id == actor.id:
+            if status == "ASSIGNED":
                 allowed.append("START")
-            elif ticket.status == "IN_PROGRESS":
+            elif status == "IN_PROGRESS":
                 allowed.append("RESOLVE")
         allowed.append("COMMENT_PUBLIC")
         if actor.role == "ADMIN":
             allowed.append("COMMENT_ADMIN_ONLY")
+    return {
+        "current_responsible_role": role,
+        "next_action": next_action,
+        "allowed_actions": allowed,
+    }
+
+
+def ticket_summary(db: Session, ticket: Ticket, actor: User) -> dict:
+    """Serialize the frozen TicketSummary shape for a related actor."""
+    reporter = db.get(User, ticket.reporter_id)
+    assignee = db.get(User, ticket.current_assignee_id) if ticket.current_assignee_id else None
     return {
         "id": ticket.id,
         "code": ticket.code,
@@ -99,9 +111,10 @@ def ticket_summary(db: Session, ticket: Ticket, actor: User) -> dict:
         "created_at": _utc(ticket.created_at),
         "updated_at": _utc(ticket.updated_at),
         "closed_at": _utc(ticket.closed_at) if ticket.closed_at else None,
-        "current_responsible_role": role,
-        "next_action": next_action,
-        "allowed_actions": allowed,
+        **ticket_projection(
+            status=ticket.status, reporter_id=ticket.reporter_id,
+            current_assignee_id=ticket.current_assignee_id, actor=actor,
+        ),
     }
 
 
@@ -210,6 +223,8 @@ def transition(
         db.commit()
         return response
     except Exception:
-        db.rollback()
-        discard_photos(photos, published)
+        try:
+            db.rollback()
+        finally:
+            discard_photos(photos, published)
         raise

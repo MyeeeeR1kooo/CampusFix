@@ -3,11 +3,11 @@
  *
  * The route is one page for Reporter, Technician and Admin; visibility and the
  * available operations are decided by the server on every read. This page only
- * composes the status strip, the operation area and the timeline — it adds no
- * permission logic of its own.
+ * composes the status strip, the operation area, the photos and the timeline —
+ * it adds no permission logic of its own.
  *
- * Photos and the conversation composer belong to later issues (#54/#56), so this
- * page deliberately stops at the description and the existing timeline.
+ * Photos and the conversation composer arrive with #54; both consume the
+ * server-filtered detail response and the server's `allowed_actions`.
  */
 
 import { useEffect, useRef } from "react";
@@ -21,7 +21,9 @@ import { CATEGORY_LABELS } from "../../lib/labels";
 import { queryKeys } from "../../lib/queryClient";
 import { landingFor, useAuth } from "../auth/AuthContext";
 import { DeniedPage, NotFoundPage } from "../../app/StatePages";
+import { CommentComposer } from "./CommentComposer";
 import { TicketActionZone, allowedLifecycleActions } from "./TicketActionZone";
+import { TicketPhotoGallery } from "./TicketPhotoGallery";
 import { TicketStatusStrip } from "./TicketStatusStrip";
 
 export function TicketDetailPage() {
@@ -111,12 +113,15 @@ export function TicketDetailPage() {
               ) : null}
             </dl>
           </section>
+
+          <TicketPhotoGallery ticket={ticket} />
         </div>
 
         <aside className="detail-side">
           <section className="card" aria-labelledby="detail-timeline-heading">
             <h2 id="detail-timeline-heading">Timeline</h2>
             <Timeline entries={ticket.timeline} />
+            <CommentComposer ticket={ticket} />
           </section>
         </aside>
       </div>

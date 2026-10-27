@@ -146,8 +146,8 @@ export function createComment(id: number, body: CommentRequest): Promise<Comment
 
 /**
  * GET /api/attachments/{id} — image bytes, and the server re-checks ticket visibility on
- * every read. For display, `Attachment.download_url` in an <img src> is the cheaper path:
- * the session cookie rides along and the same check still runs.
+ * every read. Display fetches through this function rather than putting `download_url`
+ * in an <img src>: the shared Mock bridge only sees requests made by this client.
  */
 export function downloadAttachment(id: number, signal?: AbortSignal): Promise<Blob> {
   return http.blob(`/api/attachments/${id}`, signal);

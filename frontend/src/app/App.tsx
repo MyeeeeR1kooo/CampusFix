@@ -19,11 +19,12 @@
  *   /locations        Administrator
  *   /admin/users      Administrator — account management (#49)
  *
- * The table declares every page but imports only the screens that exist. On this scaffold
- * that is `/login` alone; the rest render `UnbuiltPage`, which names the owner. That is
- * what lets #48 land first: a map that statically imported all nine screens would make the
- * scaffold depend on nine implementations, and "脚手架只搭一次，两人共用" would stop
- * being true.
+ * The table declares every page but imports only the screens that exist —
+ * `/login`, `/locations`, the reporter pages and the shared `/tickets/:id`
+ * detail; the rest render `UnbuiltPage`, which names the owner. That is what
+ * lets #48 land first: a map that statically imported all nine screens would
+ * make the scaffold depend on nine implementations, and "脚手架只搭一次，
+ * 两人共用" would stop being true.
  *
  * The role gates below are a navigation affordance, not a permission control. AGENTS.md §6
  * forbids treating a route guard or a hidden button as authorisation, and every decision is
@@ -39,6 +40,9 @@ import { AppLayout } from "../components/AppLayout";
 import { AuthProvider, landingFor, useAuth } from "../features/auth/AuthContext";
 import { LoginPage } from "../features/auth/LoginPage";
 import { LocationManagementPage } from "../features/locations/LocationManagementPage";
+import { CreateRepairPage } from "../features/tickets/CreateRepairPage";
+import { MyReportsPage } from "../features/tickets/MyReportsPage";
+import { TicketDetailPage } from "../features/tickets/TicketDetailPage";
 import { ToastProvider, useToast } from "../hooks/useToast";
 import { createAppQueryClient } from "../lib/queryClient";
 import { ErrorBoundary } from "./ErrorBoundary";
@@ -85,7 +89,7 @@ export default function App() {
                       path="/reports"
                       element={
                         <RequireRole roles={["REPORTER"]}>
-                          {pending("My reports", "张越 (features/tickets/MyReportsPage)")}
+                          <MyReportsPage />
                         </RequireRole>
                       }
                     />
@@ -93,14 +97,11 @@ export default function App() {
                       path="/reports/new"
                       element={
                         <RequireRole roles={["REPORTER"]}>
-                          {pending("Create a repair report", "张越 (features/tickets/CreateRepairPage)")}
+                          <CreateRepairPage />
                         </RequireRole>
                       }
                     />
-                    <Route
-                      path="/tickets/:ticketId"
-                      element={pending("Ticket detail", "张越 (features/tickets/TicketDetailPage)")}
-                    />
+                    <Route path="/tickets/:ticketId" element={<TicketDetailPage />} />
                     <Route
                       path="/workbench"
                       element={

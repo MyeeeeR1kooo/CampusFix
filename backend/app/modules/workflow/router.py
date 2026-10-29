@@ -71,7 +71,7 @@ def start_ticket(
 
 @router.post("/{id}/resolve", operation_id="resolveTicket")
 def resolve_ticket(
-    resolution_note: str = Form(min_length=1),
+    resolution_note: str = Form(min_length=1, max_length=2000),
     expected_version: int = Form(ge=1),
     photos: Optional[List[UploadFile]] = File(default=None),
     id: int = Path(ge=1, le=2**63 - 1),

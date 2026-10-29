@@ -199,6 +199,7 @@ paths:
         筛选以 AND 组合；按 created_at DESC, id DESC 排序。
         cursor 为含这两个排序字段的不透明游标，分页期间保持相同筛选条件。
         created_from 含边界、created_before 不含边界，均为 UTC 时间。
+        created_from 晚于 created_before 时返回 422 / VALIDATION_ERROR；相等时返回空列表。
         building 按关联地点的楼宇筛选；历史显示仍使用 location_label_snapshot。
         q 匹配工单编号或标题；无匹配返回 items=[]、next_cursor=null。
         current_assignee_id 筛选仅 ADMIN 可用，其他角色传入时返回 403 / FORBIDDEN。
@@ -220,7 +221,7 @@ paths:
             $ref: '#/components/schemas/Priority'
         - name: building
           in: query
-          schema: {type: string, minLength: 1}
+          schema: {type: string, minLength: 1, maxLength: 255}
         - name: created_from
           in: query
           schema:
@@ -231,7 +232,7 @@ paths:
             $ref: '#/components/schemas/UtcDateTime'
         - name: q
           in: query
-          schema: {type: string, minLength: 1}
+          schema: {type: string, minLength: 1, maxLength: 120}
         - name: current_assignee_id
           in: query
           description: 仅 ADMIN 的当前维修人员筛选。
@@ -1235,7 +1236,7 @@ components:
       required: [decision, reason, expected_version]
       properties:
         decision: {type: string, const: REJECT}
-        reason: {type: string, minLength: 1}
+        reason: {type: string, minLength: 1, maxLength: 2000}
         expected_version:
           $ref: '#/components/schemas/Version'
     AssignRequest:
@@ -1252,7 +1253,7 @@ components:
       additionalProperties: false
       required: [expected_version]
       properties:
-        note: {type: string}
+        note: {type: string, maxLength: 2000}
         expected_version:
           $ref: '#/components/schemas/Version'
     ResolveRequest:
@@ -1260,7 +1261,7 @@ components:
       additionalProperties: false
       required: [resolution_note, expected_version]
       properties:
-        resolution_note: {type: string, minLength: 1}
+        resolution_note: {type: string, minLength: 1, maxLength: 2000}
         expected_version:
           $ref: '#/components/schemas/Version'
         photos:
@@ -1270,7 +1271,7 @@ components:
       additionalProperties: false
       required: [reason, expected_version]
       properties:
-        reason: {type: string, minLength: 1}
+        reason: {type: string, minLength: 1, maxLength: 2000}
         expected_version:
           $ref: '#/components/schemas/Version'
     CancelRequest:
@@ -1278,7 +1279,7 @@ components:
       additionalProperties: false
       required: [expected_version]
       properties:
-        reason: {type: string}
+        reason: {type: string, maxLength: 2000}
         expected_version:
           $ref: '#/components/schemas/Version'
     CommentRequest:
@@ -1398,7 +1399,7 @@ components:
       additionalProperties: false
       required: [building, floor, room_or_area]
       properties:
-        building: {type: string, minLength: 1}
+        building: {type: string, minLength: 1, maxLength: 255}
         floor: {type: string, minLength: 1}
         room_or_area: {type: string, minLength: 1}
         active: {type: boolean, default: true}
@@ -1407,7 +1408,7 @@ components:
       additionalProperties: false
       minProperties: 1
       properties:
-        building: {type: string, minLength: 1}
+        building: {type: string, minLength: 1, maxLength: 255}
         floor: {type: string, minLength: 1}
         room_or_area: {type: string, minLength: 1}
         active: {type: boolean}

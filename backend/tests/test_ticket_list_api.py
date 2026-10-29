@@ -94,10 +94,15 @@ def test_all_seven_filter_groups_are_combined_with_and_and_utc_boundaries(
         assert ids(before) == [read_data.ids[1]]
         from_boundary = listed(client.get("/api/tickets", params={"created_from": "2026-10-12T04:00:00Z"}), read_contract_registry)
         assert ids(from_boundary) == [read_data.ids[7]]
-        reversed_range = listed(client.get("/api/tickets", params={
+        reversed_range = client.get("/api/tickets", params={
             "created_from": "2026-10-13T00:00:00Z", "created_before": "2026-10-12T00:00:00Z",
+        })
+        assert_error(reversed_range, 422, "VALIDATION_ERROR", read_contract_registry)
+        assert reversed_range.json()["error"]["field_errors"][0]["field"] == "query.created_before"
+        equal_range = listed(client.get("/api/tickets", params={
+            "created_from": "2026-10-12T03:00:00Z", "created_before": "2026-10-12T03:00:00Z",
         }), read_contract_registry)
-        assert reversed_range == {"items": [], "next_cursor": None}
+        assert equal_range == {"items": [], "next_cursor": None}
 
 
 def test_only_admin_may_filter_current_assignee(detail_app, read_data, read_contract_registry):
@@ -208,6 +213,7 @@ def test_query_validation_preserves_raw_utc_and_frozen_parameter_bounds(
 ):
     invalid = (
         {"q": ""}, {"building": ""}, {"cursor": ""}, {"limit": 0}, {"limit": 101},
+        {"q": "x" * 121}, {"building": "x" * 256},
         {"status": "UNKNOWN"}, {"category": "UNKNOWN"}, {"priority": "UNKNOWN"},
         {"current_assignee_id": 0}, {"current_assignee_id": 2**63},
         {"created_from": "2026-10-12T03:00:00+00:00"},
@@ -219,6 +225,10 @@ def test_query_validation_preserves_raw_utc_and_frozen_parameter_bounds(
             response = client.get("/api/tickets", params=params)
             assert_error(response, 422, "VALIDATION_ERROR", read_contract_registry)
             assert response.json()["error"]["field_errors"], params
+        for params in ({"q": "x" * 120}, {"building": "x" * 255}):
+            assert listed(client.get("/api/tickets", params=params), read_contract_registry) == {
+                "items": [], "next_cursor": None,
+            }
 
 
 def test_building_filter_reads_current_disabled_location_but_displays_saved_snapshot(

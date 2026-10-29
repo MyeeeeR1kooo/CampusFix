@@ -8,7 +8,7 @@
  */
 
 import { QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -204,6 +204,42 @@ describe("timeline order and visibility (#91)", () => {
 });
 
 describe("ticket detail page (#91)", () => {
+  it("only validates rejection reason length when rejecting", async () => {
+    installStateMock();
+    await signIn("ADMIN");
+    const ticket = await api.getTicket(1);
+    renderZone(ticket);
+    await userEvent.click(screen.getByRole("button", { name: "Review" }));
+    const dialog = screen.getByRole("dialog");
+    await userEvent.selectOptions(within(dialog).getByRole("combobox", { name: "Decision" }), "REJECT");
+    fireEvent.change(within(dialog).getByRole("textbox", { name: "Rejection reason (required)" }), {
+      target: { value: "x".repeat(2001) },
+    });
+    await userEvent.click(within(dialog).getByRole("button", { name: "Reject" }));
+    expect(await within(dialog).findByText("Reason must be 2000 characters or fewer.")).toBeInTheDocument();
+
+    await userEvent.selectOptions(within(dialog).getByRole("combobox", { name: "Decision" }), "APPROVE");
+    await userEvent.selectOptions(within(dialog).getByRole("combobox", { name: "Category (required)" }), "LIGHTING_ELECTRICAL");
+    await userEvent.selectOptions(within(dialog).getByRole("combobox", { name: "Priority (required)" }), "MEDIUM");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Approve" }));
+    await waitFor(() => expect(api.getTicket(1)).resolves.toMatchObject({ status: "PENDING_ASSIGNMENT" }));
+  });
+
+  it("shows the event note length error before starting work", async () => {
+    installStateMock();
+    await signIn("TECHNICIAN");
+    const ticket = await api.getTicket(3);
+    renderZone(ticket);
+    await userEvent.click(screen.getByRole("button", { name: "Start work" }));
+    const dialog = screen.getByRole("dialog");
+    fireEvent.change(within(dialog).getByRole("textbox", { name: "Opening note" }), {
+      target: { value: "x".repeat(2001) },
+    });
+    await userEvent.click(within(dialog).getByRole("button", { name: "Start work" }));
+    expect(await within(dialog).findByText("Note must be 2000 characters or fewer.")).toBeInTheDocument();
+    expect((await api.getTicket(3)).status).toBe("ASSIGNED");
+  });
+
   it("shows status, owner, next actor and only the reporter's action", async () => {
     installStateMock();
     await signIn("REPORTER");

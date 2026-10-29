@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 
 import { api, type TicketStatus, type TicketSummary } from "../../api";
@@ -58,8 +58,15 @@ export function DispatchQueue({ status, title, actionLabel }: {
 }
 
 export function DispatchWorkbenchPage() {
+  const [search] = useSearchParams();
+  const assignment = search.get("queue") === "assignment";
   return <div className="page">
-    <header className="page-head"><div><h1>Dispatch workbench</h1><p className="page-sub">Review submitted reports and confirm their category and priority.</p></div></header>
-    <DispatchQueue status="SUBMITTED" title="Review queue" actionLabel="Review ticket" />
+    <header className="page-head"><div><h1>Dispatch workbench</h1><p className="page-sub">Review submitted reports and assign approved repairs to an active technician.</p></div></header>
+    <nav className="form-actions" aria-label="Dispatch queues">
+      <Link className={`button${!assignment ? " primary" : ""}`} aria-current={!assignment ? "page" : undefined} to="/workbench">Review queue</Link>
+      <Link className={`button${assignment ? " primary" : ""}`} aria-current={assignment ? "page" : undefined} to="/workbench?queue=assignment">Pending assignment</Link>
+    </nav>
+    <DispatchQueue key={assignment ? "assignment" : "review"} status={assignment ? "PENDING_ASSIGNMENT" : "SUBMITTED"}
+      title={assignment ? "Pending assignment" : "Review queue"} actionLabel={assignment ? "Assign ticket" : "Review ticket"} />
   </div>;
 }

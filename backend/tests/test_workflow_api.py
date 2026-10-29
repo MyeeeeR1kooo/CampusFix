@@ -416,6 +416,42 @@ def test_rework_reason_and_confirm_contract_reject_invalid_input(app, pg_engine,
     assert_state(pg_engine, ticket_id, "PENDING_CONFIRMATION", 5, 0)
 
 
+@pytest.mark.parametrize("role,path,status,version,field", [
+    ("ADMIN", "review", "SUBMITTED", 1, "reason"),
+    ("REPORTER", "cancel", "SUBMITTED", 1, "reason"),
+    ("TECHNICIAN", "start", "ASSIGNED", 3, "note"),
+    ("TECHNICIAN", "resolve", "IN_PROGRESS", 4, "resolution_note"),
+    ("REPORTER", "rework", "PENDING_CONFIRMATION", 5, "reason"),
+])
+def test_event_text_length_limit_rejects_without_writes(
+    app, pg_engine, role, path, status, version, field,
+):
+    ticket_id = assigned_ticket(pg_engine, status, version) if status != "SUBMITTED" else ticket_fixture(pg_engine)
+    client = login(app, role)
+    url = f"/api/tickets/{ticket_id}/{path}"
+
+    def send(text):
+        payload = {"expected_version": version, field: text}
+        if path == "review":
+            payload["decision"] = "REJECT"
+        if path == "resolve":
+            return client.post(url, data=payload, headers=HEADERS)
+        return client.post(url, json=payload, headers=HEADERS)
+
+    rejected = send("x" * 2001)
+    assert rejected.status_code == 422
+    expected_field = "REJECT.reason" if path == "review" else field
+    assert rejected.json()["error"]["field_errors"][0]["field"] == expected_field
+    assert_state(pg_engine, ticket_id, status, version, 0)
+
+    accepted = send("x" * 2000)
+    assert accepted.status_code == 200, accepted.text
+    with Session(pg_engine) as db:
+        event = db.scalar(select(TicketEvent).where(TicketEvent.ticket_id == ticket_id))
+        assert event.note == "x" * 2000
+    assert_state(pg_engine, ticket_id, accepted.json()["status"], version + 1, 1)
+
+
 def test_resolution_photo_is_private_metadata_and_file(app, pg_engine, tmp_path):
     app.dependency_overrides[get_settings] = lambda: Settings(
         _env_file=None, allowed_origins=[ORIGIN], environment="test",

@@ -8,7 +8,7 @@ v1.0; these models alone do not implement or complete its business endpoints.
 from datetime import datetime, timedelta, timezone
 from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator
 
 
 # Existing integer/int64 API IDs map to PostgreSQL signed bigint identities.
@@ -76,10 +76,10 @@ class TicketListFilters(BaseModel):
     status: Optional[TicketStatus] = None
     category: Optional[TicketCategory] = None
     priority: Optional[TicketPriority] = None
-    building: Optional[str] = Field(default=None, min_length=1)
+    building: Optional[str] = Field(default=None, min_length=1, max_length=255)
     created_from: Optional[datetime] = None
     created_before: Optional[datetime] = None
-    q: Optional[str] = Field(default=None, min_length=1)
+    q: Optional[str] = Field(default=None, min_length=1, max_length=120)
     current_assignee_id: Optional[int] = Field(default=None, gt=0, le=_MAX_INT64_ID)
     cursor: Optional[str] = Field(default=None, min_length=1)
     limit: int = Field(default=20, ge=1, le=100)
@@ -112,3 +112,11 @@ class TicketListFilters(BaseModel):
         if value.utcoffset() != timedelta(0):
             raise ValueError("timestamp must be timezone-aware UTC")
         return value.astimezone(timezone.utc)
+
+    @field_validator("created_before")
+    @classmethod
+    def validate_time_range(cls, value: Optional[datetime], info: ValidationInfo) -> Optional[datetime]:
+        created_from = info.data.get("created_from")
+        if value is not None and created_from is not None and created_from > value:
+            raise ValueError("created_before must not precede created_from")
+        return value

@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr, field_
 
 
 LocationText = Annotated[StrictStr, Field(min_length=1)]
+BuildingText = Annotated[StrictStr, Field(min_length=1, max_length=255)]
 
 
 class LocationResponse(BaseModel):
@@ -36,7 +37,7 @@ class LocationListResponse(BaseModel):
 class CreateLocationRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    building: LocationText
+    building: BuildingText
     floor: LocationText
     room_or_area: LocationText
     active: StrictBool = True
@@ -47,7 +48,7 @@ class UpdateLocationRequest(BaseModel):
 
     # An omitted field is untouched; an explicit null fails its non-null type.
     # Defaults are deliberately not validated or included in exclude_unset dumps.
-    building: LocationText = Field(default=None)
+    building: BuildingText = Field(default=None)
     floor: LocationText = Field(default=None)
     room_or_area: LocationText = Field(default=None)
     active: StrictBool = Field(default=None)

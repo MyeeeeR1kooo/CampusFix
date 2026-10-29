@@ -33,8 +33,9 @@ export function parse<S extends z.ZodType>(schema: S, value: unknown): z.output<
 // Runtime validation of the reviewed draft's constraints; response types remain generated.
 // Validate required text without rewriting it or shortening it before maxLength checks.
 const text = z.string().min(1).refine((value) => value.trim().length > 0, "Enter a non-blank value.");
-// Location names follow minLength only and preserve whitespace/case (frozen contract).
+// Location names preserve whitespace and case.
 const locationText = z.string().min(1);
+const buildingText = locationText.max(255);
 const id = z.number().int().positive();
 const version = { expected_version: id };
 export const schemas = {
@@ -42,21 +43,21 @@ export const schemas = {
   create: z.object({ title: text.max(120), description: text.max(4000), category: z.enum(CATEGORY_ORDER), location_id: id }).strict(),
   review: z.discriminatedUnion("decision", [
     z.object({ decision: z.literal("APPROVE"), category: z.enum(CATEGORY_ORDER), priority: z.enum(PRIORITY_ORDER), ...version }).strict(),
-    z.object({ decision: z.literal("REJECT"), reason: text, ...version }).strict(),
+    z.object({ decision: z.literal("REJECT"), reason: text.max(2000), ...version }).strict(),
   ]),
   assign: z.object({ technician_id: id, ...version }).strict(),
-  start: z.object({ note: z.string().optional(), ...version }).strict(),
-  resolve: z.object({ resolution_note: text, ...version }).strict(),
+  start: z.object({ note: z.string().max(2000).optional(), ...version }).strict(),
+  resolve: z.object({ resolution_note: text.max(2000), ...version }).strict(),
   confirm: z.object(version).strict(),
-  rework: z.object({ reason: text, ...version }).strict(),
-  cancel: z.object({ reason: z.string().optional(), ...version }).strict(),
+  rework: z.object({ reason: text.max(2000), ...version }).strict(),
+  cancel: z.object({ reason: z.string().max(2000).optional(), ...version }).strict(),
   // The frozen CommentRequest is minLength 1 / maxLength 2000 and preserves the
   // text as written; unlike the other text fields it has no non-blank rule.
   comment: z.object({ body: z.string().min(1).max(2000), visibility: z.enum(["PUBLIC", "ADMIN_ONLY"]) }).strict(),
-  location: z.object({ building: locationText, floor: locationText, room_or_area: locationText, active: z.boolean().default(true) }).strict(),
-  locationPatch: z.object({ building: locationText.optional(), floor: locationText.optional(), room_or_area: locationText.optional(), active: z.boolean().optional() }).strict().refine((value) => Object.keys(value).length > 0, "Provide at least one field."),
+  location: z.object({ building: buildingText, floor: locationText, room_or_area: locationText, active: z.boolean().default(true) }).strict(),
+  locationPatch: z.object({ building: buildingText.optional(), floor: locationText.optional(), room_or_area: locationText.optional(), active: z.boolean().optional() }).strict().refine((value) => Object.keys(value).length > 0, "Provide at least one field."),
   active: z.object({ active: z.boolean() }).strict(),
-  filters: z.object({ status: z.enum(STATUS_ORDER).optional(), category: z.enum(CATEGORY_ORDER).optional(), priority: z.enum(PRIORITY_ORDER).optional(), building: text.optional(), q: text.optional(), created_from: z.iso.datetime().optional(), created_before: z.iso.datetime().optional(), current_assignee_id: z.coerce.number().int().positive().optional() }).strict(),
+  filters: z.object({ status: z.enum(STATUS_ORDER).optional(), category: z.enum(CATEGORY_ORDER).optional(), priority: z.enum(PRIORITY_ORDER).optional(), building: text.max(255).optional(), q: text.max(120).optional(), created_from: z.iso.datetime().optional(), created_before: z.iso.datetime().optional(), current_assignee_id: z.coerce.number().int().positive().optional() }).strict().refine((value) => !value.created_from || !value.created_before || Date.parse(value.created_from) <= Date.parse(value.created_before), { path: ["created_before"], message: "created_before must not precede created_from" }),
   users: z.object({ role: z.enum(["REPORTER", "TECHNICIAN"]).optional(), active: z.enum(["true", "false"]).optional() }).strict(),
 };
 

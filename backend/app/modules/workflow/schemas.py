@@ -28,14 +28,14 @@ class ApproveRequest(ActionRequest):
 
 class RejectRequest(ActionRequest):
     decision: Literal["REJECT"]
-    reason: Annotated[str, Field(strict=True, min_length=1)]
+    reason: Annotated[str, Field(strict=True, min_length=1, max_length=2000)]
 
 
 ReviewRequest = Annotated[Union[ApproveRequest, RejectRequest], Field(discriminator="decision")]
 
 
 class CancelRequest(ActionRequest):
-    reason: Optional[StrictStr] = None
+    reason: Optional[StrictStr] = Field(default=None, max_length=2000)
 
 
 class AssignRequest(ActionRequest):
@@ -43,8 +43,8 @@ class AssignRequest(ActionRequest):
 
 
 class StartRequest(ActionRequest):
-    note: Optional[StrictStr] = None
+    note: Optional[StrictStr] = Field(default=None, max_length=2000)
 
 
 class ReworkRequest(ActionRequest):
-    reason: Annotated[StrictStr, Field(min_length=1)]
+    reason: Annotated[StrictStr, Field(min_length=1, max_length=2000)]

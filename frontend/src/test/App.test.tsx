@@ -87,7 +87,6 @@ describe("anonymous visitors", () => {
 
 describe("the route table — all nine pages declared", () => {
   const guarded: Array<[string, TestRole, string]> = [
-    ["/workbench", "ADMIN", "Dispatch workbench"],
     ["/analytics", "ADMIN", "Statistics"],
     ["/admin/users", "ADMIN", "Account management"],
     ["/assignments", "TECHNICIAN", "My assignments"],
@@ -156,7 +155,6 @@ describe("the route table — all nine pages declared", () => {
 
 describe("landing pages", () => {
   it.each<[TestRole, string]>([
-    ["ADMIN", "Dispatch workbench"],
     ["TECHNICIAN", "My assignments"],
   ])("%s starts at %s", async (role, label) => {
     signedInAs(role);
@@ -168,6 +166,13 @@ describe("landing pages", () => {
     signedInAs("REPORTER");
     renderAt("/");
     expect(await screen.findByRole("heading", { name: "My repairs" })).toBeInTheDocument();
+  });
+
+  it("ADMIN starts at the review workbench", async () => {
+    signedInAs("ADMIN");
+    renderAt("/");
+    expect(await screen.findByRole("heading", { name: "Dispatch workbench" })).toBeInTheDocument();
+    expect(screen.getByRole("table", { name: "Review queue" })).toBeInTheDocument();
   });
 });
 
@@ -206,7 +211,7 @@ describe("the login form (RHF + Zod, §13.2)", () => {
     await userEvent.type(screen.getByLabelText(/Password/), "demo-password");
     await userEvent.click(screen.getByRole("button", { name: "Log in" }));
 
-    expect(await screen.findByRole("heading", { name: notBuilt("Dispatch workbench") })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "Dispatch workbench" })).toBeTruthy();
     const request = api.calls.find((c) => c.url === "/api/auth/login");
     expect(request?.method).toBe("POST");
     // No actor, no role, no token: identity is the cookie's business.

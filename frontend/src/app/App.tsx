@@ -39,6 +39,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AppLayout } from "../components/AppLayout";
 import { AuthProvider, landingFor, useAuth } from "../features/auth/AuthContext";
 import { LoginPage } from "../features/auth/LoginPage";
+import { DispatchWorkbenchPage } from "../features/dispatch/DispatchWorkbenchPage";
 import { LocationManagementPage } from "../features/locations/LocationManagementPage";
 import { CreateRepairPage } from "../features/tickets/CreateRepairPage";
 import { MyReportsPage } from "../features/tickets/MyReportsPage";
@@ -106,7 +107,7 @@ export default function App() {
                       path="/workbench"
                       element={
                         <RequireRole roles={["ADMIN"]}>
-                          {pending("Dispatch workbench", "舒玺悦 (features/dispatch/)")}
+                          <DispatchWorkbenchPage />
                         </RequireRole>
                       }
                     />

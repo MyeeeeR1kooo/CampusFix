@@ -20,6 +20,7 @@ from app.models import Attachment, Ticket
 MAX_PHOTOS = 5
 MAX_BYTES = 5 * 1024 * 1024
 MIME_BY_FORMAT = {"JPEG": "image/jpeg", "PNG": "image/png", "WEBP": "image/webp"}
+_PENDING_PUBLICATIONS = "attachment_pending_publications"
 
 
 @dataclass
@@ -55,7 +56,7 @@ def discard_photos(photos: list[PreparedPhoto], published: list[Path] = None) ->
 
 def prepare_photos(files: list[UploadFile], storage_path: Path) -> list[PreparedPhoto]:
     if len(files) > MAX_PHOTOS:
-        raise AppError(ErrorCode.VALIDATION_ERROR, 422, "Too many result photos.", [
+        raise AppError(ErrorCode.VALIDATION_ERROR, 422, "Too many photos.", [
             {"field": "photos", "message": "At most five photos are allowed.", "type": "value_error"},
         ])
     if not files:
@@ -102,6 +103,17 @@ def prepare_photos(files: list[UploadFile], storage_path: Path) -> list[Prepared
         raise
 
 
+def _mark_committed_photos(session: Session) -> None:
+    if not session.in_nested_transaction():
+        for photo in session.info.pop(_PENDING_PUBLICATIONS, []):
+            photo._publication.committed = True
+
+
+def _clear_rolled_back_photos(session: Session, transaction) -> None:
+    if transaction.parent is None:
+        session.info.pop(_PENDING_PUBLICATIONS, None)
+
+
 def stage_photos(
     db: Session, ticket_id: int, actor_id: int, photos: list[PreparedPhoto],
     *, purpose: Literal["REPORT_PHOTO", "RESOLUTION_PHOTO"] = "RESOLUTION_PHOTO",
@@ -130,11 +142,10 @@ def stage_photos(
             original_name=photo.original_name, mime=photo.mime, size=photo.size,
             purpose=purpose,
         ))
-    def committed(session):
-        if not session.in_nested_transaction():
-            for photo in photos:
-                photo._publication.committed = True
-    event.listen(db, "after_commit", committed, insert=True)
+    if not event.contains(db, "after_commit", _mark_committed_photos):
+        event.listen(db, "after_commit", _mark_committed_photos, insert=True)
+        event.listen(db, "after_soft_rollback", _clear_rolled_back_photos)
+    db.info.setdefault(_PENDING_PUBLICATIONS, []).extend(photos)
 
 
 def publish_photos(photos: list[PreparedPhoto]) -> list[Path]:

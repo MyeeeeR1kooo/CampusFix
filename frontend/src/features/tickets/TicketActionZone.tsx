@@ -215,6 +215,9 @@ const reviewSchema = z
     if (!values.reason.trim()) {
       context.addIssue({ code: "custom", path: ["reason"], message: "Enter a rejection reason." });
     }
+    if (values.reason.length > 2000) {
+      context.addIssue({ code: "custom", path: ["reason"], message: "Reason must be 2000 characters or fewer." });
+    }
   });
 
 type ReviewValues = z.infer<typeof reviewSchema>;
@@ -424,13 +427,13 @@ function AssignDialog({ ticket, close, fallback }: DialogProps) {
   );
 }
 
-const startSchema = z.object({ note: z.string() });
+const startSchema = z.object({ note: z.string().max(2000, "Note must be 2000 characters or fewer.") });
 
 type StartValues = z.infer<typeof startSchema>;
 
 function StartDialog({ ticket, close, fallback }: DialogProps) {
   const { run, pending } = useActionRunner(ticket.id, close);
-  const { register, handleSubmit } = useForm<StartValues>({
+  const { register, handleSubmit, formState: { errors } } = useForm<StartValues>({
     resolver: zodResolver(startSchema),
     defaultValues: { note: "" },
   });
@@ -461,6 +464,7 @@ function StartDialog({ ticket, close, fallback }: DialogProps) {
         label="Opening note"
         hint="Optional — recorded on the work-started event."
         rows={2}
+        error={errors.note?.message}
         {...register("note")}
       />
     </ConfirmDialog>
@@ -468,7 +472,7 @@ function StartDialog({ ticket, close, fallback }: DialogProps) {
 }
 
 const resolveSchema = z.object({
-  resolution_note: z.string().trim().min(1, "Describe the work you carried out."),
+  resolution_note: z.string().trim().min(1, "Describe the work you carried out.").max(2000, "Resolution note must be 2000 characters or fewer."),
 });
 
 type ResolveValues = z.infer<typeof resolveSchema>;
@@ -543,7 +547,7 @@ function ConfirmDialogAction({ ticket, close, fallback }: DialogProps) {
 }
 
 const reworkSchema = z.object({
-  reason: z.string().trim().min(1, "Enter a reason so the technician knows what to fix."),
+  reason: z.string().trim().min(1, "Enter a reason so the technician knows what to fix.").max(2000, "Reason must be 2000 characters or fewer."),
 });
 
 type ReworkValues = z.infer<typeof reworkSchema>;
@@ -598,7 +602,7 @@ function ReworkDialog({ ticket, close, fallback }: DialogProps) {
   );
 }
 
-const cancelSchema = z.object({ reason: z.string() });
+const cancelSchema = z.object({ reason: z.string().max(2000, "Reason must be 2000 characters or fewer.") });
 
 type CancelValues = z.infer<typeof cancelSchema>;
 

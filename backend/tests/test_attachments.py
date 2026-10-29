@@ -155,6 +155,7 @@ def test_six_images_are_rejected_before_writing(tmp_path):
     with pytest.raises(AppError) as caught:
         prepare_photos([upload() for _ in range(6)], tmp_path)
     assert caught.value.status_code == 422
+    assert caught.value.message == "Too many photos."
     assert disk_files(tmp_path) == []
 
 
@@ -219,6 +220,39 @@ def test_post_commit_notification_error_cannot_delete_durable_files(tmp_path, pg
     assert prepared[0].final_path.read_bytes() == picture()
     with Session(pg_engine) as db:
         assert db.scalar(select(func.count()).select_from(Attachment)) == 1
+
+
+def test_reused_session_keeps_one_publication_listener_and_clears_rollback(tmp_path, pg_engine):
+    ticket_id = ticket_fixture(pg_engine)
+    batches = [prepare_photos([upload()], tmp_path) for _ in range(4)]
+    try:
+        with Session(pg_engine) as db:
+            initial_listeners = len(list(db.dispatch.after_commit))
+            for batch in batches[:2]:
+                stage_photos(db, ticket_id, 1, batch, purpose="REPORT_PHOTO")
+                db.flush()
+                publish_photos(batch)
+                db.commit()
+                assert len(list(db.dispatch.after_commit)) == initial_listeners + 1
+                assert batch[0]._publication.committed
+
+            stage_photos(db, ticket_id, 1, batches[2], purpose="REPORT_PHOTO")
+            db.flush()
+            publish_photos(batches[2])
+            db.rollback()
+            discard_photos(batches[2], [batches[2][0].final_path])
+            assert not batches[2][0]._publication.committed
+
+            stage_photos(db, ticket_id, 1, batches[3], purpose="REPORT_PHOTO")
+            db.flush()
+            publish_photos(batches[3])
+            db.commit()
+            assert len(list(db.dispatch.after_commit)) == initial_listeners + 1
+            assert batches[3][0]._publication.committed
+            assert not batches[2][0]._publication.committed
+    finally:
+        discard_photos([photo for batch in batches for photo in batch])
+    assert len(disk_files(tmp_path)) == 3
 
 
 def test_two_batches_in_a_core_autoflush_disabled_transaction_share_the_limit(tmp_path, pg_engine):

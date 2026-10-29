@@ -257,6 +257,19 @@ describe("mock filters and cursor contract — FR-04", () => {
     expect((await api.listTickets({ q: "no match" })).items).toEqual([]);
   });
 
+  it("enforces filter lengths and rejects reversed creation ranges", async () => {
+    await login(3);
+    await expect(api.listTickets({ q: "x".repeat(121) })).rejects.toMatchObject({ status: 422 });
+    await expect(api.listTickets({ building: "x".repeat(256) })).rejects.toMatchObject({ status: 422 });
+    expect((await api.listTickets({ q: "x".repeat(120) })).items).toEqual([]);
+    expect((await api.listTickets({ building: "x".repeat(255) })).items).toEqual([]);
+    const created_at = (await api.getTicket(1)).created_at;
+    await expect(api.listTickets({ created_from: new Date(Date.parse(created_at) + 1000).toISOString(), created_before: created_at }))
+      .rejects.toMatchObject({ status: 422, fields: { created_before: expect.any(String) } });
+    expect(await api.listTickets({ created_from: created_at, created_before: created_at }))
+      .toEqual({ items: [], next_cursor: null });
+  });
+
   it("uses stable keyset cursors and rejects mismatched filters, roles and malformed values", async () => {
     await login(3);
     const first = await api.listTickets({ limit: 2 });
@@ -390,6 +403,32 @@ describe("mutable workflow — FR-02, FR-05–09; UC-01–04", () => {
     await login(4);
     expect(await api.cancelTicket(9, { expected_version: 1 })).toMatchObject({ status: "CANCELLED", version: 2, allowed_actions: [] });
     expect((await api.getTicket(9)).timeline.filter((entry) => entry.kind === "EVENT").at(-1)).toMatchObject({ type: "TICKET_CANCELLED" });
+  });
+
+  it("rejects oversized event text without changing tickets", async () => {
+    const longText = "x".repeat(2001);
+    await login(3);
+    const submitted = await api.getTicket(1);
+    await expect(api.reviewTicket(1, { decision: "REJECT", reason: longText, expected_version: 1 }))
+      .rejects.toMatchObject({ status: 422 });
+    expect(await api.getTicket(1)).toEqual(submitted);
+
+    await login(2);
+    const assigned = await api.getTicket(3);
+    await expect(api.startTicket(3, { note: longText, expected_version: 3 })).rejects.toMatchObject({ status: 422 });
+    expect(await api.getTicket(3)).toEqual(assigned);
+    const processing = await api.getTicket(4);
+    await expect(api.resolveTicket(4, { resolution_note: longText, expected_version: 4 })).rejects.toMatchObject({ status: 422 });
+    expect(await api.getTicket(4)).toEqual(processing);
+
+    await login(1);
+    const awaiting = await api.getTicket(5);
+    await expect(api.reworkTicket(5, { reason: longText, expected_version: 5 })).rejects.toMatchObject({ status: 422 });
+    expect(await api.getTicket(5)).toEqual(awaiting);
+    await login(4);
+    const cancellable = await api.getTicket(9);
+    await expect(api.cancelTicket(9, { reason: longText, expected_version: 1 })).rejects.toMatchObject({ status: 422 });
+    expect(await api.getTicket(9)).toEqual(cancellable);
   });
 
   it("rejects invalid assignments without changing state, assignments or events", async () => {
@@ -537,6 +576,18 @@ describe("comments, files, locations and accounts — FR-03, FR-10, FR-12", () =
     await expect(http.post("/api/admin/locations", { ...defaults, extra: true })).rejects.toMatchObject({ status: 422 });
     for (const payload of [{}, { extra: true }]) await expect(http.patch("/api/admin/locations/1", payload)).rejects.toMatchObject({ status: 422 });
     expect(await api.updateLocation(1, { active: false })).toMatchObject({ ...{ building: "Teaching Building A", floor: "3", room_or_area: "301" }, active: false });
+  });
+
+  it("limits building names on create and update", async () => {
+    await login(3);
+    const longest = "x".repeat(255);
+    const created = await api.createLocation({ building: longest, floor: "1", room_or_area: "101", active: true });
+    expect(created.building).toBe(longest);
+    await expect(api.createLocation({ building: longest + "x", floor: "2", room_or_area: "201", active: true }))
+      .rejects.toMatchObject({ status: 422, fields: { building: expect.any(String) } });
+    await expect(api.updateLocation(created.id, { building: longest + "x" }))
+      .rejects.toMatchObject({ status: 422, fields: { building: expect.any(String) } });
+    expect((await api.listAdminLocations({ limit: 100 })).items.find((item) => item.id === created.id)?.building).toBe(longest);
   });
 
   it("lists managed accounts and disallows Admin management and inactive logins", async () => {

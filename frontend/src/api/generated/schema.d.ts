@@ -1,9 +1,9 @@
 /*
  * CampusFix #48 — generated API types. Run `npm run gen:api`, never edit by hand.
  *   contract version : 1.0.0
- *   contract digest  : sha256:e958fbf475b9
+ *   contract digest  : sha256:7904f9a39ec6
  *   contract source  : docs/api/openapi.yaml
- *   generated at     : 2026-10-07T06:01:36.263Z
+ *   generated at     : 2026-10-29T09:32:42.148Z
  *
  * The digest is the anchor while #46 is unmerged: two runs over the same YAML differ only
  * by timestamp, and any contract edit changes it. Record the upstream commit in the commit
@@ -114,6 +114,7 @@ export interface paths {
          *     筛选以 AND 组合；按 created_at DESC, id DESC 排序。
          *     cursor 为含这两个排序字段的不透明游标，分页期间保持相同筛选条件。
          *     created_from 含边界、created_before 不含边界，均为 UTC 时间。
+         *     created_from 晚于 created_before 时返回 422 / VALIDATION_ERROR；相等时返回空列表。
          *     building 按关联地点的楼宇筛选；历史显示仍使用 location_label_snapshot。
          *     q 匹配工单编号或标题；无匹配返回 items=[]、next_cursor=null。
          *     current_assignee_id 筛选仅 ADMIN 可用，其他角色传入时返回 403 / FORBIDDEN。

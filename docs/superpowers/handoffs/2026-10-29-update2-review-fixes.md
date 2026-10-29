@@ -28,7 +28,7 @@
 - `docs/superpowers/specs/CampusFix P0 Requirements & Design Baseline.md`：记录批准的长度及时间区间边界。
 - 测试文件：`backend/tests/test_attachments.py`、`test_location_schemas.py`、`test_locations_api.py`、`test_ticket_list_api.py`、`test_workflow_api.py`，以及 `frontend/src/test/mockApi.test.ts`、`ticketDetail.test.tsx`。
 
-审核与派单工作台后续集成应关注 API 契约、冻结基线、Mock、共享动作区和地点表单；这些文件的并行修改需要与 #52/#53 开发者协调。本记录 PR 仅新增本文档，业务修改已在以下提交中交付。
+审核与派单工作台后续集成应关注 API 契约、冻结基线、Mock、共享动作区和地点表单；这些文件的并行修改需要与 #52/#53 开发者协调。本记录 PR 新增本文档，并通过仓库生成脚本补齐前端类型同步；业务修改已在以下提交中交付。
 
 2026-10-29 检查开放 PR #108、#109 的文件清单：二者均未直接修改上述共享文件；#109 修改 `TicketDetailPage.tsx`，集成时需关注其与共享动作区的调用关系。
 
@@ -41,7 +41,7 @@
 - `b42cf1f`：将上述代码合并至 `main`。
 - `5822306`：将 `main` 同步至 `admin-flow`。
 
-上述代码合并已推送 GitHub。本次补充 PR 用于记录问题、范围与验证证据，不重复实施代码修复。
+上述代码合并已推送 GitHub。本次补充 PR 用于记录问题、范围与验证证据，并补齐前端生成类型与契约的同步。
 
 ## 验证证据与限制
 
@@ -53,3 +53,7 @@
 - 后端覆盖照片超限写入前拒绝、复用 Session 监听器数量稳定、回滚记录清理、筛选边界、超长请求返回 422 且无业务写入副作用。
 - 最终前端修订后未能再次运行后端：本地没有 `pytest` 命令，Docker daemon 拒绝访问；后端代码在此前 743 项通过后未再修改。
 - 本次补充文档不改变运行行为，不将既有测试结果表述为本次重新执行；未新增端到端或外部集成测试证据。
+
+## 补充 PR 的 CI 检查与修正
+
+PR #110 首次 CI 后端通过，前端在契约摘要检查失败，尚未执行 vitest/build。原因是原修复更新 OpenAPI 后未重新生成前端类型。已运行 `npm run gen:api` 更新 `frontend/src/api/generated/schema.d.ts`：契约摘要变为 `7904f9a39ec6`，并同步反向时间区间的接口注释；运行时类型结构不变。本地 `npm run build` 通过。最终 CI 结果以 PR #110 检查记录为准。

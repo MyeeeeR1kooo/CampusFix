@@ -1,0 +1,984 @@
+{
+  "started_at": "2026-10-31T07:23:47.961Z",
+  "base_url": "http://127.0.0.1:41752",
+  "scenarios": [
+    {
+      "name": "52-review-queue-pagination-and-priority-filter",
+      "result": "PASS",
+      "duration_ms": 327
+    },
+    {
+      "name": "52-approve-category-priority-and-queue-transition",
+      "result": "PASS",
+      "duration_ms": 320
+    },
+    {
+      "name": "52-reject-requires-reason-and-records-timeline",
+      "result": "PASS",
+      "duration_ms": 246
+    },
+    {
+      "name": "52-invalid-priority-is-422-without-side-effects",
+      "result": "PASS",
+      "duration_ms": 11
+    },
+    {
+      "name": "52-stale-review-refreshes-winning-state",
+      "result": "PASS",
+      "duration_ms": 289
+    },
+    {
+      "name": "53-paginated-candidates-assign-owner-history-timeline",
+      "result": "PASS",
+      "duration_ms": 413
+    },
+    {
+      "name": "53-current-technician-gains-access-and-starts",
+      "result": "PASS",
+      "duration_ms": 1513
+    },
+    {
+      "name": "52-53-non-admin-ui-and-real-api-denial",
+      "result": "PASS",
+      "duration_ms": 139
+    },
+    {
+      "name": "53-stale-assignment-retains-one-winning-owner",
+      "result": "PASS",
+      "duration_ms": 473
+    },
+    {
+      "name": "53-disabled-loaded-candidate-field-error-and-correction",
+      "result": "PASS",
+      "duration_ms": 413
+    },
+    {
+      "name": "53-no-active-candidates-disables-confirmation",
+      "result": "PASS",
+      "duration_ms": 954
+    },
+    {
+      "name": "53-priority-filter-and-queue-switch-reset",
+      "result": "PASS",
+      "duration_ms": 133
+    },
+    {
+      "name": "53-mobile-queue-has-no-document-overflow",
+      "result": "FAIL",
+      "error": "Expected values to be strictly equal:\n\nfalse !== true\n"
+    }
+  ],
+  "network": [
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 401
+    },
+    {
+      "role": "ADMIN",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets?status=SUBMITTED&limit=20",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 401
+    },
+    {
+      "role": "REPORTER",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/tickets?limit=20",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 401
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 401
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 401
+    },
+    {
+      "role": "ADMIN",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets?status=SUBMITTED&limit=20",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets?status=SUBMITTED&limit=20",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets?status=SUBMITTED&cursor=eyJjcmVhdGVkX2F0IjoiMjAyNi0xMC0zMVQwNzoyMzo0OS4zNjA1NjhaIiwiaWQiOjMsInNjb3BlIjoiMjJiMzAwNzFlMzFmNTBhNTI2ZjQ1YWE3M2ExOGM3NWE0NDlkOWVmN2U3ZTg1ZDkxNzk4ZjIwZDM4MjhjZGJjOCIsInYiOjF9.M7JnOed_YIrmZzz9P9bE44izjMgq7GBRMn1XsnYvhT8&limit=20",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets?status=SUBMITTED&priority=HIGH&limit=20",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets?status=SUBMITTED&limit=20",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets?status=SUBMITTED&cursor=eyJjcmVhdGVkX2F0IjoiMjAyNi0xMC0zMVQwNzoyMzo0OS4zNjA1NjhaIiwiaWQiOjMsInNjb3BlIjoiMjJiMzAwNzFlMzFmNTBhNTI2ZjQ1YWE3M2ExOGM3NWE0NDlkOWVmN2U3ZTg1ZDkxNzk4ZjIwZDM4MjhjZGJjOCIsInYiOjF9.M7JnOed_YIrmZzz9P9bE44izjMgq7GBRMn1XsnYvhT8&limit=20",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "POST",
+      "path": "/api/tickets/1/review",
+      "status": 200,
+      "body": {
+        "decision": "APPROVE",
+        "category": "HVAC",
+        "priority": "HIGH",
+        "expected_version": 1
+      }
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets?status=SUBMITTED&limit=20",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets?status=PENDING_ASSIGNMENT&limit=20",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/2",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "POST",
+      "path": "/api/tickets/2/review",
+      "status": 200,
+      "body": {
+        "decision": "REJECT",
+        "reason": "Fictional repair outside facilities scope",
+        "expected_version": 1
+      }
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/2",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/3",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/3",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "POST",
+      "path": "/api/tickets/3/review",
+      "status": 200,
+      "body": {
+        "decision": "APPROVE",
+        "category": "HVAC",
+        "priority": "HIGH",
+        "expected_version": 1
+      }
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/3",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "POST",
+      "path": "/api/tickets/3/review",
+      "status": 409,
+      "body": {
+        "decision": "APPROVE",
+        "category": "HVAC",
+        "priority": "LOW",
+        "expected_version": 1
+      }
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/3",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets?status=PENDING_ASSIGNMENT&limit=20",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets?status=PENDING_ASSIGNMENT&priority=HIGH&limit=20",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/users?role=TECHNICIAN&active=true&limit=100",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/users?role=TECHNICIAN&active=true&limit=100&cursor=eyJhY3RpdmUiOnRydWUsImNyZWF0ZWRfYXQiOiIyMDI2LTEwLTMxVDA3OjIzOjQ3LjY2MjY5OSswMDowMCIsImlkIjo1LCJyb2xlIjoiVEVDSE5JQ0lBTiJ9bRDG3-T35OP4Y9NHYHnWhhfd1s6U7DqHvHQVYGQB1QM",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "POST",
+      "path": "/api/tickets/1/assign",
+      "status": 200,
+      "body": {
+        "technician_id": 2,
+        "expected_version": 2
+      }
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets?status=SUBMITTED&limit=20",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets?status=PENDING_ASSIGNMENT&limit=20",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "POST",
+      "path": "/api/tickets/1/start",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 404
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 404
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/4",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "POST",
+      "path": "/api/tickets/4/review",
+      "status": 200,
+      "body": {
+        "decision": "APPROVE",
+        "category": "HVAC",
+        "priority": "HIGH",
+        "expected_version": 1
+      }
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/4",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/users?role=TECHNICIAN&active=true&limit=100",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/users?role=TECHNICIAN&active=true&limit=100&cursor=eyJhY3RpdmUiOnRydWUsImNyZWF0ZWRfYXQiOiIyMDI2LTEwLTMxVDA3OjIzOjQ3LjY2MjY5OSswMDowMCIsImlkIjo1LCJyb2xlIjoiVEVDSE5JQ0lBTiJ9bRDG3-T35OP4Y9NHYHnWhhfd1s6U7DqHvHQVYGQB1QM",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/4",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/users?role=TECHNICIAN&active=true&limit=100",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/users?role=TECHNICIAN&active=true&limit=100&cursor=eyJhY3RpdmUiOnRydWUsImNyZWF0ZWRfYXQiOiIyMDI2LTEwLTMxVDA3OjIzOjQ3LjY2MjY5OSswMDowMCIsImlkIjo1LCJyb2xlIjoiVEVDSE5JQ0lBTiJ9bRDG3-T35OP4Y9NHYHnWhhfd1s6U7DqHvHQVYGQB1QM",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "POST",
+      "path": "/api/tickets/4/assign",
+      "status": 200,
+      "body": {
+        "technician_id": 4,
+        "expected_version": 2
+      }
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/4",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "POST",
+      "path": "/api/tickets/4/assign",
+      "status": 409,
+      "body": {
+        "technician_id": 2,
+        "expected_version": 2
+      }
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/4",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/5",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "POST",
+      "path": "/api/tickets/5/review",
+      "status": 200,
+      "body": {
+        "decision": "APPROVE",
+        "category": "HVAC",
+        "priority": "HIGH",
+        "expected_version": 1
+      }
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/5",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/users?role=TECHNICIAN&active=true&limit=100",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/users?role=TECHNICIAN&active=true&limit=100&cursor=eyJhY3RpdmUiOnRydWUsImNyZWF0ZWRfYXQiOiIyMDI2LTEwLTMxVDA3OjIzOjQ3LjY2MjY5OSswMDowMCIsImlkIjo1LCJyb2xlIjoiVEVDSE5JQ0lBTiJ9bRDG3-T35OP4Y9NHYHnWhhfd1s6U7DqHvHQVYGQB1QM",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "POST",
+      "path": "/api/tickets/5/assign",
+      "status": 422,
+      "body": {
+        "technician_id": 4,
+        "expected_version": 2
+      }
+    },
+    {
+      "role": "ADMIN",
+      "method": "POST",
+      "path": "/api/tickets/5/assign",
+      "status": 200,
+      "body": {
+        "technician_id": 2,
+        "expected_version": 2
+      }
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/5",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/6",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "POST",
+      "path": "/api/tickets/6/review",
+      "status": 200,
+      "body": {
+        "decision": "APPROVE",
+        "category": "HVAC",
+        "priority": "LOW",
+        "expected_version": 1
+      }
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/6",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/6",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/users?role=TECHNICIAN&active=true&limit=100",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets?status=PENDING_ASSIGNMENT&limit=20",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets?status=PENDING_ASSIGNMENT&priority=HIGH&limit=20",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets?status=SUBMITTED&limit=20",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets?status=PENDING_ASSIGNMENT&limit=20",
+      "status": 200
+    }
+  ],
+  "page_errors": [],
+  "tickets": {
+    "approve-and-assign": {
+      "id": 1,
+      "title": "Dispatch E2E 01 approve-and-assign",
+      "status": "IN_PROGRESS",
+      "version": 4,
+      "current_assignee_id": 2,
+      "assignments": [
+        {
+          "technician_id": 2,
+          "ended_at": null
+        }
+      ],
+      "events": [
+        "TICKET_SUBMITTED",
+        "TICKET_APPROVED",
+        "TICKET_ASSIGNED",
+        "WORK_STARTED"
+      ]
+    },
+    "reject": {
+      "id": 2,
+      "title": "Dispatch E2E 02 reject",
+      "status": "REJECTED",
+      "version": 2,
+      "current_assignee_id": null,
+      "assignments": [],
+      "events": [
+        "TICKET_SUBMITTED",
+        "TICKET_REJECTED"
+      ]
+    },
+    "stale-review": {
+      "id": 3,
+      "title": "Dispatch E2E 03 stale-review",
+      "status": "PENDING_ASSIGNMENT",
+      "version": 2,
+      "current_assignee_id": null,
+      "assignments": [],
+      "events": [
+        "TICKET_SUBMITTED",
+        "TICKET_APPROVED"
+      ]
+    },
+    "stale-assign": {
+      "id": 4,
+      "title": "Dispatch E2E 04 stale-assign",
+      "status": "ASSIGNED",
+      "version": 3,
+      "current_assignee_id": 4,
+      "assignments": [
+        {
+          "technician_id": 4,
+          "ended_at": null
+        }
+      ],
+      "events": [
+        "TICKET_SUBMITTED",
+        "TICKET_APPROVED",
+        "TICKET_ASSIGNED"
+      ]
+    },
+    "disabled-candidate": {
+      "id": 5,
+      "title": "Dispatch E2E 05 disabled-candidate",
+      "status": "ASSIGNED",
+      "version": 3,
+      "current_assignee_id": 2,
+      "assignments": [
+        {
+          "technician_id": 2,
+          "ended_at": null
+        }
+      ],
+      "events": [
+        "TICKET_SUBMITTED",
+        "TICKET_APPROVED",
+        "TICKET_ASSIGNED"
+      ]
+    },
+    "no-candidates": {
+      "id": 6,
+      "title": "Dispatch E2E 06 no-candidates",
+      "status": "PENDING_ASSIGNMENT",
+      "version": 2,
+      "current_assignee_id": null,
+      "assignments": [],
+      "events": [
+        "TICKET_SUBMITTED",
+        "TICKET_APPROVED"
+      ]
+    },
+    "pagination-0": {
+      "id": 7,
+      "title": "Dispatch E2E 07 pagination-0",
+      "status": "SUBMITTED",
+      "version": 1,
+      "current_assignee_id": null,
+      "assignments": [],
+      "events": [
+        "TICKET_SUBMITTED"
+      ]
+    },
+    "pagination-1": {
+      "id": 8,
+      "title": "Dispatch E2E 08 pagination-1",
+      "status": "SUBMITTED",
+      "version": 1,
+      "current_assignee_id": null,
+      "assignments": [],
+      "events": [
+        "TICKET_SUBMITTED"
+      ]
+    },
+    "pagination-2": {
+      "id": 9,
+      "title": "Dispatch E2E 09 pagination-2",
+      "status": "SUBMITTED",
+      "version": 1,
+      "current_assignee_id": null,
+      "assignments": [],
+      "events": [
+        "TICKET_SUBMITTED"
+      ]
+    },
+    "pagination-3": {
+      "id": 10,
+      "title": "Dispatch E2E 10 pagination-3",
+      "status": "SUBMITTED",
+      "version": 1,
+      "current_assignee_id": null,
+      "assignments": [],
+      "events": [
+        "TICKET_SUBMITTED"
+      ]
+    },
+    "pagination-4": {
+      "id": 11,
+      "title": "Dispatch E2E 11 pagination-4",
+      "status": "SUBMITTED",
+      "version": 1,
+      "current_assignee_id": null,
+      "assignments": [],
+      "events": [
+        "TICKET_SUBMITTED"
+      ]
+    },
+    "pagination-5": {
+      "id": 12,
+      "title": "Dispatch E2E 12 pagination-5",
+      "status": "SUBMITTED",
+      "version": 1,
+      "current_assignee_id": null,
+      "assignments": [],
+      "events": [
+        "TICKET_SUBMITTED"
+      ]
+    },
+    "pagination-6": {
+      "id": 13,
+      "title": "Dispatch E2E 13 pagination-6",
+      "status": "SUBMITTED",
+      "version": 1,
+      "current_assignee_id": null,
+      "assignments": [],
+      "events": [
+        "TICKET_SUBMITTED"
+      ]
+    },
+    "pagination-7": {
+      "id": 14,
+      "title": "Dispatch E2E 14 pagination-7",
+      "status": "SUBMITTED",
+      "version": 1,
+      "current_assignee_id": null,
+      "assignments": [],
+      "events": [
+        "TICKET_SUBMITTED"
+      ]
+    },
+    "pagination-8": {
+      "id": 15,
+      "title": "Dispatch E2E 15 pagination-8",
+      "status": "SUBMITTED",
+      "version": 1,
+      "current_assignee_id": null,
+      "assignments": [],
+      "events": [
+        "TICKET_SUBMITTED"
+      ]
+    },
+    "pagination-9": {
+      "id": 16,
+      "title": "Dispatch E2E 16 pagination-9",
+      "status": "SUBMITTED",
+      "version": 1,
+      "current_assignee_id": null,
+      "assignments": [],
+      "events": [
+        "TICKET_SUBMITTED"
+      ]
+    },
+    "pagination-10": {
+      "id": 17,
+      "title": "Dispatch E2E 17 pagination-10",
+      "status": "SUBMITTED",
+      "version": 1,
+      "current_assignee_id": null,
+      "assignments": [],
+      "events": [
+        "TICKET_SUBMITTED"
+      ]
+    },
+    "pagination-11": {
+      "id": 18,
+      "title": "Dispatch E2E 18 pagination-11",
+      "status": "SUBMITTED",
+      "version": 1,
+      "current_assignee_id": null,
+      "assignments": [],
+      "events": [
+        "TICKET_SUBMITTED"
+      ]
+    },
+    "pagination-12": {
+      "id": 19,
+      "title": "Dispatch E2E 19 pagination-12",
+      "status": "SUBMITTED",
+      "version": 1,
+      "current_assignee_id": null,
+      "assignments": [],
+      "events": [
+        "TICKET_SUBMITTED"
+      ]
+    },
+    "pagination-13": {
+      "id": 20,
+      "title": "Dispatch E2E 20 pagination-13",
+      "status": "SUBMITTED",
+      "version": 1,
+      "current_assignee_id": null,
+      "assignments": [],
+      "events": [
+        "TICKET_SUBMITTED"
+      ]
+    },
+    "pagination-14": {
+      "id": 21,
+      "title": "Dispatch E2E 21 pagination-14",
+      "status": "SUBMITTED",
+      "version": 1,
+      "current_assignee_id": null,
+      "assignments": [],
+      "events": [
+        "TICKET_SUBMITTED"
+      ]
+    },
+    "pagination-15": {
+      "id": 22,
+      "title": "Dispatch E2E 22 pagination-15",
+      "status": "SUBMITTED",
+      "version": 1,
+      "current_assignee_id": null,
+      "assignments": [],
+      "events": [
+        "TICKET_SUBMITTED"
+      ]
+    }
+  },
+  "browser_version": "156.0.8078.76",
+  "mobile_layout": {
+    "viewport_width": 390,
+    "document_width": 394,
+    "overflowing_elements": [
+      {
+        "tag": "NAV",
+        "class": "form-actions",
+        "right": 394
+      }
+    ]
+  },
+  "result": "FAIL",
+  "error": "Expected values to be strictly equal:\n\nfalse !== true\n",
+  "error_stack": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at file:///Users/lzt778899/CampusFix/CampusFix/tests/e2e/dispatch-browser.mjs:345:12\n    at async scenario (file:///Users/lzt778899/CampusFix/CampusFix/tests/e2e/dispatch-browser.mjs:59:5)\n    at async file:///Users/lzt778899/CampusFix/CampusFix/tests/e2e/dispatch-browser.mjs:333:3",
+  "finished_at": "2026-10-31T07:23:54.818Z"
+}

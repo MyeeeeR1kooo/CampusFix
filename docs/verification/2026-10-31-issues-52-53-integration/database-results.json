@@ -1,0 +1,118 @@
+{
+  "result": "PASS",
+  "ticket_checks": [
+    {
+      "ticket_id": 1,
+      "label": "approve-and-assign",
+      "result": "PASS"
+    },
+    {
+      "ticket_id": 2,
+      "label": "reject",
+      "result": "PASS"
+    },
+    {
+      "ticket_id": 3,
+      "label": "stale-review",
+      "result": "PASS"
+    },
+    {
+      "ticket_id": 4,
+      "label": "stale-assign",
+      "result": "PASS"
+    },
+    {
+      "ticket_id": 5,
+      "label": "disabled-candidate",
+      "result": "PASS"
+    },
+    {
+      "ticket_id": 6,
+      "label": "no-candidates",
+      "result": "PASS"
+    },
+    {
+      "ticket_id": 7,
+      "label": "pagination-0",
+      "result": "PASS"
+    },
+    {
+      "ticket_id": 8,
+      "label": "pagination-1",
+      "result": "PASS"
+    },
+    {
+      "ticket_id": 9,
+      "label": "pagination-2",
+      "result": "PASS"
+    },
+    {
+      "ticket_id": 10,
+      "label": "pagination-3",
+      "result": "PASS"
+    },
+    {
+      "ticket_id": 11,
+      "label": "pagination-4",
+      "result": "PASS"
+    },
+    {
+      "ticket_id": 12,
+      "label": "pagination-5",
+      "result": "PASS"
+    },
+    {
+      "ticket_id": 13,
+      "label": "pagination-6",
+      "result": "PASS"
+    },
+    {
+      "ticket_id": 14,
+      "label": "pagination-7",
+      "result": "PASS"
+    },
+    {
+      "ticket_id": 15,
+      "label": "pagination-8",
+      "result": "PASS"
+    },
+    {
+      "ticket_id": 16,
+      "label": "pagination-9",
+      "result": "PASS"
+    },
+    {
+      "ticket_id": 17,
+      "label": "pagination-10",
+      "result": "PASS"
+    },
+    {
+      "ticket_id": 18,
+      "label": "pagination-11",
+      "result": "PASS"
+    },
+    {
+      "ticket_id": 19,
+      "label": "pagination-12",
+      "result": "PASS"
+    },
+    {
+      "ticket_id": 20,
+      "label": "pagination-13",
+      "result": "PASS"
+    },
+    {
+      "ticket_id": 21,
+      "label": "pagination-14",
+      "result": "PASS"
+    },
+    {
+      "ticket_id": 22,
+      "label": "pagination-15",
+      "result": "PASS"
+    }
+  ],
+  "unique_index": "uq_assignments_current_ticket: UNIQUE(ticket_id) WHERE ended_at IS NULL",
+  "restored_active_technicians": 102,
+  "preserved_inactive_technicians": 1
+}

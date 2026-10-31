@@ -20,6 +20,7 @@ import { classify } from "../../lib/errors";
 import { CATEGORY_LABELS } from "../../lib/labels";
 import { queryKeys } from "../../lib/queryClient";
 import { landingFor, useAuth } from "../auth/AuthContext";
+import { TicketAssignmentHistory } from "../dispatch/TicketAssignmentHistory";
 import { DeniedPage, NotFoundPage } from "../../app/StatePages";
 import { CommentComposer } from "./CommentComposer";
 import { TicketActionZone, allowedLifecycleActions } from "./TicketActionZone";
@@ -114,6 +115,7 @@ export function TicketDetailPage() {
             </dl>
           </section>
 
+          <TicketAssignmentHistory assignments={ticket.assignments} />
           <TicketPhotoGallery ticket={ticket} />
         </div>
 

@@ -1,0 +1,38 @@
+D1 runtime verification | 2026-11-13T10:39:29.438Z
+
+$ git branch --show-current
+main
+
+$ git rev-parse HEAD
+ca2d8c1a622feccbf7884e2fcf91bfd9aba4138c
+
+$ docker compose -p campusfix-d1-20261113 up -d --wait --wait-timeout 180
+ Container campusfix-d1-20261113-api-1 Running 
+ Container campusfix-d1-20261113-web-1 Running 
+ Container campusfix-d1-20261113-db-1 Running 
+ Container campusfix-d1-20261113-db-1 Waiting 
+ Container campusfix-d1-20261113-db-1 Healthy 
+ Container campusfix-d1-20261113-migrate-1 Starting 
+ Container campusfix-d1-20261113-migrate-1 Started 
+ Container campusfix-d1-20261113-migrate-1 Waiting 
+ Container campusfix-d1-20261113-migrate-1 Exited 
+ Container campusfix-d1-20261113-api-1 Waiting 
+ Container campusfix-d1-20261113-api-1 Healthy 
+ Container campusfix-d1-20261113-web-1 Waiting 
+ Container campusfix-d1-20261113-db-1 Waiting 
+ Container campusfix-d1-20261113-migrate-1 Waiting 
+ Container campusfix-d1-20261113-api-1 Waiting 
+ Container campusfix-d1-20261113-migrate-1 Exited 
+ Container campusfix-d1-20261113-web-1 Healthy 
+ Container campusfix-d1-20261113-api-1 Healthy 
+ Container campusfix-d1-20261113-db-1 Healthy
+
+$ docker compose -p campusfix-d1-20261113 ps -a --format '{{.Service}}  {{.State}}  {{.Health}}  {{.ExitCode}}  {{.Ports}}'
+api  running  healthy  0  8000/tcp
+db  running  healthy  0  5432/tcp
+migrate  exited    0  
+web  running  healthy  0  127.0.0.1:8080->80/tcp
+
+$ curl --fail --silent --show-error http://localhost:8080/health
+{"status":"ok"}
+

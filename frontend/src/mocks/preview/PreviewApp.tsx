@@ -23,7 +23,8 @@ function Session() {
   return <main className="preview-main">
     <header className="card"><h2>CampusFix · #48 development preview</h2>
       <p>Two example pages share the component library. Data resets when this page reloads.</p>
-      <p>CampusFix handles facilities only. Use existing school emergency channels for urgent safety or medical incidents.</p>
+      <p>Safety incidents, medical events and police reports must use the university's
+        existing emergency channels. CampusFix does not handle them.</p>
       {auth.initialising ? <p role="status">Checking session…</p> : auth.user ? <div>
         <p>Signed in: {auth.user.name} · {auth.user.role}</p>
         <button type="button" disabled={busy} onClick={() => { void auth.logout(); }}>Log out</button>

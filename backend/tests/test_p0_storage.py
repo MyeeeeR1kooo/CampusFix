@@ -20,7 +20,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.security import verify_password
 from app.models import Assignment, Attachment, Base, Comment, Location, Session as AuthSession, Ticket, TicketEvent, User
-from app.seed import DEMO_ACCOUNTS, SeedPasswords, main, seed_demo_data
+from app.seed import DEMO_ACCOUNTS, DEMO_LOCATIONS, SeedPasswords, main, seed_demo_data
 
 
 BACKEND = Path(__file__).resolve().parents[1]
@@ -241,11 +241,11 @@ def test_duplicate_assignment_and_referenced_user_delete_are_rejected(seeded_ses
 
 @pytest.mark.parametrize("table,changes", [
     ("users", {"role": "SUPERUSER"}),
-    ("users", {"email": "demo-reporter@example.invalid"}),
+    ("users", {"email": "reporter@example.invalid"}),
     ("locations", {"building": ""}),
     ("locations", {"floor": ""}),
     ("locations", {"room_or_area": ""}),
-    ("locations", {"building": "演示楼 A", "floor": "1", "room_or_area": "示例房间 101"}),
+    ("locations", {"building": DEMO_LOCATIONS[0][0], "floor": DEMO_LOCATIONS[0][1], "room_or_area": DEMO_LOCATIONS[0][2]}),
     ("comments", {"visibility": "PRIVATE"}),
     ("ticket_events", {"visibility": "PRIVATE"}),
     ("ticket_events", {"from_status": "INVALID"}),

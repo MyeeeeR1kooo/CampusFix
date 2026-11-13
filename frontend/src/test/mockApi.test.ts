@@ -149,7 +149,13 @@ describe("partner review: seeded details and failure envelopes", () => {
     expect((await original!.arrayBuffer()).byteLength).toBe(seeded[0].size);
     for (const userId of [2, 3]) {
       await login(userId);
-      for (const attachment of seeded) await expect(api.downloadAttachment(attachment.id)).resolves.toBeInstanceOf(Blob);
+      for (const attachment of seeded) {
+        // `response.blob()` yields Node's Blob; jsdom's FileReader only accepts a Blob from its
+        // own realm, so assert on the bytes instead of `instanceof` — the two never match.
+        const blob = await api.downloadAttachment(attachment.id);
+        expect(blob.size).toBe(attachment.size);
+        expect(blob.type).toMatch(/^image\//);
+      }
     }
     await login(4);
     for (const attachment of seeded) await expect(api.downloadAttachment(attachment.id)).rejects.toMatchObject({ status: 404 });
@@ -249,6 +255,19 @@ describe("mock filters and cursor contract — FR-04", () => {
     expect(Object.keys(result).sort()).toEqual(["items", "next_cursor"]);
     expect(await api.listTickets({ created_before: ticket.created_at, q: ticket.code })).toEqual({ items: [], next_cursor: null });
     expect((await api.listTickets({ q: "no match" })).items).toEqual([]);
+  });
+
+  it("enforces filter lengths and rejects reversed creation ranges", async () => {
+    await login(3);
+    await expect(api.listTickets({ q: "x".repeat(121) })).rejects.toMatchObject({ status: 422 });
+    await expect(api.listTickets({ building: "x".repeat(256) })).rejects.toMatchObject({ status: 422 });
+    expect((await api.listTickets({ q: "x".repeat(120) })).items).toEqual([]);
+    expect((await api.listTickets({ building: "x".repeat(255) })).items).toEqual([]);
+    const created_at = (await api.getTicket(1)).created_at;
+    await expect(api.listTickets({ created_from: new Date(Date.parse(created_at) + 1000).toISOString(), created_before: created_at }))
+      .rejects.toMatchObject({ status: 422, fields: { created_before: expect.any(String) } });
+    expect(await api.listTickets({ created_from: created_at, created_before: created_at }))
+      .toEqual({ items: [], next_cursor: null });
   });
 
   it("uses stable keyset cursors and rejects mismatched filters, roles and malformed values", async () => {
@@ -386,6 +405,32 @@ describe("mutable workflow — FR-02, FR-05–09; UC-01–04", () => {
     expect((await api.getTicket(9)).timeline.filter((entry) => entry.kind === "EVENT").at(-1)).toMatchObject({ type: "TICKET_CANCELLED" });
   });
 
+  it("rejects oversized event text without changing tickets", async () => {
+    const longText = "x".repeat(2001);
+    await login(3);
+    const submitted = await api.getTicket(1);
+    await expect(api.reviewTicket(1, { decision: "REJECT", reason: longText, expected_version: 1 }))
+      .rejects.toMatchObject({ status: 422 });
+    expect(await api.getTicket(1)).toEqual(submitted);
+
+    await login(2);
+    const assigned = await api.getTicket(3);
+    await expect(api.startTicket(3, { note: longText, expected_version: 3 })).rejects.toMatchObject({ status: 422 });
+    expect(await api.getTicket(3)).toEqual(assigned);
+    const processing = await api.getTicket(4);
+    await expect(api.resolveTicket(4, { resolution_note: longText, expected_version: 4 })).rejects.toMatchObject({ status: 422 });
+    expect(await api.getTicket(4)).toEqual(processing);
+
+    await login(1);
+    const awaiting = await api.getTicket(5);
+    await expect(api.reworkTicket(5, { reason: longText, expected_version: 5 })).rejects.toMatchObject({ status: 422 });
+    expect(await api.getTicket(5)).toEqual(awaiting);
+    await login(4);
+    const cancellable = await api.getTicket(9);
+    await expect(api.cancelTicket(9, { reason: longText, expected_version: 1 })).rejects.toMatchObject({ status: 422 });
+    expect(await api.getTicket(9)).toEqual(cancellable);
+  });
+
   it("rejects invalid assignments without changing state, assignments or events", async () => {
     await login(3);
     const before = await api.getTicket(2);
@@ -447,12 +492,9 @@ describe("comments, files, locations and accounts — FR-03, FR-10, FR-12", () =
     const attachment = (await api.getTicket(ticket.id)).report_photos[0];
     expect(attachment).toMatchObject({ purpose: "REPORT_PHOTO", size: pngBytes.length, download_url: `/api/attachments/${attachment.id}` });
     const blob = await api.downloadAttachment(attachment.id);
-    const downloaded = await new Promise<ArrayBuffer>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as ArrayBuffer);
-      reader.onerror = reject;
-      reader.readAsArrayBuffer(blob);
-    });
+    // `blob.arrayBuffer()` accepts both Node's and jsdom's Blob; jsdom's FileReader rejects a
+    // Blob created outside its realm.
+    const downloaded = await blob.arrayBuffer();
     expect(new Uint8Array(downloaded)).toEqual(pngBytes);
     expect(URL.revokeObjectURL).toHaveBeenCalled();
     await login(4);
@@ -502,6 +544,50 @@ describe("comments, files, locations and accounts — FR-03, FR-10, FR-12", () =
     expect((await api.listTickets({ building: "Renamed A" })).items.some((ticket) => ticket.id === 1)).toBe(true);
     await login(1);
     await expect(api.createTicket({ ...report, location_id: 1 })).rejects.toMatchObject({ status: 409, code: "CONFLICT", fieldErrors: [] });
+  });
+
+  it("preserves nonempty location whitespace and case on create and partial update", async () => {
+    await login(3);
+    for (const value of [" ", "\t", "\n", "  MiXeD Case  "]) {
+      const created = await http.post<import("../api").Location>("/api/admin/locations", { building: value, floor: value, room_or_area: value });
+      expect(created).toMatchObject({ building: value, floor: value, room_or_area: value, active: true });
+      for (const field of ["building", "floor", "room_or_area"] as const) {
+        const next = `${value}\t`;
+        expect(await api.updateLocation(created.id, { [field]: next })).toMatchObject({ [field]: next, active: true });
+      }
+      const stored = (await api.listAdminLocations({ limit: 100 })).items.find((location) => location.id === created.id)!;
+      expect(stored).toMatchObject({ building: `${value}\t`, floor: `${value}\t`, room_or_area: `${value}\t` });
+    }
+  });
+
+  it("retains location empty-string, type, strict-field and nonempty-PATCH validation", async () => {
+    await login(3);
+    const defaults = { building: "Lab", floor: "1", room_or_area: "101" };
+    for (const field of ["building", "floor", "room_or_area"] as const) {
+      for (const value of ["", null, 1]) {
+        await expect(http.post("/api/admin/locations", { ...defaults, [field]: value })).rejects.toMatchObject({ status: 422, fields: { [field]: expect.any(String) } });
+        await expect(http.patch("/api/admin/locations/1", { [field]: value })).rejects.toMatchObject({ status: 422, fields: { [field]: expect.any(String) } });
+      }
+    }
+    for (const active of ["true", 1, null]) {
+      await expect(http.post("/api/admin/locations", { ...defaults, active })).rejects.toMatchObject({ status: 422 });
+      await expect(http.patch("/api/admin/locations/1", { active })).rejects.toMatchObject({ status: 422 });
+    }
+    await expect(http.post("/api/admin/locations", { ...defaults, extra: true })).rejects.toMatchObject({ status: 422 });
+    for (const payload of [{}, { extra: true }]) await expect(http.patch("/api/admin/locations/1", payload)).rejects.toMatchObject({ status: 422 });
+    expect(await api.updateLocation(1, { active: false })).toMatchObject({ ...{ building: "Teaching Building A", floor: "3", room_or_area: "301" }, active: false });
+  });
+
+  it("limits building names on create and update", async () => {
+    await login(3);
+    const longest = "x".repeat(255);
+    const created = await api.createLocation({ building: longest, floor: "1", room_or_area: "101", active: true });
+    expect(created.building).toBe(longest);
+    await expect(api.createLocation({ building: longest + "x", floor: "2", room_or_area: "201", active: true }))
+      .rejects.toMatchObject({ status: 422, fields: { building: expect.any(String) } });
+    await expect(api.updateLocation(created.id, { building: longest + "x" }))
+      .rejects.toMatchObject({ status: 422, fields: { building: expect.any(String) } });
+    expect((await api.listAdminLocations({ limit: 100 })).items.find((item) => item.id === created.id)?.building).toBe(longest);
   });
 
   it("lists managed accounts and disallows Admin management and inactive logins", async () => {

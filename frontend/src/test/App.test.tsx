@@ -19,6 +19,8 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import App from "../app/App";
+import { ROLE_LABELS } from "../lib/labels";
+import { createFixtures } from "../mocks/fixtures";
 import { stubApi, userPayload } from "../test-helpers";
 
 type TestRole = "REPORTER" | "TECHNICIAN" | "ADMIN";
@@ -50,9 +52,23 @@ afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
 });
 
 describe("anonymous visitors", () => {
+  it.each([
+    { dev: true, mock: "0" },
+    { dev: false, mock: "1" },
+  ])("hides Mock guidance with DEV=$dev and VITE_USE_MOCK=$mock", async ({ dev, mock }) => {
+    vi.stubEnv("DEV", dev);
+    vi.stubEnv("VITE_USE_MOCK", mock);
+    anonymous();
+    renderAt("/login");
+    expect(await screen.findByRole("heading", { name: "Demo accounts" })).toBeInTheDocument();
+    expect(screen.queryByRole("note", { name: "Mock development mode" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Open Mock accounts" })).not.toBeInTheDocument();
+  });
+
   it("land on the login page from the root", async () => {
     anonymous();
     renderAt("/");
@@ -69,14 +85,9 @@ describe("anonymous visitors", () => {
   });
 });
 
-describe("the route table — all nine pages declared, one built", () => {
+describe("the route table — all nine pages declared", () => {
   const guarded: Array<[string, TestRole, string]> = [
-    ["/reports", "REPORTER", "My reports"],
-    ["/reports/new", "REPORTER", "Create a repair report"],
-    ["/tickets/7", "REPORTER", "Ticket detail"],
-    ["/workbench", "ADMIN", "Dispatch workbench"],
     ["/analytics", "ADMIN", "Statistics"],
-    ["/locations", "ADMIN", "Location management"],
     ["/admin/users", "ADMIN", "Account management"],
     ["/assignments", "TECHNICIAN", "My assignments"],
   ];
@@ -87,6 +98,45 @@ describe("the route table — all nine pages declared, one built", () => {
     expect(await screen.findByRole("heading", { name: notBuilt(label) })).toBeTruthy();
     // "a blank page reads like a working page" — the stand-in must say who fills it.
     expect(document.body.textContent).toMatch(/owned by (张越|舒玺悦)/);
+  });
+
+  it("serves the implemented reporter pages", async () => {
+    signedInAs("REPORTER");
+    renderAt("/reports");
+    expect(await screen.findByRole("heading", { name: "My repairs" })).toBeInTheDocument();
+    cleanup();
+    signedInAs("REPORTER");
+    renderAt("/reports/new");
+    expect(await screen.findByRole("heading", { name: "Create a repair report" })).toBeInTheDocument();
+  });
+
+  it("serves the shared ticket detail page to a related actor", async () => {
+    const ticket = createFixtures(new Date("2026-10-03T10:00:00Z")).tickets[0];
+    stubApi([
+      { match: /\/api\/me$/, reply: () => ({ body: userPayload({ id: 3, role: "ADMIN" }) }) },
+      {
+        match: /\/api\/tickets\/1$/,
+        reply: () => ({
+          body: {
+            ...ticket,
+            current_responsible_role: "ADMIN",
+            next_action: "REVIEW",
+            allowed_actions: ["REVIEW", "COMMENT_PUBLIC", "COMMENT_ADMIN_ONLY"],
+          },
+        }),
+      },
+    ]);
+    renderAt("/tickets/1");
+    expect(await screen.findByRole("heading", { name: "Classroom lights flicker" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Ticket status and responsibility" })).toHaveTextContent("Submitted");
+    expect(screen.getByRole("button", { name: "Review" })).toBeInTheDocument();
+  });
+
+  it("serves the location management page to Admin", async () => {
+    signedInAs("ADMIN");
+    renderAt("/locations");
+    expect(await screen.findByRole("heading", { name: "Location management" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "New location" })).toBeInTheDocument();
   });
 
   it("refuses a role that does not own the page", async () => {
@@ -105,13 +155,24 @@ describe("the route table — all nine pages declared, one built", () => {
 
 describe("landing pages", () => {
   it.each<[TestRole, string]>([
-    ["ADMIN", "Dispatch workbench"],
     ["TECHNICIAN", "My assignments"],
-    ["REPORTER", "My reports"],
   ])("%s starts at %s", async (role, label) => {
     signedInAs(role);
     renderAt("/");
     expect(await screen.findByRole("heading", { name: notBuilt(label) })).toBeTruthy();
+  });
+
+  it("REPORTER starts at My repairs", async () => {
+    signedInAs("REPORTER");
+    renderAt("/");
+    expect(await screen.findByRole("heading", { name: "My repairs" })).toBeInTheDocument();
+  });
+
+  it("ADMIN starts at the review workbench", async () => {
+    signedInAs("ADMIN");
+    renderAt("/");
+    expect(await screen.findByRole("heading", { name: "Dispatch workbench" })).toBeInTheDocument();
+    expect(screen.getByRole("table", { name: "Review queue" })).toBeInTheDocument();
   });
 });
 
@@ -150,7 +211,7 @@ describe("the login form (RHF + Zod, §13.2)", () => {
     await userEvent.type(screen.getByLabelText(/Password/), "demo-password");
     await userEvent.click(screen.getByRole("button", { name: "Log in" }));
 
-    expect(await screen.findByRole("heading", { name: notBuilt("Dispatch workbench") })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "Dispatch workbench" })).toBeTruthy();
     const request = api.calls.find((c) => c.url === "/api/auth/login");
     expect(request?.method).toBe("POST");
     // No actor, no role, no token: identity is the cookie's business.
@@ -236,6 +297,58 @@ describe("the login form (RHF + Zod, §13.2)", () => {
     // Asserted by the message element, not by its text: Zod's default copy is a library
     // detail, and a test that pins it breaks when the library rewords it.
     await waitFor(() => expect(document.getElementById("login-email-error")).toBeNull());
+  });
+});
+
+describe("the login page's side content (§13.1)", () => {
+  // This table is a *copy* of `backend/app/seed.py:20-24` (DEMO_ACCOUNTS). Reading the real
+  // thing would be the stronger guard, but this package has no @types/node, so importing
+  // node:fs is a TS2307 and the fix would be a new shared dependency. Consequence to keep
+  // honest: if the seed renames an account, panel and test stay green together. #59 联调 is
+  // where that pair is supposed to be caught, by logging in for real.
+  const SEEDED: Array<{ role: TestRole; email: string }> = [
+    { role: "ADMIN", email: "admin@example.invalid" },
+    { role: "TECHNICIAN", email: "technician@example.invalid" },
+    { role: "REPORTER", email: "reporter@example.invalid" },
+  ];
+
+  it("lists exactly the accounts the seed creates, with their roles", async () => {
+    expect(SEEDED).toHaveLength(3);
+    anonymous();
+    renderAt("/login");
+    const panel = (await screen.findByText("Demo accounts")).closest(".demo-hint");
+    const shown = [...(panel?.querySelectorAll("li") ?? [])].map((li) => li.textContent);
+    for (const { role, email } of SEEDED) {
+      expect(shown.some((row) => row === `${email} — ${ROLE_LABELS[role]}`)).toBe(true);
+    }
+    expect(shown).toHaveLength(SEEDED.length);
+  });
+
+  it("prints no credential in the demo panel", async () => {
+    anonymous();
+    renderAt("/login");
+    const panel = (await screen.findByText("Demo accounts")).closest(".demo-hint");
+    const text = panel?.textContent ?? "";
+    // Guarded by shape, not by a list of known passwords: the only monospaced things on
+    // the panel are the account addresses, and nothing may look like `key: value`.
+    // The panel lists admin first, the seed declares reporter first: compare as sets.
+    expect([...(panel?.querySelectorAll("code") ?? [])].map((c) => c.textContent).sort()).toEqual(
+      SEEDED.map((a) => a.email).sort(),
+    );
+    expect(text).toMatch(/never printed/i);
+    expect(text).not.toMatch(/campusfix-mock|demo-password/i);
+    expect(text).not.toMatch(/password[^.\n]{0,20}[:=]\s*\S/i);
+  });
+
+  it("sends each emergency class to the university's own channels", async () => {
+    anonymous();
+    renderAt("/login");
+    // §2.2's sentence names three classes; a rewrite that quietly drops one is exactly
+    // the failure mode that would reach a reviewer as "the notice is there".
+    const notice = await screen.findByText(/emergency channels/i);
+    expect(notice.textContent).toMatch(/safety/i);
+    expect(notice.textContent).toMatch(/medical/i);
+    expect(notice.textContent).toMatch(/police/i);
   });
 });
 

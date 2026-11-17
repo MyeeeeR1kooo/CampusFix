@@ -20,8 +20,8 @@
  *   /admin/users      Administrator — account management (#49)
  *
  * The table declares every page but imports only the screens that exist —
- * `/login`, `/locations`, the reporter pages and the shared `/tickets/:id`
- * detail; the rest render `UnbuiltPage`, which names the owner. That is what
+ * `/login`, `/locations`, the reporter/dispatch/technician workbenches and the
+ * shared `/tickets/:id` detail; the rest render `UnbuiltPage`, which names the owner. That is what
  * lets #48 land first: a map that statically imported all nine screens would
  * make the scaffold depend on nine implementations, and "脚手架只搭一次，
  * 两人共用" would stop being true.
@@ -44,6 +44,7 @@ import { LocationManagementPage } from "../features/locations/LocationManagement
 import { CreateRepairPage } from "../features/tickets/CreateRepairPage";
 import { MyReportsPage } from "../features/tickets/MyReportsPage";
 import { TicketDetailPage } from "../features/tickets/TicketDetailPage";
+import { MyAssignmentsPage } from "../features/technician/MyAssignmentsPage";
 import { ToastProvider, useToast } from "../hooks/useToast";
 import { createAppQueryClient } from "../lib/queryClient";
 import { ErrorBoundary } from "./ErrorBoundary";
@@ -115,7 +116,7 @@ export default function App() {
                       path="/assignments"
                       element={
                         <RequireRole roles={["TECHNICIAN"]}>
-                          {pending("My assignments", "舒玺悦 (features/technician/)")}
+                          <MyAssignmentsPage />
                         </RequireRole>
                       }
                     />

@@ -89,7 +89,6 @@ describe("the route table — all nine pages declared", () => {
   const guarded: Array<[string, TestRole, string]> = [
     ["/analytics", "ADMIN", "Statistics"],
     ["/admin/users", "ADMIN", "Account management"],
-    ["/assignments", "TECHNICIAN", "My assignments"],
   ];
 
   it.each(guarded)("%s as %s renders a page that names its owner", async (path, role, label) => {
@@ -154,12 +153,11 @@ describe("the route table — all nine pages declared", () => {
 });
 
 describe("landing pages", () => {
-  it.each<[TestRole, string]>([
-    ["TECHNICIAN", "My assignments"],
-  ])("%s starts at %s", async (role, label) => {
-    signedInAs(role);
+  it("TECHNICIAN starts at the assignments workbench", async () => {
+    signedInAs("TECHNICIAN");
     renderAt("/");
-    expect(await screen.findByRole("heading", { name: notBuilt(label) })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "My assignments" })).toBeInTheDocument();
+    expect(screen.getByRole("table", { name: "My assigned tickets" })).toBeInTheDocument();
   });
 
   it("REPORTER starts at My repairs", async () => {

@@ -40,7 +40,7 @@
 | POST `/api/tickets/{id}/assign` | 200 / TicketSummary | Admin 分派启用的 Technician，不提供重新分派 |
 | POST `/api/tickets/{id}/start` | 200 / TicketSummary | 当前 Technician 开始处理 |
 | POST `/api/tickets/{id}/resolve` | 200 / TicketSummary | 当前 Technician；处理说明和可选结果图片 multipart |
-| POST `/api/tickets/{id}/confirm` | 200 / TicketSummary | 原 Reporter 确认完成；设置 closed_at |
+| POST `/api/tickets/{id}/confirm` | 200 / TicketSummary | 原 Reporter 确认完成；设置 closed_at；携带 UUID 幂等键，相同键和版本重试返回原结果 |
 | POST `/api/tickets/{id}/rework` | 200 / TicketSummary | 原 Reporter 填原因要求返工，回到 IN_PROGRESS |
 | POST `/api/tickets/{id}/cancel` | 200 / TicketSummary | 原 Reporter 仅审核前撤销 |
 | POST `/api/tickets/{id}/comments` | 201 / Comment | 非终态公开留言；仅 Admin 可写/读内部备注 |

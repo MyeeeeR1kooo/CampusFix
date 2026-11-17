@@ -23,6 +23,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "pytest>=8,<9",
+  "pytest-cov==7.0.0",
   "PyYAML==6.0.3",
   "openapi-spec-validator==0.7.2",
   "jsonschema==4.25.1",
@@ -31,6 +32,10 @@ dev = [
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+
+[tool.coverage.run]
+relative_files = true
+source = ["app"]
 
 [tool.setuptools.packages.find]
 where = ["."]

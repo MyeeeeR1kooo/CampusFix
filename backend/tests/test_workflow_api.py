@@ -358,7 +358,8 @@ def test_technician_start_and_resolve_then_reporter_confirm(app, pg_engine, cont
     assert_schema(resolved, "TicketSummary", contract_registry)
     assert resolved.json()["status"] == "PENDING_CONFIRMATION"
     confirmed = reporter.post(
-        f"/api/tickets/{ticket_id}/confirm", json={"expected_version": 5}, headers=HEADERS,
+        f"/api/tickets/{ticket_id}/confirm",
+        json={"expected_version": 5, "idempotency_key": str(uuid4())}, headers=HEADERS,
     )
     assert confirmed.status_code == 200, confirmed.text
     assert_schema(confirmed, "TicketSummary", contract_registry)
@@ -370,6 +371,44 @@ def test_technician_start_and_resolve_then_reporter_confirm(app, pg_engine, cont
         assert [event.type for event in events] == ["WORK_STARTED", "RESOLUTION_SUBMITTED", "TICKET_CLOSED"]
         assert [event.note for event in events] == ["On site", "Replaced the lamp", None]
         assert db.get(Ticket, ticket_id).current_assignee_id == 2
+
+
+def test_confirm_replay_requires_matching_key_and_version(app, pg_engine):
+    ticket_id = assigned_ticket(pg_engine, "PENDING_CONFIRMATION", 5)
+    reporter = login(app, "REPORTER")
+    key = str(uuid4())
+    url = f"/api/tickets/{ticket_id}/confirm"
+    body = {"expected_version": 5, "idempotency_key": key}
+
+    first = reporter.post(url, json=body, headers=HEADERS)
+    replay = reporter.post(url, json=body, headers=HEADERS)
+    assert first.status_code == replay.status_code == 200
+    assert replay.json() == first.json()
+    assert_state(pg_engine, ticket_id, "CLOSED", 6, 1)
+
+    for stale in ({**body, "idempotency_key": str(uuid4())}, {**body, "expected_version": 4}):
+        conflict = reporter.post(url, json=stale, headers=HEADERS)
+        assert conflict.status_code == 409
+        assert conflict.json()["error"]["code"] == "TICKET_VERSION_CONFLICT"
+    assert_state(pg_engine, ticket_id, "CLOSED", 6, 1)
+
+
+def test_concurrent_confirm_replay_has_one_event(app, pg_engine):
+    ticket_id = assigned_ticket(pg_engine, "PENDING_CONFIRMATION", 5)
+    body = {"expected_version": 5, "idempotency_key": str(uuid4())}
+    workers = 4
+    barrier = Barrier(workers)
+
+    def submit(_):
+        client = login(app, "REPORTER")
+        barrier.wait(timeout=15)
+        return client.post(f"/api/tickets/{ticket_id}/confirm", json=body, headers=HEADERS)
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        results = list(pool.map(submit, range(workers)))
+    assert [response.status_code for response in results] == [200] * workers
+    assert all(response.json() == results[0].json() for response in results)
+    assert_state(pg_engine, ticket_id, "CLOSED", 6, 1)
 
 
 def test_reporter_rework_preserves_assignee_and_can_resolve_again(app, pg_engine):
@@ -393,8 +432,8 @@ def test_reporter_rework_preserves_assignee_and_can_resolve_again(app, pg_engine
 @pytest.mark.parametrize("role,path,body,initial_status,version", [
     ("REPORTER", "start", {"expected_version": 3}, "ASSIGNED", 3),
     ("ADMIN", "start", {"expected_version": 3}, "ASSIGNED", 3),
-    ("REPORTER", "confirm", {"expected_version": 3}, "ASSIGNED", 3),
-    ("TECHNICIAN", "confirm", {"expected_version": 5}, "PENDING_CONFIRMATION", 5),
+    ("REPORTER", "confirm", {"expected_version": 3, "idempotency_key": str(uuid4())}, "ASSIGNED", 3),
+    ("TECHNICIAN", "confirm", {"expected_version": 5, "idempotency_key": str(uuid4())}, "PENDING_CONFIRMATION", 5),
     ("TECHNICIAN", "rework", {"expected_version": 5, "reason": "Still broken"}, "PENDING_CONFIRMATION", 5),
 ])
 def test_second_phase_actions_reject_wrong_role_or_state(app, pg_engine, role, path, body, initial_status, version):
@@ -525,7 +564,7 @@ def test_timeline_filters_internal_rows_and_sorts_stably(pg_engine, contract_reg
 @pytest.mark.parametrize("action,role,status,version,body", [
     ("start", "TECHNICIAN", "ASSIGNED", 3, {"expected_version": 3}),
     ("resolve", "TECHNICIAN", "IN_PROGRESS", 4, {"expected_version": "4", "resolution_note": "Fixed"}),
-    ("confirm", "REPORTER", "PENDING_CONFIRMATION", 5, {"expected_version": 5}),
+    ("confirm", "REPORTER", "PENDING_CONFIRMATION", 5, {"expected_version": 5, "idempotency_key": str(uuid4())}),
 ])
 def test_concurrent_second_phase_actions_have_one_winner(
     app, pg_engine, action, role, status, version, body,
@@ -539,7 +578,8 @@ def test_concurrent_second_phase_actions_have_one_winner(
         barrier.wait(timeout=15)
         if action == "resolve":
             return client.post(f"/api/tickets/{ticket_id}/{action}", data=body, headers=HEADERS)
-        return client.post(f"/api/tickets/{ticket_id}/{action}", json=body, headers=HEADERS)
+        request_body = {**body, "idempotency_key": str(uuid4())} if action == "confirm" else body
+        return client.post(f"/api/tickets/{ticket_id}/{action}", json=request_body, headers=HEADERS)
 
     with ThreadPoolExecutor(max_workers=workers) as pool:
         results = list(pool.map(submit, range(workers)))

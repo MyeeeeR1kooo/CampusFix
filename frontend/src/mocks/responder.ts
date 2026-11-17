@@ -83,6 +83,7 @@ export function createMockApi(options: { now?: () => Date; emptyTickets?: boolea
   const store = createFixtures(now());
   if (options.emptyTickets) { store.tickets = []; store.blobs.clear(); }
   const paginate = createPaginator();
+  const successfulConfirms = new Map<number, { key: string; expectedVersion: number }>();
   const blobs = store.blobs;
   let userId: number | null = null;
   let expiresAt = 0;
@@ -289,8 +290,12 @@ export function createMockApi(options: { now?: () => Date; emptyTickets?: boolea
           case "confirm": {
             requireRole(user, "REPORTER");
             const body = parse(schemas.confirm, request.json);
+            const previous = successfulConfirms.get(ticket.id);
+            if (ticket.status === "CLOSED" && previous?.key === body.idempotency_key && previous.expectedVersion === body.expected_version) break;
             checkVersion(ticket, body.expected_version); checkState(ticket, "PENDING_CONFIRMATION");
-            transition(ticket, user, "CLOSED", "TICKET_CLOSED"); break;
+            transition(ticket, user, "CLOSED", "TICKET_CLOSED");
+            successfulConfirms.set(ticket.id, { key: body.idempotency_key, expectedVersion: body.expected_version });
+            break;
           }
           case "rework": {
             requireRole(user, "REPORTER");

@@ -240,7 +240,8 @@ def test_actual_report_photo_comments_resolution_photo_and_closed_history_handof
         for photo in detail.json()["report_photos"] + detail.json()["resolution_photos"]:
             downloaded = client.get(photo["download_url"])
             assert downloaded.status_code == 200 and downloaded.content == png_bytes()
-    closed = reporter.post(url + "/confirm", headers=HEADERS, json={"expected_version": 5})
+    closed = reporter.post(url + "/confirm", headers=HEADERS,
+                           json={"expected_version": 5, "idempotency_key": str(uuid4())})
     assert closed.status_code == 200 and closed.json()["version"] == 6
     for client in [reporter, technician, admin]:
         detail = client.get(url)

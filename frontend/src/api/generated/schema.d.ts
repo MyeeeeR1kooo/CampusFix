@@ -1,9 +1,9 @@
 /*
  * CampusFix #48 — generated API types. Run `npm run gen:api`, never edit by hand.
  *   contract version : 1.0.0
- *   contract digest  : sha256:7904f9a39ec6
+ *   contract digest  : sha256:e9d38a7c1ee1
  *   contract source  : docs/api/openapi.yaml
- *   generated at     : 2026-10-29T09:32:42.148Z
+ *   generated at     : 2026-11-17T11:19:02.402Z
  *
  * The digest is the anchor while #46 is unmerged: two runs over the same YAML differ only
  * by timestamp, and any contract edit changes it. Record the upstream commit in the commit
@@ -279,7 +279,7 @@ export interface paths {
         /**
          * 原 Reporter 确认完成
          * @description PENDING_CONFIRMATION → CLOSED，设置 closed_at，version 递增，写入一条 TICKET_CLOSED 事件。
-         *     不接受满意度或评价字段。重复旧版本请求返回 409，不能重复写入有效关闭事件。
+         *     不接受满意度或评价字段。相同 idempotency_key 和 expected_version 的成功请求重试返回原结果，不重复写入事件；其他旧版本请求返回 409。
          */
         post: operations["confirmTicket"];
         delete?: never;
@@ -657,6 +657,11 @@ export interface components {
         };
         VersionRequest: {
             expected_version: components["schemas"]["Version"];
+        };
+        ConfirmRequest: {
+            expected_version: components["schemas"]["Version"];
+            /** Format: uuid */
+            idempotency_key: string;
         };
         ReviewRequest: components["schemas"]["ApproveRequest"] | components["schemas"]["RejectRequest"];
         ApproveRequest: {
@@ -1526,10 +1531,11 @@ export interface operations {
             content: {
                 /**
                  * @example {
-                 *       "expected_version": 5
+                 *       "expected_version": 5,
+                 *       "idempotency_key": "550e8400-e29b-41d4-a716-446655440000"
                  *     }
                  */
-                "application/json": components["schemas"]["VersionRequest"];
+                "application/json": components["schemas"]["ConfirmRequest"];
             };
         };
         responses: {

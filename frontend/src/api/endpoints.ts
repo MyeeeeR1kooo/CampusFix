@@ -17,6 +17,7 @@ import type {
   AssignRequest,
   CancelRequest,
   Category,
+  ConfirmRequest,
   Comment,
   CommentRequest,
   CreateLocationRequest,
@@ -37,7 +38,6 @@ import type {
   UserActiveRequest,
   UserPage,
   Version,
-  VersionRequest,
 } from "./index";
 
 /** The ticket fields that travel as multipart text parts alongside `photos`. */
@@ -124,7 +124,7 @@ export function resolveTicket(id: number, input: {
   return http.multipart<TicketSummary>(`${TICKETS}/${id}/resolve`, form);
 }
 
-export function confirmTicket(id: number, body: VersionRequest): Promise<TicketSummary> {
+export function confirmTicket(id: number, body: ConfirmRequest): Promise<TicketSummary> {
   return http.post<TicketSummary>(`${TICKETS}/${id}/confirm`, body);
 }
 

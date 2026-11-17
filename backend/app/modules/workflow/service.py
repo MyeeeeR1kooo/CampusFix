@@ -2,6 +2,7 @@
 
 from datetime import datetime, timezone
 from typing import Optional
+from uuid import UUID
 
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
@@ -50,6 +51,15 @@ def _check_state(ticket: Ticket, from_status: str, expected_version: int) -> Non
         raise AppError(ErrorCode.TICKET_VERSION_CONFLICT, 409, "Ticket version has changed.")
     if ticket.status != from_status:
         raise AppError(ErrorCode.CONFLICT, 409, "Ticket state does not allow this action.")
+
+
+def _confirmed_retry(ticket: Ticket, action: str, expected_version: int, key: Optional[UUID]) -> bool:
+    return (
+        action == "CONFIRM" and ticket.status == "CLOSED"
+        and ticket.closed_at is not None and key is not None
+        and ticket.confirm_idempotency_key == key
+        and ticket.confirm_expected_version == expected_version
+    )
 
 
 def _utc(value: datetime) -> str:
@@ -159,6 +169,7 @@ def transition(
     db: Session, ticket_id: int, actor: User, action: str, expected_version: int,
     *, category: str = None, priority: str = None, note: str = None,
     technician_id: int = None, photos: list[PreparedPhoto] = None,
+    idempotency_key: Optional[UUID] = None,
 ) -> dict:
     rule = TRANSITIONS[action]
     photos = photos or []
@@ -168,6 +179,8 @@ def transition(
         if ticket is None:
             raise AppError(ErrorCode.NOT_FOUND, 404, "Ticket not found.")
         _check_access(ticket, actor, rule.actor)
+        if _confirmed_retry(ticket, action, expected_version, idempotency_key):
+            return ticket_summary(db, ticket, actor)
         _check_state(ticket, rule.from_status, expected_version)
 
         if action == "ASSIGN":
@@ -188,6 +201,8 @@ def transition(
             values["current_assignee_id"] = technician_id
         elif action == "CONFIRM":
             values["closed_at"] = now
+            values["confirm_idempotency_key"] = idempotency_key
+            values["confirm_expected_version"] = expected_version
         changed = db.execute(
             update(Ticket).where(
                 Ticket.id == ticket_id,
@@ -201,6 +216,8 @@ def transition(
             if current is None:
                 raise AppError(ErrorCode.NOT_FOUND, 404, "Ticket not found.")
             _check_access(current, actor, rule.actor)
+            if _confirmed_retry(current, action, expected_version, idempotency_key):
+                return ticket_summary(db, current, actor)
             _check_state(current, rule.from_status, expected_version)
             raise AppError(ErrorCode.CONFLICT, 409, "Ticket state does not allow this action.")
 

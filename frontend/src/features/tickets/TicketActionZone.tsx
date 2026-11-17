@@ -528,6 +528,7 @@ function ResolveDialog({ ticket, close, fallback }: DialogProps) {
 
 function ConfirmDialogAction({ ticket, close, fallback }: DialogProps) {
   const { run, pending } = useActionRunner(ticket.id, close);
+  const [idempotencyKey] = useState(() => crypto.randomUUID());
 
   return (
     <ConfirmDialog
@@ -539,7 +540,7 @@ function ConfirmDialogAction({ ticket, close, fallback }: DialogProps) {
       fallbackFocusRef={fallback}
       onCancel={close}
       onConfirm={() => run({
-        request: () => api.confirmTicket(ticket.id, { expected_version: ticket.version }),
+        request: () => api.confirmTicket(ticket.id, { expected_version: ticket.version, idempotency_key: idempotencyKey }),
         success: `Ticket ${ticket.code} closed.`,
       })}
     />

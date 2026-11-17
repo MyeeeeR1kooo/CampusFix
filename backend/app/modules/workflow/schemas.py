@@ -1,6 +1,7 @@
 """Request schemas for the four Update 2 state actions."""
 
 from typing import Annotated, Literal, Optional, Union
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, StrictStr
 
@@ -18,6 +19,10 @@ class ActionRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     expected_version: Version
+
+
+class ConfirmRequest(ActionRequest):
+    idempotency_key: UUID
 
 
 class ApproveRequest(ActionRequest):

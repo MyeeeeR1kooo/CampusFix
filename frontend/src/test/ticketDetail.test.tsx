@@ -337,6 +337,172 @@ describe("ticket detail page (#91)", () => {
   });
 });
 
+describe("technician result (#56)", () => {
+  function resolutionPhoto(name: string) {
+    // The valid PNG used by tests/e2e/fixtures/photo.png.
+    const bytes = Uint8Array.from(
+      atob("iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAFElEQVR4nGO8o6HBgA0wYRUdtBIA78QBPFxuqR4AAAAASUVORK5CYII="),
+      (value) => value.charCodeAt(0),
+    );
+    return new File([bytes], name, { type: "image/png" });
+  }
+
+  function installPhotoMock() {
+    const responder = installStateMock();
+    vi.stubGlobal("Image", class {
+      onload?: () => void;
+      set src(_url: string) { queueMicrotask(() => this.onload?.()); }
+    });
+    vi.stubGlobal("URL", class extends URL {
+      static createObjectURL = vi.fn(() => "blob:resolution-photo");
+      static revokeObjectURL = vi.fn();
+    });
+    return responder;
+  }
+
+  it("starts an assigned ticket and submits its selected result photo once", async () => {
+    const responder = installPhotoMock();
+    const submissions: FormData[] = [];
+    let release!: () => void;
+    const responseGate = new Promise<void>((resolve) => { release = resolve; });
+    installMock(async (request) => {
+      if (request.method === "POST" && request.path === "/api/tickets/3/resolve" && request.form) {
+        submissions.push(request.form);
+        await responseGate;
+      }
+      return responder(request);
+    });
+
+    await signIn("TECHNICIAN");
+    const assigned = await api.getTicket(3);
+    openTicket(3);
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: "Start work" }));
+    await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Start work" }));
+
+    await user.click(await screen.findByRole("button", { name: "Submit result" }));
+    const dialog = within(screen.getByRole("dialog"));
+    const note = "Replaced the faulty switch and verified the repair.";
+    await user.type(dialog.getByLabelText(/Resolution note/), note);
+    await user.upload(dialog.getByLabelText(/Photos/), resolutionPhoto("repair-result.png"));
+    expect(await dialog.findByRole("img", { name: "Preview of repair-result.png" })).toBeInTheDocument();
+
+    try {
+      await user.click(dialog.getByRole("button", { name: "Submit result" }));
+      const pending = await dialog.findByRole("button", { name: "Submitting…" });
+      expect(pending).toBeDisabled();
+      expect(dialog.getByLabelText(/Photos/)).toBeDisabled();
+      expect(dialog.getByRole("button", { name: "Remove repair-result.png" })).toBeDisabled();
+      await user.click(pending);
+      expect(submissions).toHaveLength(1);
+      expect(submissions[0].get("expected_version")).toBe(String(assigned.version + 1));
+      expect(submissions[0].get("resolution_note")).toBe(note);
+      expect(submissions[0].getAll("photos")).toMatchObject([
+        { name: "repair-result.png", type: "image/png" },
+      ]);
+    } finally {
+      release();
+    }
+
+    const timeline = within(screen.getByRole("region", { name: "Timeline" }));
+    expect(await timeline.findByText(note)).toBeInTheDocument();
+    expect(timeline.getByText("Processing started")).toBeInTheDocument();
+    expect(timeline.getByText("Result submitted")).toBeInTheDocument();
+    const gallery = within(screen.getByRole("list", { name: "Resolution photos" }));
+    expect(await gallery.findByRole("img")).toBeInTheDocument();
+    expect(gallery.getByText("repair-result.png")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Ticket status and responsibility" }))
+      .toHaveTextContent("Pending Confirmation");
+    expect(screen.queryByRole("button", { name: "Submit result" })).not.toBeInTheDocument();
+  });
+
+  it("requires a resolution note even when a photo is selected", async () => {
+    const responder = installPhotoMock();
+    const submitResult = vi.fn(responder);
+    installMock(submitResult);
+    await signIn("TECHNICIAN");
+    openTicket(4);
+    const user = userEvent.setup();
+
+    await user.click(await screen.findByRole("button", { name: "Submit result" }));
+    const dialog = within(screen.getByRole("dialog"));
+    await user.upload(dialog.getByLabelText(/Photos/), resolutionPhoto("repair-result.png"));
+    await user.type(dialog.getByLabelText(/Resolution note/), "   ");
+    await user.click(dialog.getByRole("button", { name: "Submit result" }));
+
+    expect(await dialog.findByText("Describe the work you carried out.")).toBeInTheDocument();
+    expect(dialog.getByRole("img", { name: "Preview of repair-result.png" })).toBeInTheDocument();
+    expect(submitResult).not.toHaveBeenCalledWith(expect.objectContaining({
+      method: "POST", path: "/api/tickets/4/resolve",
+    }));
+  });
+
+  it("offers only the remaining result-photo slots after rework", async () => {
+    installPhotoMock();
+    await signIn("TECHNICIAN");
+    const ticket = await api.getTicket(4);
+    const submitted = await api.resolveTicket(4, {
+      expected_version: ticket.version,
+      resolution_note: "Initial repair.",
+      photos: Array.from({ length: 4 }, (_, index) => resolutionPhoto("prior-" + index + ".png")),
+    });
+    await signIn("REPORTER");
+    await api.reworkTicket(4, { expected_version: submitted.version, reason: "Please check it again." });
+    await signIn("TECHNICIAN");
+    openTicket(4);
+    const user = userEvent.setup();
+
+    await user.click(await screen.findByRole("button", { name: "Submit result" }));
+    const dialog = within(screen.getByRole("dialog"));
+    await user.upload(dialog.getByLabelText(/Photos/), [
+      resolutionPhoto("first-new.png"),
+      resolutionPhoto("second-new.png"),
+    ]);
+
+    expect(dialog.getByText("1 of 1 selected")).toBeInTheDocument();
+    expect(await dialog.findByRole("img", { name: "Preview of first-new.png" })).toBeInTheDocument();
+    expect(dialog.queryByRole("img", { name: "Preview of second-new.png" })).not.toBeInTheDocument();
+
+    await user.type(dialog.getByLabelText(/Resolution note/), "Verified the repair again.");
+    await user.click(dialog.getByRole("button", { name: "Submit result" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    const after = await api.getTicket(4);
+    expect(after.status).toBe("PENDING_CONFIRMATION");
+    expect(after.resolution_photos).toHaveLength(5);
+    expect(after.resolution_photos.map((photo) => photo.original_name)).toEqual(expect.arrayContaining([
+      "prior-0.png", "prior-1.png", "prior-2.png", "prior-3.png", "first-new.png",
+    ]));
+  });
+
+  it("shows an indexed photo error beside the picker and keeps the note available for retry", async () => {
+    installPhotoMock();
+    await signIn("TECHNICIAN");
+    openTicket(4);
+    const user = userEvent.setup();
+
+    await user.click(await screen.findByRole("button", { name: "Submit result" }));
+    const dialog = within(screen.getByRole("dialog"));
+    const picker = dialog.getByLabelText(/Photos/);
+    await user.type(dialog.getByLabelText(/Resolution note/), "Checked the repair.");
+    await user.upload(picker, new File(["not a PNG"], "repair-result.png", { type: "image/png" }));
+    await user.click(dialog.getByRole("button", { name: "Submit result" }));
+
+    expect(await dialog.findByText("Image content does not match an allowed type.")).toBeInTheDocument();
+    expect(dialog.getByText("Input validation failed.")).toBeInTheDocument();
+    expect(picker).toHaveAttribute("aria-invalid", "true");
+    await user.click(dialog.getByRole("button", { name: "Remove repair-result.png" }));
+    expect(picker).not.toHaveAttribute("aria-invalid");
+    expect(dialog.getByLabelText(/Resolution note/)).toHaveValue("Checked the repair.");
+
+    await user.click(dialog.getByRole("button", { name: "Submit result" }));
+    expect(await screen.findByText("Checked the repair.")).toBeInTheDocument();
+    await expect(api.getTicket(4)).resolves.toMatchObject({
+      status: "PENDING_CONFIRMATION",
+      resolution_photos: [],
+    });
+  });
+});
+
 describe("action dialog ownership (#91 P2)", () => {
   it("closes an open dialog when the route moves to another ticket", async () => {
     installStateMock();

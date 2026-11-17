@@ -26,6 +26,7 @@ import { SelectField, TextAreaField } from "../../components/Field";
 import { useToast } from "../../hooks/useToast";
 import { classify } from "../../lib/errors";
 import { currentSessionVersion } from "../../lib/session";
+import { MAX_PHOTOS, PhotoPicker } from "./PhotoPicker";
 import {
   ACTION_LABELS,
   CATEGORY_LABELS,
@@ -118,8 +119,8 @@ function useActionRunner(ticketId: number, close: () => void) {
       }
       if (classified.kind === "validation" && input.setFieldError) {
         for (const [field, message] of Object.entries(classified.fields)) {
-          if (!input.fields?.includes(field)) continue;
-          input.setFieldError(field, message);
+          const formField = input.fields?.find((name) => field === name || field.startsWith(name + "."));
+          if (formField) input.setFieldError(formField, message);
         }
       }
       // Keep field hints alongside the dialog's request-level error summary (§13.3).
@@ -479,6 +480,9 @@ type ResolveValues = z.infer<typeof resolveSchema>;
 
 function ResolveDialog({ ticket, close, fallback }: DialogProps) {
   const { run, pending } = useActionRunner(ticket.id, close);
+  const [photos, setPhotos] = useState<File[]>([]);
+  const [photoError, setPhotoError] = useState<string>();
+  const remainingPhotoSlots = Math.max(0, MAX_PHOTOS - ticket.resolution_photos.length);
   const {
     register,
     handleSubmit,
@@ -494,11 +498,13 @@ function ResolveDialog({ ticket, close, fallback }: DialogProps) {
       request: () => api.resolveTicket(ticket.id, {
         resolution_note: values.resolution_note,
         expected_version: ticket.version,
+        photos,
       }),
       success: `Result submitted for ticket ${ticket.code}.`,
-      fields: ["resolution_note"],
+      fields: ["resolution_note", "photos"],
       setFieldError: (field, message) => {
         if (field === "resolution_note") setError("resolution_note", { message });
+        if (field === "photos") setPhotoError(message);
       },
     });
   });
@@ -521,6 +527,16 @@ function ResolveDialog({ ticket, close, fallback }: DialogProps) {
         rows={4}
         error={errors.resolution_note?.message}
         {...register("resolution_note")}
+      />
+      <PhotoPicker
+        files={photos}
+        maxPhotos={remainingPhotoSlots}
+        disabled={pending}
+        error={photoError}
+        onChange={(next) => {
+          setPhotos(next);
+          setPhotoError(undefined);
+        }}
       />
     </ConfirmDialog>
   );

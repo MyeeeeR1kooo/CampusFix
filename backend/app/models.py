@@ -6,10 +6,11 @@ the existing core.database.get_db / SessionLocal, never call create_all().
 
 from datetime import datetime
 from typing import Optional
+from uuid import UUID
 
 from sqlalchemy import (
     BigInteger, Boolean, CheckConstraint, DateTime, ForeignKey, Identity,
-    Index, Integer, Text, UniqueConstraint, text,
+    Index, Integer, Text, UniqueConstraint, Uuid, text,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -99,6 +100,8 @@ class Ticket(IdentityRow, UpdatedRow, Base):
     current_assignee_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"))
     version: Mapped[int] = mapped_column(Integer, server_default=text("1"))
     closed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    confirm_idempotency_key: Mapped[Optional[UUID]] = mapped_column(Uuid)
+    confirm_expected_version: Mapped[Optional[int]] = mapped_column(Integer)
 
 
 class Assignment(IdentityRow, Base):

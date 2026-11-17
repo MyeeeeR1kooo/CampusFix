@@ -11,7 +11,7 @@ from app.models import User
 from app.modules.attachments.service import prepare_photos
 from app.modules.auth.dependencies import get_current_user
 from app.modules.workflow import service
-from app.modules.workflow.schemas import ActionRequest, AssignRequest, CancelRequest, ReviewRequest, ReworkRequest, StartRequest
+from app.modules.workflow.schemas import ActionRequest, AssignRequest, CancelRequest, ConfirmRequest, ReviewRequest, ReworkRequest, StartRequest
 
 
 router = APIRouter(prefix="/api/tickets", tags=["Workflow"])
@@ -87,12 +87,15 @@ def resolve_ticket(
 
 @router.post("/{id}/confirm", operation_id="confirmTicket")
 def confirm_ticket(
-    payload: ActionRequest,
+    payload: ConfirmRequest,
     id: int = Path(ge=1, le=2**63 - 1),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> dict:
-    return service.transition(db, id, user, "CONFIRM", payload.expected_version)
+    return service.transition(
+        db, id, user, "CONFIRM", payload.expected_version,
+        idempotency_key=payload.idempotency_key,
+    )
 
 
 @router.post("/{id}/rework", operation_id="reworkTicket")

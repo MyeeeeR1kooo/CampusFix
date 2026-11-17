@@ -87,7 +87,7 @@ describe("generated URLs", () => {
     ["assignTicket", () => api.assignTicket(42, { technician_id: 7, expected_version: 1 }), "/api/tickets/42/assign"],
     ["startTicket", () => api.startTicket(42, { expected_version: 1 }), "/api/tickets/42/start"],
     ["resolveTicket", () => api.resolveTicket(42, { resolution_note: "done", expected_version: 1 }), "/api/tickets/42/resolve"],
-    ["confirmTicket", () => api.confirmTicket(42, { expected_version: 1 }), "/api/tickets/42/confirm"],
+    ["confirmTicket", () => api.confirmTicket(42, { expected_version: 1, idempotency_key: "550e8400-e29b-41d4-a716-446655440000" }), "/api/tickets/42/confirm"],
     ["reworkTicket", () => api.reworkTicket(42, { reason: "still leaking", expected_version: 1 }), "/api/tickets/42/rework"],
     ["cancelTicket", () => api.cancelTicket(42, { reason: "duplicate", expected_version: 1 }), "/api/tickets/42/cancel"],
     ["createComment", () => api.createComment(42, { body: "hi", visibility: "PUBLIC" }), "/api/tickets/42/comments"],
@@ -147,7 +147,7 @@ describe("generated URLs", () => {
         return jsonResponse({}, 200);
       }),
     );
-    await api.confirmTicket(1, { expected_version: 4 });
-    expect(JSON.parse(String(seen[0]))).toEqual({ expected_version: 4 });
+    await api.confirmTicket(1, { expected_version: 4, idempotency_key: "550e8400-e29b-41d4-a716-446655440000" });
+    expect(JSON.parse(String(seen[0]))).toEqual({ expected_version: 4, idempotency_key: "550e8400-e29b-41d4-a716-446655440000" });
   });
 });

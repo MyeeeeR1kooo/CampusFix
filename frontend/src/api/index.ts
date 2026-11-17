@@ -62,6 +62,7 @@ export type ReworkRequest = Schema["ReworkRequest"];
 export type CancelRequest = Schema["CancelRequest"];
 export type CommentRequest = Schema["CommentRequest"];
 export type VersionRequest = Schema["VersionRequest"];
+export type ConfirmRequest = Schema["ConfirmRequest"];
 
 export type Attachment = Schema["Attachment"];
 export type Assignment = Schema["Assignment"];

@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='utf-8'?>
+<testsuites name="pytest tests">
+  <testsuite name="pytest" errors="0" failures="0" skipped="0" tests="44" time="8.615" timestamp="2026-11-17T23:32:38.555210+08:00">
+    <testcase classname="tests.test_workflow_api" name="test_rule_table_defines_only_the_eight_approved_transitions" time="0.000" />
+    <testcase classname="tests.test_workflow_api" name="test_admin_review_actions_commit_state_version_and_one_public_event[APPROVE-body0-PENDING_ASSIGNMENT-TICKET_APPROVED]" time="0.230" />
+    <testcase classname="tests.test_workflow_api" name="test_admin_review_actions_commit_state_version_and_one_public_event[REJECT-body1-REJECTED-TICKET_REJECTED]" time="0.190" />
+    <testcase classname="tests.test_workflow_api" name="test_original_reporter_can_cancel_with_optional_reason_only_once" time="0.177" />
+    <testcase classname="tests.test_workflow_api" name="test_assign_writes_assignee_assignment_and_event_atomically" time="0.175" />
+    <testcase classname="tests.test_workflow_api" name="test_only_admin_can_review_or_assign[REPORTER-403]" time="0.170" />
+    <testcase classname="tests.test_workflow_api" name="test_only_admin_can_review_or_assign[TECHNICIAN-404]" time="0.172" />
+    <testcase classname="tests.test_workflow_api" name="test_non_owner_reporter_cannot_cancel_another_reporters_ticket" time="0.145" />
+    <testcase classname="tests.test_workflow_api" name="test_invalid_assignment_target_is_422_without_side_effects[999-False]" time="0.176" />
+    <testcase classname="tests.test_workflow_api" name="test_invalid_assignment_target_is_422_without_side_effects[1-False]" time="0.175" />
+    <testcase classname="tests.test_workflow_api" name="test_invalid_assignment_target_is_422_without_side_effects[3-False]" time="0.195" />
+    <testcase classname="tests.test_workflow_api" name="test_invalid_assignment_target_is_422_without_side_effects[2-True]" time="0.170" />
+    <testcase classname="tests.test_workflow_api" name="test_illegal_transition_and_old_version_have_deterministic_conflicts" time="0.197" />
+    <testcase classname="tests.test_workflow_api" name="test_concurrent_review_requests_have_one_winner" time="0.187" />
+    <testcase classname="tests.test_workflow_api" name="test_event_insert_failure_rolls_back_state_and_assignment" time="0.172" />
+    <testcase classname="tests.test_workflow_api" name="test_technician_start_and_resolve_then_reporter_confirm" time="0.208" />
+    <testcase classname="tests.test_workflow_api" name="test_confirm_replay_requires_matching_key_and_version" time="0.175" />
+    <testcase classname="tests.test_workflow_api" name="test_concurrent_confirm_replay_has_one_event" time="0.228" />
+    <testcase classname="tests.test_workflow_api" name="test_repeating_confirm_preserves_a_single_ticket_closed_event" time="0.225" />
+    <testcase classname="tests.test_workflow_api" name="test_technician_list_after_dispatch_only_returns_current_assignments" time="0.215" />
+    <testcase classname="tests.test_workflow_api" name="test_reporter_rework_preserves_assignee_and_can_resolve_again" time="0.239" />
+    <testcase classname="tests.test_workflow_api" name="test_second_phase_actions_reject_wrong_role_or_state[REPORTER-start-body0-ASSIGNED-3]" time="0.189" />
+    <testcase classname="tests.test_workflow_api" name="test_second_phase_actions_reject_wrong_role_or_state[ADMIN-start-body1-ASSIGNED-3]" time="0.186" />
+    <testcase classname="tests.test_workflow_api" name="test_second_phase_actions_reject_wrong_role_or_state[REPORTER-confirm-body2-ASSIGNED-3]" time="0.172" />
+    <testcase classname="tests.test_workflow_api" name="test_second_phase_actions_reject_wrong_role_or_state[TECHNICIAN-confirm-body3-PENDING_CONFIRMATION-5]" time="0.170" />
+    <testcase classname="tests.test_workflow_api" name="test_second_phase_actions_reject_wrong_role_or_state[TECHNICIAN-rework-body4-PENDING_CONFIRMATION-5]" time="0.168" />
+    <testcase classname="tests.test_workflow_api" name="test_rework_reason_and_confirm_contract_reject_invalid_input[rework-body0]" time="0.168" />
+    <testcase classname="tests.test_workflow_api" name="test_rework_reason_and_confirm_contract_reject_invalid_input[rework-body1]" time="0.166" />
+    <testcase classname="tests.test_workflow_api" name="test_rework_reason_and_confirm_contract_reject_invalid_input[confirm-body2]" time="0.169" />
+    <testcase classname="tests.test_workflow_api" name="test_event_text_length_limit_rejects_without_writes[ADMIN-review-SUBMITTED-1-reason]" time="0.196" />
+    <testcase classname="tests.test_workflow_api" name="test_event_text_length_limit_rejects_without_writes[REPORTER-cancel-SUBMITTED-1-reason]" time="0.174" />
+    <testcase classname="tests.test_workflow_api" name="test_event_text_length_limit_rejects_without_writes[TECHNICIAN-start-ASSIGNED-3-note]" time="0.174" />
+    <testcase classname="tests.test_workflow_api" name="test_event_text_length_limit_rejects_without_writes[TECHNICIAN-resolve-IN_PROGRESS-4-resolution_note]" time="0.172" />
+    <testcase classname="tests.test_workflow_api" name="test_event_text_length_limit_rejects_without_writes[REPORTER-rework-PENDING_CONFIRMATION-5-reason]" time="0.172" />
+    <testcase classname="tests.test_workflow_api" name="test_resolution_photo_is_private_metadata_and_file" time="0.173" />
+    <testcase classname="tests.test_workflow_api" name="test_invalid_result_photo_leaves_no_file_or_state_change[files0-422]" time="0.263" />
+    <testcase classname="tests.test_workflow_api" name="test_invalid_result_photo_leaves_no_file_or_state_change[files1-415]" time="0.171" />
+    <testcase classname="tests.test_workflow_api" name="test_invalid_result_photo_leaves_no_file_or_state_change[files2-415]" time="0.166" />
+    <testcase classname="tests.test_workflow_api" name="test_invalid_result_photo_leaves_no_file_or_state_change[files3-413]" time="0.178" />
+    <testcase classname="tests.test_workflow_api" name="test_timeline_filters_internal_rows_and_sorts_stably" time="0.178" />
+    <testcase classname="tests.test_workflow_api" name="test_concurrent_second_phase_actions_have_one_winner[start-TECHNICIAN-ASSIGNED-3-body0]" time="0.307" />
+    <testcase classname="tests.test_workflow_api" name="test_concurrent_second_phase_actions_have_one_winner[resolve-TECHNICIAN-IN_PROGRESS-4-body1]" time="0.306" />
+    <testcase classname="tests.test_workflow_api" name="test_concurrent_second_phase_actions_have_one_winner[confirm-REPORTER-PENDING_CONFIRMATION-5-body2]" time="0.295" />
+    <testcase classname="tests.test_workflow_api" name="test_result_photo_and_state_roll_back_when_event_insert_fails" time="0.179" />
+  </testsuite>
+</testsuites>

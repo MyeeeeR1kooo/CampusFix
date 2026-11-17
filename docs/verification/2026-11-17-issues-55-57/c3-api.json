@@ -1,0 +1,78 @@
+{
+  "scope": "C3 API regression tests only (FastAPI TestClient and isolated real PostgreSQL, no browser)",
+  "source_revision": "92d4dd0e9c699d3c41637e6b53fa01e0134c8792 plus the two C3 tests",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/api/tickets/1/confirm",
+      "http_status": 200,
+      "request_fields": {
+        "expected_version": 5,
+        "idempotency_key": "f088b905-7f07-4753-8998-855b1294bdcc"
+      },
+      "ticket_fields": {
+        "id": 1,
+        "status": "CLOSED",
+        "version": 6,
+        "closed_at": "2026-11-17T15:32:22.218556Z"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/tickets/1/confirm",
+      "http_status": 200,
+      "request_fields": {
+        "expected_version": 5,
+        "idempotency_key": "f088b905-7f07-4753-8998-855b1294bdcc"
+      },
+      "ticket_fields": {
+        "id": 1,
+        "status": "CLOSED",
+        "version": 6,
+        "closed_at": "2026-11-17T15:32:22.218556Z"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/tickets/1/assign",
+      "http_status": 200,
+      "request_fields": {
+        "technician_id": 2,
+        "expected_version": 1
+      },
+      "ticket_fields": {
+        "id": 1,
+        "status": "ASSIGNED",
+        "version": 2,
+        "closed_at": null
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/tickets/2/assign",
+      "http_status": 200,
+      "request_fields": {
+        "technician_id": 4,
+        "expected_version": 1
+      },
+      "ticket_fields": {
+        "id": 2,
+        "status": "ASSIGNED",
+        "version": 2,
+        "closed_at": null
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/tickets",
+      "http_status": 200,
+      "items": [
+        {
+          "id": 1,
+          "current_assignee_id": 2
+        }
+      ],
+      "next_cursor": null
+    }
+  ]
+}

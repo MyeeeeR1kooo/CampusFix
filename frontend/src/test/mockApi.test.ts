@@ -386,7 +386,7 @@ describe("mutable workflow — FR-02, FR-05–09; UC-01–04", () => {
     await login(2);
     ticket = await api.resolveTicket(ticket.id, { expected_version: ticket.version, resolution_note: "Adjusted alignment." });
     await login(1);
-    ticket = await api.confirmTicket(ticket.id, { expected_version: ticket.version });
+    ticket = await api.confirmTicket(ticket.id, { expected_version: ticket.version, idempotency_key: crypto.randomUUID() });
     expect(ticket).toMatchObject({ status: "CLOSED", version: 8, closed_at: instant.toISOString(), current_assignee: { id: 2 }, allowed_actions: [], next_action: null });
     const result = await api.getTicket(ticket.id);
     expect(result.timeline.filter((entry) => entry.kind === "EVENT").map((entry) => entry.type)).toEqual([
@@ -459,7 +459,7 @@ describe("mutable workflow — FR-02, FR-05–09; UC-01–04", () => {
       review: async () => { await login(3); return { id: 1, run: () => api.reviewTicket(1, { decision: "APPROVE", category: "HVAC", priority: "LOW", expected_version: 1 }) }; },
       start: async () => { await login(2); return { id: 3, run: () => api.startTicket(3, { expected_version: 3 }) }; },
       resolve: async () => { await login(2); return { id: 4, run: () => api.resolveTicket(4, { expected_version: 4, resolution_note: "Done." }) }; },
-      confirm: async () => { await login(1); return { id: 5, run: () => api.confirmTicket(5, { expected_version: 5 }) }; },
+      confirm: async () => { await login(1); return { id: 5, run: () => api.confirmTicket(5, { expected_version: 5, idempotency_key: crypto.randomUUID() }) }; },
     };
     const { id, run } = await operations[action]();
     const before = await api.getTicket(id);
@@ -467,6 +467,21 @@ describe("mutable workflow — FR-02, FR-05–09; UC-01–04", () => {
     expect(results.map((result) => result.status)).toEqual(["fulfilled", "rejected"]);
     expect(results[1]).toMatchObject({ reason: { status: 409, code: "TICKET_VERSION_CONFLICT" } });
     const after = await api.getTicket(id);
+    expect(after.version).toBe(before.version + 1);
+    expect(after.timeline).toHaveLength(before.timeline.length + 1);
+  });
+
+  it("replays only the matching successful confirm request", async () => {
+    await login(1);
+    const before = await api.getTicket(5);
+    const body = { expected_version: 5, idempotency_key: crypto.randomUUID() };
+    const first = await api.confirmTicket(5, body);
+    expect(await api.confirmTicket(5, body)).toEqual(first);
+    await expect(api.confirmTicket(5, { ...body, idempotency_key: crypto.randomUUID() }))
+      .rejects.toMatchObject({ status: 409, code: "TICKET_VERSION_CONFLICT" });
+    await expect(api.confirmTicket(5, { ...body, expected_version: 4 }))
+      .rejects.toMatchObject({ status: 409, code: "TICKET_VERSION_CONFLICT" });
+    const after = await api.getTicket(5);
     expect(after.version).toBe(before.version + 1);
     expect(after.timeline).toHaveLength(before.timeline.length + 1);
   });
@@ -611,7 +626,7 @@ describe("statistics and scaffold integration — FR-11 / UC-05 / §13.3", () =>
     expect(before.by_status.reduce((sum, row) => sum + row.count, 0)).toBe(10);
     expect(before.backlog_count).toBe(7);
     await login(1);
-    await api.confirmTicket(5, { expected_version: 5 });
+    await api.confirmTicket(5, { expected_version: 5, idempotency_key: crypto.randomUUID() });
     await login(3);
     const after = await api.getAnalytics();
     expect(after.backlog_count).toBe(6);

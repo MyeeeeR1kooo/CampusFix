@@ -49,7 +49,7 @@ EXPECTED_OPERATIONS = {
 }
 ACTION_SCHEMAS = {
     "review": "ReviewRequest", "assign": "AssignRequest", "start": "StartRequest",
-    "resolve": "ResolveRequest", "confirm": "VersionRequest",
+    "resolve": "ResolveRequest", "confirm": "ConfirmRequest",
     "rework": "ReworkRequest", "cancel": "CancelRequest",
 }
 
@@ -309,6 +309,14 @@ def test_every_workflow_action_requires_a_positive_expected_version(contract, ac
         assert not validator.is_valid(missing)
         for invalid_version in (0, -1, "1", None):
             assert not validator.is_valid({**value, "expected_version": invalid_version})
+
+
+def test_confirm_requires_uuid_idempotency_key(contract):
+    validator = schema_validator(contract, "ConfirmRequest")
+    valid = {"expected_version": 5, "idempotency_key": "550e8400-e29b-41d4-a716-446655440000"}
+    assert validator.is_valid(valid)
+    assert not validator.is_valid({"expected_version": 5})
+    assert not validator.is_valid({**valid, "idempotency_key": "not-a-uuid"})
 
 
 @pytest.mark.parametrize("action,expected_statuses", [

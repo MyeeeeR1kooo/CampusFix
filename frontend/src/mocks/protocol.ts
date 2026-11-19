@@ -48,7 +48,7 @@ export const schemas = {
   assign: z.object({ technician_id: id, ...version }).strict(),
   start: z.object({ note: z.string().max(2000).optional(), ...version }).strict(),
   resolve: z.object({ resolution_note: text.max(2000), ...version }).strict(),
-  confirm: z.object(version).strict(),
+  confirm: z.object({ ...version, idempotency_key: z.uuid() }).strict(),
   rework: z.object({ reason: text.max(2000), ...version }).strict(),
   cancel: z.object({ reason: z.string().max(2000).optional(), ...version }).strict(),
   // The frozen CommentRequest is minLength 1 / maxLength 2000 and preserves the

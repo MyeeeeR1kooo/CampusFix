@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<testsuites name="pytest tests">
+  <testsuite name="pytest" errors="0" failures="0" skipped="0" tests="2" time="1.260" timestamp="2026-11-17T23:32:21.304692+08:00">
+    <testcase classname="tests.test_workflow_api" name="test_repeating_confirm_preserves_a_single_ticket_closed_event" time="0.313" />
+    <testcase classname="tests.test_workflow_api" name="test_technician_list_after_dispatch_only_returns_current_assignments" time="0.324" />
+  </testsuite>
+</testsuites>

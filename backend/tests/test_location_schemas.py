@@ -31,6 +31,19 @@ def test_creation_defaults_active_and_keeps_all_input_text():
     assert request.model_dump() == {**payload, "active": True}
 
 
+def test_building_length_limit_applies_to_create_and_update_only():
+    longest = "x" * 255
+    assert CreateLocationRequest.model_validate({**ADDRESS, "building": longest}).building == longest
+    assert UpdateLocationRequest.model_validate({"building": longest}).building == longest
+    for payload, schema in (
+        ({**ADDRESS, "building": longest + "x"}, CreateLocationRequest),
+        ({"building": longest + "x"}, UpdateLocationRequest),
+    ):
+        with pytest.raises(ValidationError):
+            schema.model_validate(payload)
+    assert CreateLocationRequest.model_validate({**ADDRESS, "floor": longest + "x"}).floor == longest + "x"
+
+
 @pytest.mark.parametrize("field", ADDRESS)
 @pytest.mark.parametrize("invalid", [None, "", 1, True, [], {}])
 def test_creation_rejects_invalid_location_text(field, invalid):

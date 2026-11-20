@@ -149,7 +149,13 @@ describe("partner review: seeded details and failure envelopes", () => {
     expect((await original!.arrayBuffer()).byteLength).toBe(seeded[0].size);
     for (const userId of [2, 3]) {
       await login(userId);
-      for (const attachment of seeded) await expect(api.downloadAttachment(attachment.id)).resolves.toBeInstanceOf(Blob);
+      for (const attachment of seeded) {
+        // `response.blob()` yields Node's Blob; jsdom's FileReader only accepts a Blob from its
+        // own realm, so assert on the bytes instead of `instanceof` — the two never match.
+        const blob = await api.downloadAttachment(attachment.id);
+        expect(blob.size).toBe(attachment.size);
+        expect(blob.type).toMatch(/^image\//);
+      }
     }
     await login(4);
     for (const attachment of seeded) await expect(api.downloadAttachment(attachment.id)).rejects.toMatchObject({ status: 404 });
@@ -249,6 +255,19 @@ describe("mock filters and cursor contract — FR-04", () => {
     expect(Object.keys(result).sort()).toEqual(["items", "next_cursor"]);
     expect(await api.listTickets({ created_before: ticket.created_at, q: ticket.code })).toEqual({ items: [], next_cursor: null });
     expect((await api.listTickets({ q: "no match" })).items).toEqual([]);
+  });
+
+  it("enforces filter lengths and rejects reversed creation ranges", async () => {
+    await login(3);
+    await expect(api.listTickets({ q: "x".repeat(121) })).rejects.toMatchObject({ status: 422 });
+    await expect(api.listTickets({ building: "x".repeat(256) })).rejects.toMatchObject({ status: 422 });
+    expect((await api.listTickets({ q: "x".repeat(120) })).items).toEqual([]);
+    expect((await api.listTickets({ building: "x".repeat(255) })).items).toEqual([]);
+    const created_at = (await api.getTicket(1)).created_at;
+    await expect(api.listTickets({ created_from: new Date(Date.parse(created_at) + 1000).toISOString(), created_before: created_at }))
+      .rejects.toMatchObject({ status: 422, fields: { created_before: expect.any(String) } });
+    expect(await api.listTickets({ created_from: created_at, created_before: created_at }))
+      .toEqual({ items: [], next_cursor: null });
   });
 
   it("uses stable keyset cursors and rejects mismatched filters, roles and malformed values", async () => {
@@ -367,7 +386,7 @@ describe("mutable workflow — FR-02, FR-05–09; UC-01–04", () => {
     await login(2);
     ticket = await api.resolveTicket(ticket.id, { expected_version: ticket.version, resolution_note: "Adjusted alignment." });
     await login(1);
-    ticket = await api.confirmTicket(ticket.id, { expected_version: ticket.version });
+    ticket = await api.confirmTicket(ticket.id, { expected_version: ticket.version, idempotency_key: crypto.randomUUID() });
     expect(ticket).toMatchObject({ status: "CLOSED", version: 8, closed_at: instant.toISOString(), current_assignee: { id: 2 }, allowed_actions: [], next_action: null });
     const result = await api.getTicket(ticket.id);
     expect(result.timeline.filter((entry) => entry.kind === "EVENT").map((entry) => entry.type)).toEqual([
@@ -384,6 +403,32 @@ describe("mutable workflow — FR-02, FR-05–09; UC-01–04", () => {
     await login(4);
     expect(await api.cancelTicket(9, { expected_version: 1 })).toMatchObject({ status: "CANCELLED", version: 2, allowed_actions: [] });
     expect((await api.getTicket(9)).timeline.filter((entry) => entry.kind === "EVENT").at(-1)).toMatchObject({ type: "TICKET_CANCELLED" });
+  });
+
+  it("rejects oversized event text without changing tickets", async () => {
+    const longText = "x".repeat(2001);
+    await login(3);
+    const submitted = await api.getTicket(1);
+    await expect(api.reviewTicket(1, { decision: "REJECT", reason: longText, expected_version: 1 }))
+      .rejects.toMatchObject({ status: 422 });
+    expect(await api.getTicket(1)).toEqual(submitted);
+
+    await login(2);
+    const assigned = await api.getTicket(3);
+    await expect(api.startTicket(3, { note: longText, expected_version: 3 })).rejects.toMatchObject({ status: 422 });
+    expect(await api.getTicket(3)).toEqual(assigned);
+    const processing = await api.getTicket(4);
+    await expect(api.resolveTicket(4, { resolution_note: longText, expected_version: 4 })).rejects.toMatchObject({ status: 422 });
+    expect(await api.getTicket(4)).toEqual(processing);
+
+    await login(1);
+    const awaiting = await api.getTicket(5);
+    await expect(api.reworkTicket(5, { reason: longText, expected_version: 5 })).rejects.toMatchObject({ status: 422 });
+    expect(await api.getTicket(5)).toEqual(awaiting);
+    await login(4);
+    const cancellable = await api.getTicket(9);
+    await expect(api.cancelTicket(9, { reason: longText, expected_version: 1 })).rejects.toMatchObject({ status: 422 });
+    expect(await api.getTicket(9)).toEqual(cancellable);
   });
 
   it("rejects invalid assignments without changing state, assignments or events", async () => {
@@ -414,7 +459,7 @@ describe("mutable workflow — FR-02, FR-05–09; UC-01–04", () => {
       review: async () => { await login(3); return { id: 1, run: () => api.reviewTicket(1, { decision: "APPROVE", category: "HVAC", priority: "LOW", expected_version: 1 }) }; },
       start: async () => { await login(2); return { id: 3, run: () => api.startTicket(3, { expected_version: 3 }) }; },
       resolve: async () => { await login(2); return { id: 4, run: () => api.resolveTicket(4, { expected_version: 4, resolution_note: "Done." }) }; },
-      confirm: async () => { await login(1); return { id: 5, run: () => api.confirmTicket(5, { expected_version: 5 }) }; },
+      confirm: async () => { await login(1); return { id: 5, run: () => api.confirmTicket(5, { expected_version: 5, idempotency_key: crypto.randomUUID() }) }; },
     };
     const { id, run } = await operations[action]();
     const before = await api.getTicket(id);
@@ -422,6 +467,21 @@ describe("mutable workflow — FR-02, FR-05–09; UC-01–04", () => {
     expect(results.map((result) => result.status)).toEqual(["fulfilled", "rejected"]);
     expect(results[1]).toMatchObject({ reason: { status: 409, code: "TICKET_VERSION_CONFLICT" } });
     const after = await api.getTicket(id);
+    expect(after.version).toBe(before.version + 1);
+    expect(after.timeline).toHaveLength(before.timeline.length + 1);
+  });
+
+  it("replays only the matching successful confirm request", async () => {
+    await login(1);
+    const before = await api.getTicket(5);
+    const body = { expected_version: 5, idempotency_key: crypto.randomUUID() };
+    const first = await api.confirmTicket(5, body);
+    expect(await api.confirmTicket(5, body)).toEqual(first);
+    await expect(api.confirmTicket(5, { ...body, idempotency_key: crypto.randomUUID() }))
+      .rejects.toMatchObject({ status: 409, code: "TICKET_VERSION_CONFLICT" });
+    await expect(api.confirmTicket(5, { ...body, expected_version: 4 }))
+      .rejects.toMatchObject({ status: 409, code: "TICKET_VERSION_CONFLICT" });
+    const after = await api.getTicket(5);
     expect(after.version).toBe(before.version + 1);
     expect(after.timeline).toHaveLength(before.timeline.length + 1);
   });
@@ -447,12 +507,9 @@ describe("comments, files, locations and accounts — FR-03, FR-10, FR-12", () =
     const attachment = (await api.getTicket(ticket.id)).report_photos[0];
     expect(attachment).toMatchObject({ purpose: "REPORT_PHOTO", size: pngBytes.length, download_url: `/api/attachments/${attachment.id}` });
     const blob = await api.downloadAttachment(attachment.id);
-    const downloaded = await new Promise<ArrayBuffer>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as ArrayBuffer);
-      reader.onerror = reject;
-      reader.readAsArrayBuffer(blob);
-    });
+    // `blob.arrayBuffer()` accepts both Node's and jsdom's Blob; jsdom's FileReader rejects a
+    // Blob created outside its realm.
+    const downloaded = await blob.arrayBuffer();
     expect(new Uint8Array(downloaded)).toEqual(pngBytes);
     expect(URL.revokeObjectURL).toHaveBeenCalled();
     await login(4);
@@ -536,6 +593,18 @@ describe("comments, files, locations and accounts — FR-03, FR-10, FR-12", () =
     expect(await api.updateLocation(1, { active: false })).toMatchObject({ ...{ building: "Teaching Building A", floor: "3", room_or_area: "301" }, active: false });
   });
 
+  it("limits building names on create and update", async () => {
+    await login(3);
+    const longest = "x".repeat(255);
+    const created = await api.createLocation({ building: longest, floor: "1", room_or_area: "101", active: true });
+    expect(created.building).toBe(longest);
+    await expect(api.createLocation({ building: longest + "x", floor: "2", room_or_area: "201", active: true }))
+      .rejects.toMatchObject({ status: 422, fields: { building: expect.any(String) } });
+    await expect(api.updateLocation(created.id, { building: longest + "x" }))
+      .rejects.toMatchObject({ status: 422, fields: { building: expect.any(String) } });
+    expect((await api.listAdminLocations({ limit: 100 })).items.find((item) => item.id === created.id)?.building).toBe(longest);
+  });
+
   it("lists managed accounts and disallows Admin management and inactive logins", async () => {
     await login(3);
     expect((await api.listUsers({ role: "TECHNICIAN", active: true })).items.map((user) => user.id)).toEqual([5, 2]);
@@ -557,7 +626,7 @@ describe("statistics and scaffold integration — FR-11 / UC-05 / §13.3", () =>
     expect(before.by_status.reduce((sum, row) => sum + row.count, 0)).toBe(10);
     expect(before.backlog_count).toBe(7);
     await login(1);
-    await api.confirmTicket(5, { expected_version: 5 });
+    await api.confirmTicket(5, { expected_version: 5, idempotency_key: crypto.randomUUID() });
     await login(3);
     const after = await api.getAnalytics();
     expect(after.backlog_count).toBe(6);

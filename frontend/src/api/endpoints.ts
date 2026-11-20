@@ -17,6 +17,7 @@ import type {
   AssignRequest,
   CancelRequest,
   Category,
+  ConfirmRequest,
   Comment,
   CommentRequest,
   CreateLocationRequest,
@@ -37,7 +38,6 @@ import type {
   UserActiveRequest,
   UserPage,
   Version,
-  VersionRequest,
 } from "./index";
 
 /** The ticket fields that travel as multipart text parts alongside `photos`. */
@@ -124,7 +124,7 @@ export function resolveTicket(id: number, input: {
   return http.multipart<TicketSummary>(`${TICKETS}/${id}/resolve`, form);
 }
 
-export function confirmTicket(id: number, body: VersionRequest): Promise<TicketSummary> {
+export function confirmTicket(id: number, body: ConfirmRequest): Promise<TicketSummary> {
   return http.post<TicketSummary>(`${TICKETS}/${id}/confirm`, body);
 }
 
@@ -146,8 +146,8 @@ export function createComment(id: number, body: CommentRequest): Promise<Comment
 
 /**
  * GET /api/attachments/{id} — image bytes, and the server re-checks ticket visibility on
- * every read. For display, `Attachment.download_url` in an <img src> is the cheaper path:
- * the session cookie rides along and the same check still runs.
+ * every read. Display fetches through this function rather than putting `download_url`
+ * in an <img src>: the shared Mock bridge only sees requests made by this client.
  */
 export function downloadAttachment(id: number, signal?: AbortSignal): Promise<Blob> {
   return http.blob(`/api/attachments/${id}`, signal);

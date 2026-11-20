@@ -1,0 +1,56 @@
+{
+  "source_commit": "c61e42858cd86cd933f53a863358f0cd2d1e4c34",
+  "source_branch": "admin-flow",
+  "overall_result": "FAIL",
+  "browser": {
+    "passed": 12,
+    "failed": 1,
+    "page_errors": 0,
+    "started_at": "2026-10-31T07:23:47.961Z",
+    "finished_at": "2026-10-31T07:23:54.818Z"
+  },
+  "environment": {
+    "system": "Darwin",
+    "machine": "arm64",
+    "python": "3.12.13",
+    "node": "v24.15.0",
+    "postgresql": "17.11",
+    "playwright": "1.64.1",
+    "chrome": "156.0.8078.76",
+    "mock": false,
+    "database_timezone": "UTC"
+  },
+  "junit_reports": {
+    "frontend-components.xml": {
+      "tests": 15,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "backend-workflow.xml": {
+      "tests": 45,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "database_ticket_checks": 22,
+  "build": {
+    "result": "PASS",
+    "command": "VITE_USE_MOCK=0 VITE_API_TARGET=http://127.0.0.1:8052 npm run build -- --outDir /private/tmp/campusfix-dispatch-e2e-dist",
+    "assets_sha256": {
+      "assets/index-CwTlvwt-.css": "88af53654ec55db56c6e0421df009627441434beeca5349b99823243e3e0d981",
+      "assets/index-DmKZCtVK.js": "62384cf156b91927151843019551a29081e59dc18200309cf38e69697d1540c5",
+      "index.html": "2d1222625e3474ae9e3278e174c59a13db5a8ff5e4c5d5828ec09498bf8b4c4d"
+    }
+  },
+  "source_sha256": {
+    "tests/e2e/dispatch-browser.mjs": "d7a93d70349d0feffb91c383bd4e2db3ecff7cba36d48009cad5af963ce0763a",
+    "tests/e2e/dispatch-fixtures.py": "169e661958084dd08e4c2b135521b3c26a8a162111321ad89ca77066572d42e7",
+    "tests/e2e/dispatch-database-check.py": "552dd12ddb4c4d40b694597a3c7d868b74804fa96cdd1ee4d43fb89cf9e65c33",
+    "backend/requirements-dev.lock": "437ed3a47a82f9122af2f56cea6132f4f9443b01435cd09bfc3db469aeb0995e",
+    "backend/requirements.lock": "67b6903d17d20ebf2b73f73ce1d75ddffb6faf163c88bc12dfafdc7f0238992a",
+    "frontend/package-lock.json": "ce7552abc2940526ce7d4db61e16e08066882bae70927737a68357ed037af15f"
+  },
+  "services_stopped": true
+}

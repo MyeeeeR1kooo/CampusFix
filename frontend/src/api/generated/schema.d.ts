@@ -1,9 +1,9 @@
 /*
  * CampusFix #48 — generated API types. Run `npm run gen:api`, never edit by hand.
  *   contract version : 1.0.0
- *   contract digest  : sha256:e958fbf475b9
+ *   contract digest  : sha256:e9d38a7c1ee1
  *   contract source  : docs/api/openapi.yaml
- *   generated at     : 2026-10-07T06:01:36.263Z
+ *   generated at     : 2026-11-17T11:19:02.402Z
  *
  * The digest is the anchor while #46 is unmerged: two runs over the same YAML differ only
  * by timestamp, and any contract edit changes it. Record the upstream commit in the commit
@@ -114,6 +114,7 @@ export interface paths {
          *     筛选以 AND 组合；按 created_at DESC, id DESC 排序。
          *     cursor 为含这两个排序字段的不透明游标，分页期间保持相同筛选条件。
          *     created_from 含边界、created_before 不含边界，均为 UTC 时间。
+         *     created_from 晚于 created_before 时返回 422 / VALIDATION_ERROR；相等时返回空列表。
          *     building 按关联地点的楼宇筛选；历史显示仍使用 location_label_snapshot。
          *     q 匹配工单编号或标题；无匹配返回 items=[]、next_cursor=null。
          *     current_assignee_id 筛选仅 ADMIN 可用，其他角色传入时返回 403 / FORBIDDEN。
@@ -278,7 +279,7 @@ export interface paths {
         /**
          * 原 Reporter 确认完成
          * @description PENDING_CONFIRMATION → CLOSED，设置 closed_at，version 递增，写入一条 TICKET_CLOSED 事件。
-         *     不接受满意度或评价字段。重复旧版本请求返回 409，不能重复写入有效关闭事件。
+         *     不接受满意度或评价字段。相同 idempotency_key 和 expected_version 的成功请求重试返回原结果，不重复写入事件；其他旧版本请求返回 409。
          */
         post: operations["confirmTicket"];
         delete?: never;
@@ -656,6 +657,11 @@ export interface components {
         };
         VersionRequest: {
             expected_version: components["schemas"]["Version"];
+        };
+        ConfirmRequest: {
+            expected_version: components["schemas"]["Version"];
+            /** Format: uuid */
+            idempotency_key: string;
         };
         ReviewRequest: components["schemas"]["ApproveRequest"] | components["schemas"]["RejectRequest"];
         ApproveRequest: {
@@ -1525,10 +1531,11 @@ export interface operations {
             content: {
                 /**
                  * @example {
-                 *       "expected_version": 5
+                 *       "expected_version": 5,
+                 *       "idempotency_key": "550e8400-e29b-41d4-a716-446655440000"
                  *     }
                  */
-                "application/json": components["schemas"]["VersionRequest"];
+                "application/json": components["schemas"]["ConfirmRequest"];
             };
         };
         responses: {

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="15" failures="0" errors="0" time="2.518">
+    <testsuite name="src/test/assignmentQueue.test.tsx" timestamp="2026-10-31T07:05:38.197Z" hostname="linzhitaodeMacBook-Air.local" tests="7" failures="0" errors="0" skipped="0" time="1.585644333">
+        <testcase classname="src/test/assignmentQueue.test.tsx" name="#53 assignment queue, action and history &gt; assigns to an active technician and displays the owner, assignment and timeline" time="0.229593333">
+            <system-err>
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/assignmentQueue.test.tsx" name="#53 assignment queue, action and history &gt; rejects a stale concurrent assignment and preserves the single winning owner" time="0.105751375">
+        </testcase>
+        <testcase classname="src/test/assignmentQueue.test.tsx" name="#53 assignment queue, action and history &gt; shows a field error if a loaded candidate is disabled, then accepts a corrected selection" time="0.089965541">
+        </testcase>
+        <testcase classname="src/test/assignmentQueue.test.tsx" name="#53 assignment queue, action and history &gt; disables confirmation when no active technicians are available" time="0.046403708">
+        </testcase>
+        <testcase classname="src/test/assignmentQueue.test.tsx" name="#53 assignment queue, action and history &gt; retries a failed candidate query and clears filters when switching queues" time="1.101142791">
+        </testcase>
+        <testcase classname="src/test/assignmentQueue.test.tsx" name="#53 assignment queue, action and history &gt; denies assignment queue and action to reporter01@campusfix.test" time="0.006904292">
+        </testcase>
+        <testcase classname="src/test/assignmentQueue.test.tsx" name="#53 assignment queue, action and history &gt; denies assignment queue and action to technician01@campusfix.test" time="0.005352916">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/reviewQueue.test.tsx" timestamp="2026-10-31T07:05:38.197Z" hostname="linzhitaodeMacBook-Air.local" tests="8" failures="0" errors="0" skipped="0" time="1.650991083">
+        <testcase classname="src/test/reviewQueue.test.tsx" name="#52 review queue and review actions &gt; approves from the queue with category, priority and version, records the event and removes the row" time="0.210749208">
+            <system-err>
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/reviewQueue.test.tsx" name="#52 review queue and review actions &gt; requires a rejection reason and displays the rejected event" time="0.15464625">
+        </testcase>
+        <testcase classname="src/test/reviewQueue.test.tsx" name="#52 review queue and review actions &gt; pages with server cursors and resets the cursor when applying priority" time="0.122987958">
+        </testcase>
+        <testcase classname="src/test/reviewQueue.test.tsx" name="#52 review queue and review actions &gt; closes a stale review after a concurrent approval and refreshes the detail" time="0.077561417">
+        </testcase>
+        <testcase classname="src/test/reviewQueue.test.tsx" name="#52 review queue and review actions &gt; shows retry on list failures without showing stale rows" time="1.028665875">
+        </testcase>
+        <testcase classname="src/test/reviewQueue.test.tsx" name="#52 review queue and review actions &gt; offers only contract priorities and refuses an invalid priority without updating the ticket" time="0.044015541">
+        </testcase>
+        <testcase classname="src/test/reviewQueue.test.tsx" name="#52 review queue and review actions &gt; denies the workbench and review operation to reporter01@campusfix.test" time="0.006452625">
+        </testcase>
+        <testcase classname="src/test/reviewQueue.test.tsx" name="#52 review queue and review actions &gt; denies the workbench and review operation to technician01@campusfix.test" time="0.005269834">
+        </testcase>
+    </testsuite>
+</testsuites>

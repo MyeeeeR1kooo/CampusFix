@@ -234,6 +234,7 @@ def test_location_input_and_path_validation_is_422_without_write_side_effects(ap
         {**ADDRESS, "active": "false"}, {**ADDRESS, "active": 0}, {**ADDRESS, "active": None},
         {**ADDRESS, "id": 9}, {**ADDRESS, "updated_at": "2026-10-10T00:00:00Z"},
     ]
+    create_payloads.append({**ADDRESS, "building": "x" * 256})
     for payload in create_payloads:
         assert_error(create_location(admin, payload), 422, "VALIDATION_ERROR", contract_registry, fields=True)
     update_payloads = [
@@ -241,6 +242,7 @@ def test_location_input_and_path_validation_is_422_without_write_side_effects(ap
         {"building": ""}, {"floor": 3}, {"active": "false"}, {"active": 0},
         {"active": False, "id": 2},
     ]
+    update_payloads.append({"building": "x" * 256})
     for payload in update_payloads:
         response = admin.patch(f"/api/admin/locations/{created['id']}", json=payload, headers=HEADERS)
         assert_error(response, 422, "VALIDATION_ERROR", contract_registry, fields=True)

@@ -10,9 +10,9 @@ import { TextField } from "../../components/Field";
 import { classify } from "../../lib/errors";
 import { queryKeys } from "../../lib/queryClient";
 
-// The contract accepts nonempty strings as written; do not silently trim or fold names.
+// Location names are preserved as written; do not silently trim or fold them.
 const locationSchema = z.object({
-  building: z.string().min(1, "Enter a building."),
+  building: z.string().min(1, "Enter a building.").max(255, "Building must be 255 characters or fewer."),
   floor: z.string().min(1, "Enter a floor."),
   room_or_area: z.string().min(1, "Enter a room or area."),
 });

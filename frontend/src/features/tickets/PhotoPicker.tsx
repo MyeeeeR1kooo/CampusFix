@@ -1,9 +1,8 @@
 /**
- * Report-photo picker (#54).
+ * Ticket photo picker for report and resolution forms.
  *
  * Client-side checks mirror the frozen file rules (P0 §7.1) so the user gets an
- * immediate answer, but they are not the security boundary: creation still sends
- * the files as multipart parts and the backend re-checks real content.
+ * immediate answer. The forms send multipart files for the backend to validate.
  */
 
 import { useEffect, useId, useState } from "react";
@@ -22,14 +21,17 @@ function sizeLabel(bytes: number): string {
   return `${Math.max(1, Math.round(bytes / 1024))} KiB`;
 }
 
-export function PhotoPicker({ files, onChange, error }: {
+export function PhotoPicker({ files, onChange, error, maxPhotos = MAX_PHOTOS, disabled = false }: {
   files: readonly File[];
   onChange: (files: File[]) => void;
   error?: string;
+  maxPhotos?: number;
+  disabled?: boolean;
 }) {
   const id = useId();
   const [message, setMessage] = useState<string>();
   const [previews, setPreviews] = useState<SelectedPreview[]>([]);
+  const hasAvailableSlots = maxPhotos > 0;
 
   useEffect(() => {
     const next = files.map((file) => ({ file, url: URL.createObjectURL(file) }));
@@ -45,8 +47,9 @@ export function PhotoPicker({ files, onChange, error }: {
     const problems: string[] = [];
     const next = [...files];
     for (const file of chosen) {
-      if (next.length >= MAX_PHOTOS) {
-        problems.push(`You can attach at most ${MAX_PHOTOS} photos.`);
+      if (next.length >= maxPhotos) {
+        const noun = maxPhotos === 1 ? "photo" : "photos";
+        problems.push(`You can attach at most ${maxPhotos} ${noun}.`);
         break;
       }
       if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
@@ -83,20 +86,25 @@ export function PhotoPicker({ files, onChange, error }: {
         Photos <span className="muted">(optional)</span>
       </label>
       <p className="field-hint" id={`${id}-hint`}>
-        Up to {MAX_PHOTOS} images. JPEG, PNG or WebP; each 5 MiB or smaller.
+        {hasAvailableSlots
+          ? <>Up to {maxPhotos} {maxPhotos === 1 ? "image" : "images"}. JPEG, PNG or WebP; each 5 MiB or smaller.</>
+          : "This ticket has reached its photo limit."}
       </p>
       <input
         id={`${id}-photos`}
         type="file"
         accept={ALLOWED_PHOTO_TYPES.join(",")}
         multiple
+        disabled={disabled || !hasAvailableSlots}
         aria-describedby={[`${id}-hint`, describedBy].filter(Boolean).join(" ")}
         aria-invalid={message || error ? true : undefined}
         onChange={(event) => select(event.target.files, event.currentTarget)}
       />
-      <p className="field-hint" aria-live="polite">
-        {files.length} of {MAX_PHOTOS} selected
-      </p>
+      {hasAvailableSlots || files.length > 0 ? (
+        <p className="field-hint" aria-live="polite">
+          {files.length} of {maxPhotos} selected
+        </p>
+      ) : null}
       {message ? (
         <p className="field-error" id={`${id}-message`} role="alert">{message}</p>
       ) : null}
@@ -115,6 +123,7 @@ export function PhotoPicker({ files, onChange, error }: {
                   <button
                     type="button"
                     aria-label={`Remove ${file.name}`}
+                    disabled={disabled}
                     onClick={() => remove(index)}
                   >
                     Remove

@@ -411,6 +411,60 @@ def test_concurrent_confirm_replay_has_one_event(app, pg_engine):
     assert_state(pg_engine, ticket_id, "CLOSED", 6, 1)
 
 
+def test_repeating_confirm_preserves_a_single_ticket_closed_event(app, pg_engine):
+    ticket_id = assigned_ticket(pg_engine, "PENDING_CONFIRMATION", version=5)
+    path = f"/api/tickets/{ticket_id}/confirm"
+    payload = {"expected_version": 5, "idempotency_key": str(uuid4())}
+    with login(app, "REPORTER") as reporter:
+        first = reporter.post(path, json=payload, headers=HEADERS)
+        assert first.status_code == 200, first.text
+        first_closed_at = first.json()["closed_at"]
+        assert first_closed_at is not None
+
+        # Frozen P0 §4.2: the same successful confirmation key and version replay safely.
+        repeat = reporter.post(path, json=payload, headers=HEADERS)
+        assert repeat.status_code == 200, repeat.text
+        assert repeat.json() == first.json()
+
+    with Session(pg_engine) as db:
+        ticket = db.get(Ticket, ticket_id)
+        assert (ticket.status, ticket.version) == ("CLOSED", 6)
+        assert ticket.closed_at == datetime.fromisoformat(first_closed_at.replace("Z", "+00:00"))
+        assert db.scalars(select(TicketEvent.type).where(TicketEvent.ticket_id == ticket_id)).all() == [
+            "TICKET_CLOSED",
+        ]
+
+
+def test_technician_list_after_dispatch_only_returns_current_assignments(app, pg_engine):
+    with Session(pg_engine) as db, db.begin():
+        reporter = db.scalar(select(User).where(User.role == "REPORTER"))
+        technician_id = db.scalar(select(User.id).where(User.role == "TECHNICIAN"))
+        colleague = User(name="Other Technician", email="colleague@example.invalid",
+                         password_hash="unused", role="TECHNICIAN")
+        db.add(colleague)
+        db.flush()
+        colleague_id = colleague.id
+        mine, theirs, _unassigned = [
+            create_ticket(db, reporter, status="PENDING_ASSIGNMENT", priority="HIGH")
+            for _ in range(3)
+        ]
+
+    with login(app, "ADMIN") as admin:
+        for ticket_id, assignee_id in ((mine, technician_id), (theirs, colleague_id)):
+            assigned = admin.post(f"/api/tickets/{ticket_id}/assign", headers=HEADERS,
+                                  json={"technician_id": assignee_id, "expected_version": 1})
+            assert assigned.status_code == 200, assigned.text
+
+    with login(app, "TECHNICIAN") as tech:
+        response = tech.get("/api/tickets")  # Visibility must not rely on a client-side filter.
+        assert response.status_code == 200, response.text
+        page = response.json()
+        assert [(item["id"], item["current_assignee"]["id"]) for item in page["items"]] == [
+            (mine, technician_id),
+        ]
+        assert page["next_cursor"] is None
+
+
 def test_reporter_rework_preserves_assignee_and_can_resolve_again(app, pg_engine):
     ticket_id = assigned_ticket(pg_engine, "PENDING_CONFIRMATION", 5)
     reporter = login(app, "REPORTER")

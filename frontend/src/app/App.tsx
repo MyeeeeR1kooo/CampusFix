@@ -46,10 +46,11 @@ import { MyReportsPage } from "../features/tickets/MyReportsPage";
 import { TicketDetailPage } from "../features/tickets/TicketDetailPage";
 import { MyAssignmentsPage } from "../features/technician/MyAssignmentsPage";
 import { AccountManagementPage } from "../features/users/AccountManagementPage";
+import { AnalyticsPage } from "../features/analytics/AnalyticsPage";
 import { ToastProvider, useToast } from "../hooks/useToast";
 import { createAppQueryClient } from "../lib/queryClient";
 import { ErrorBoundary } from "./ErrorBoundary";
-import { NotFoundPage, UnbuiltPage } from "./StatePages";
+import { NotFoundPage } from "./StatePages";
 import { RequireRole, RequireSession } from "./ProtectedRoute";
 
 /** Sends an authenticated visitor from "/" to their role's landing page. */
@@ -57,11 +58,6 @@ function RoleHome() {
   const { user, initialising } = useAuth();
   if (initialising) return <p role="status">Loading…</p>;
   return <Navigate to={user ? landingFor(user.role) : "/login"} replace />;
-}
-
-/** A contracted route whose screen has an owner but no implementation yet. */
-function pending(route: string, owner: string) {
-  return <UnbuiltPage route={route} owner={owner} />;
 }
 
 /** One client for the app, carrying §13.3's 409 behaviour in its mutation cache. */
@@ -125,7 +121,7 @@ export default function App() {
                       path="/analytics"
                       element={
                         <RequireRole roles={["ADMIN"]}>
-                          {pending("Statistics", "舒玺悦 (features/analytics/)")}
+                          <AnalyticsPage />
                         </RequireRole>
                       }
                     />

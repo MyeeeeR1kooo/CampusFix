@@ -86,18 +86,6 @@ describe("anonymous visitors", () => {
 });
 
 describe("the route table — all nine pages declared", () => {
-  const guarded: Array<[string, TestRole, string]> = [
-    ["/analytics", "ADMIN", "Statistics"],
-  ];
-
-  it.each(guarded)("%s as %s renders a page that names its owner", async (path, role, label) => {
-    signedInAs(role);
-    renderAt(path);
-    expect(await screen.findByRole("heading", { name: notBuilt(label) })).toBeTruthy();
-    // "a blank page reads like a working page" — the stand-in must say who fills it.
-    expect(document.body.textContent).toMatch(/owned by (张越|舒玺悦)/);
-  });
-
   it("serves the implemented reporter pages", async () => {
     signedInAs("REPORTER");
     renderAt("/reports");
@@ -135,6 +123,12 @@ describe("the route table — all nine pages declared", () => {
     renderAt("/locations");
     expect(await screen.findByRole("heading", { name: "Location management" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "New location" })).toBeInTheDocument();
+  });
+
+  it("serves the statistics page to Admin", async () => {
+    signedInAs("ADMIN");
+    renderAt("/analytics");
+    expect(await screen.findByRole("heading", { name: "Statistics" })).toBeInTheDocument();
   });
 
   it("serves the account management page to Admin", async () => {

@@ -1557,7 +1557,6 @@ input[type="radio"] {
   height: 100%;
   border-radius: var(--radius-pill);
   background: var(--brand-500);
-  min-width: 2px;
 }
 
 .distribution-count {
@@ -1565,6 +1564,34 @@ input[type="radio"] {
   font-variant-numeric: tabular-nums;
   font-weight: var(--fw-semibold);
   color: var(--n-600);
+}
+
+.trend-table-wrap {
+  overflow-x: auto;
+}
+
+.trend-bars {
+  display: inline-flex;
+  align-items: end;
+  gap: 0.2rem;
+  width: 2rem;
+  height: 2rem;
+  vertical-align: middle;
+}
+
+.trend-bar {
+  display: block;
+  width: 0.7rem;
+  min-height: 0;
+  border-radius: 0.15rem 0.15rem 0 0;
+}
+
+.trend-bar-created {
+  background: var(--brand-500);
+}
+
+.trend-bar-closed {
+  background: var(--green);
 }
 
 /* ----------------------------------------------------------------- toasts */

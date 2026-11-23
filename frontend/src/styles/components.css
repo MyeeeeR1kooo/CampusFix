@@ -1557,7 +1557,6 @@ input[type="radio"] {
   height: 100%;
   border-radius: var(--radius-pill);
   background: var(--brand-500);
-  min-width: 2px;
 }
 
 .distribution-count {

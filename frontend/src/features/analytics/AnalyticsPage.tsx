@@ -38,8 +38,8 @@ function Trend({ data }: { data: Analytics["daily_trend"] }) {
         <tbody>{data.map((day) => <tr key={day.date}>
           <th scope="row">{day.date}</th><td>{day.created_count}</td><td>{day.closed_count}</td>
           <td><span className="trend-bars" aria-label={`${day.created_count} created, ${day.closed_count} closed`}>
-            <span className="trend-bar trend-bar-created" style={{ height: `${maximum ? Math.max(2, (day.created_count / maximum) * 100) : 0}%` }} />
-            <span className="trend-bar trend-bar-closed" style={{ height: `${maximum ? Math.max(2, (day.closed_count / maximum) * 100) : 0}%` }} />
+            <span className="trend-bar trend-bar-created" style={{ height: `${day.created_count && maximum ? Math.max(2, (day.created_count / maximum) * 100) : 0}%` }} />
+            <span className="trend-bar trend-bar-closed" style={{ height: `${day.closed_count && maximum ? Math.max(2, (day.closed_count / maximum) * 100) : 0}%` }} />
           </span></td>
         </tr>)}</tbody>
       </table>

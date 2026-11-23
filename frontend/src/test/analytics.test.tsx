@@ -54,4 +54,18 @@ describe("analytics page", () => {
     expect(screen.getByText("North Hall")).toBeInTheDocument();
     expect(screen.getByText("From creation to closure, including confirmation")).toBeInTheDocument();
   });
+
+  it("does not draw bars for zero counts alongside nonzero counts", async () => {
+    renderAnalytics({
+      ...emptyAnalytics,
+      by_status: [{ status: "SUBMITTED", count: 0 }, { status: "CLOSED", count: 3 }],
+      daily_trend: [{ date: "2026-10-23", created_count: 3, closed_count: 0 }],
+    });
+    const status = await screen.findByText("Submitted", { selector: ".distribution-label" });
+    const zeroStatusBar = status.closest("li")?.querySelector<HTMLElement>(".distribution-fill");
+    expect(zeroStatusBar).toHaveStyle({ width: "0%" });
+    const activity = screen.getByLabelText("3 created, 0 closed");
+    expect(activity.querySelector<HTMLElement>(".trend-bar-created")).toHaveStyle({ height: "100%" });
+    expect(activity.querySelector<HTMLElement>(".trend-bar-closed")).toHaveStyle({ height: "0%" });
+  });
 });

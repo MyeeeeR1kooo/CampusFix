@@ -1,0 +1,21 @@
+{
+  "source_commit": "c5b600f16635dd11589a0d93c6592890192e8598",
+  "queried_at_utc": "2026-11-23T00:55:23.701305+00:00",
+  "fictional_ticket_code": "CF-20261123-000001",
+  "events": [
+    "TICKET_SUBMITTED",
+    "TICKET_APPROVED",
+    "TICKET_ASSIGNED",
+    "WORK_STARTED",
+    "RESOLUTION_SUBMITTED",
+    "REWORK_REQUESTED",
+    "RESOLUTION_SUBMITTED",
+    "TICKET_CLOSED"
+  ],
+  "status": "CLOSED",
+  "version": 8,
+  "closed_at": "2026-11-23T00:53:26.532222+00:00",
+  "ticket_id": 1,
+  "attachments": 3,
+  "closing_events": 1
+}

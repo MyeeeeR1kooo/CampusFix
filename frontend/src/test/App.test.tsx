@@ -88,7 +88,6 @@ describe("anonymous visitors", () => {
 describe("the route table — all nine pages declared", () => {
   const guarded: Array<[string, TestRole, string]> = [
     ["/analytics", "ADMIN", "Statistics"],
-    ["/admin/users", "ADMIN", "Account management"],
   ];
 
   it.each(guarded)("%s as %s renders a page that names its owner", async (path, role, label) => {
@@ -136,6 +135,16 @@ describe("the route table — all nine pages declared", () => {
     renderAt("/locations");
     expect(await screen.findByRole("heading", { name: "Location management" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "New location" })).toBeInTheDocument();
+  });
+
+  it("serves the account management page to Admin", async () => {
+    stubApi([
+      { match: /\/api\/me$/, reply: () => ({ body: userPayload({ id: 3, role: "ADMIN" }) }) },
+      { match: /\/api\/admin\/users/, reply: () => ({ body: { items: [], next_cursor: null } }) },
+    ]);
+    renderAt("/admin/users");
+    expect(await screen.findByRole("heading", { name: "Account management" })).toBeInTheDocument();
+    expect(screen.getByRole("table", { name: "Managed accounts" })).toBeInTheDocument();
   });
 
   it("refuses a role that does not own the page", async () => {

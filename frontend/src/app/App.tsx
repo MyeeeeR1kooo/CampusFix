@@ -45,6 +45,7 @@ import { CreateRepairPage } from "../features/tickets/CreateRepairPage";
 import { MyReportsPage } from "../features/tickets/MyReportsPage";
 import { TicketDetailPage } from "../features/tickets/TicketDetailPage";
 import { MyAssignmentsPage } from "../features/technician/MyAssignmentsPage";
+import { AccountManagementPage } from "../features/users/AccountManagementPage";
 import { ToastProvider, useToast } from "../hooks/useToast";
 import { createAppQueryClient } from "../lib/queryClient";
 import { ErrorBoundary } from "./ErrorBoundary";
@@ -140,7 +141,7 @@ export default function App() {
                       path="/admin/users"
                       element={
                         <RequireRole roles={["ADMIN"]}>
-                          {pending("Account management", "舒玺悦 (features/users/, #49)")}
+                          <AccountManagementPage />
                         </RequireRole>
                       }
                     />

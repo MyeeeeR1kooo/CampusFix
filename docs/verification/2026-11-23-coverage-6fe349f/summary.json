@@ -1,0 +1,70 @@
+{
+  "status": "candidate-pending-team-baseline-confirmation",
+  "source_branch": "main",
+  "source_commit": "6fe349f01acc5ae6f17d1059e2e8984676016ab9",
+  "feature_merge_commit": "1fa6102a641876c1a24b7d2ca0ec4dc241e2248b",
+  "files_changed_since_feature_merge": [
+    "docs/Update_3/handoff/D4-test-functions.tsv",
+    "docs/Update_3/handoff/D4-test-inventory-and-FR-map.md"
+  ],
+  "acceptance_signed_off": false,
+  "test_date_asia_shanghai": "2026-11-23",
+  "backend": {
+    "tests": {
+      "test_files": 28,
+      "total": 758,
+      "passed": 758,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "started_at_utc": "2026-11-23T07:42:35Z",
+      "finished_at_utc": "2026-11-23T07:44:39Z",
+      "junit": "backend-results.xml",
+      "exit_code": 0
+    },
+    "coverage": {
+      "covered_lines": 1705,
+      "total_lines": 1751,
+      "line_rate": "0.9737",
+      "xml": "backend/coverage.xml"
+    }
+  },
+  "frontend": {
+    "tests": {
+      "test_files": 20,
+      "total": 318,
+      "passed": 318,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "started_at_utc": "2026-11-23T07:42:44Z",
+      "finished_at_utc": "2026-11-23T07:43:13Z",
+      "junit": "frontend-results.xml",
+      "exit_code": 0
+    },
+    "coverage": {
+      "covered_lines": 3427,
+      "total_lines": 3557,
+      "line_rate": "0.9634",
+      "xml": "frontend/cobertura-coverage.xml",
+      "branches_covered": 1263,
+      "branches_total": 1348,
+      "functions_covered": 306,
+      "functions_total": 340
+    }
+  },
+  "environment": {
+    "host_os": "macOS 26.6.2 ARM64",
+    "python": "3.12.13",
+    "postgresql": "17.11 (UTC)",
+    "pytest": "8.4.2",
+    "pytest-cov": "7.0.0",
+    "coverage.py": "7.10.7",
+    "node": "24.21.0",
+    "npm": "11.19.0",
+    "vitest": "2.1.9",
+    "@vitest/coverage-v8": "2.1.9"
+  },
+  "frontend_production_build": "passed",
+  "openapi_generated_types_digest_match": "e9d38a7c1ee1"
+}

@@ -1,0 +1,744 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="318" failures="0" errors="0" time="26.673">
+    <testsuite name="src/test/App.test.tsx" timestamp="2026-11-23T07:43:13.320Z" tests="25" failures="0" errors="0" skipped="0" time="1.55898675">
+        <testcase classname="src/test/App.test.tsx" name="anonymous visitors &gt; hides Mock guidance with DEV=true and VITE_USE_MOCK=&apos;0&apos;" time="0.154562708">
+            <system-err>
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/App.test.tsx" name="anonymous visitors &gt; hides Mock guidance with DEV=false and VITE_USE_MOCK=&apos;1&apos;" time="0.028327583">
+        </testcase>
+        <testcase classname="src/test/App.test.tsx" name="anonymous visitors &gt; land on the login page from the root" time="0.0261115">
+        </testcase>
+        <testcase classname="src/test/App.test.tsx" name="anonymous visitors &gt; learn nothing about which routes exist" time="0.026771416">
+        </testcase>
+        <testcase classname="src/test/App.test.tsx" name="the route table — all nine pages declared &gt; serves the implemented reporter pages" time="0.083257084">
+        </testcase>
+        <testcase classname="src/test/App.test.tsx" name="the route table — all nine pages declared &gt; serves the shared ticket detail page to a related actor" time="0.101128292">
+        </testcase>
+        <testcase classname="src/test/App.test.tsx" name="the route table — all nine pages declared &gt; serves the location management page to Admin" time="0.038234625">
+        </testcase>
+        <testcase classname="src/test/App.test.tsx" name="the route table — all nine pages declared &gt; serves the statistics page to Admin" time="0.023562167">
+        </testcase>
+        <testcase classname="src/test/App.test.tsx" name="the route table — all nine pages declared &gt; serves the account management page to Admin" time="0.036201334">
+        </testcase>
+        <testcase classname="src/test/App.test.tsx" name="the route table — all nine pages declared &gt; refuses a role that does not own the page" time="0.021447709">
+        </testcase>
+        <testcase classname="src/test/App.test.tsx" name="the route table — all nine pages declared &gt; serves the login page itself" time="0.017776875">
+        </testcase>
+        <testcase classname="src/test/App.test.tsx" name="landing pages &gt; TECHNICIAN starts at the assignments workbench" time="0.024459917">
+        </testcase>
+        <testcase classname="src/test/App.test.tsx" name="landing pages &gt; REPORTER starts at My repairs" time="0.0213895">
+        </testcase>
+        <testcase classname="src/test/App.test.tsx" name="landing pages &gt; ADMIN starts at the review workbench" time="0.032870083">
+        </testcase>
+        <testcase classname="src/test/App.test.tsx" name="the login form (RHF + Zod, §13.2) &gt; blocks a malformed email before any request leaves the browser" time="0.143632916">
+        </testcase>
+        <testcase classname="src/test/App.test.tsx" name="the login form (RHF + Zod, §13.2) &gt; blocks an empty password too" time="0.115066417">
+        </testcase>
+        <testcase classname="src/test/App.test.tsx" name="the login form (RHF + Zod, §13.2) &gt; posts exactly the contract&apos;s body and lands on the role&apos;s page" time="0.148452166">
+        </testcase>
+        <testcase classname="src/test/App.test.tsx" name="the login form (RHF + Zod, §13.2) &gt; shows one generic refusal for a bad password and keeps the user on the form" time="0.121756916">
+        </testcase>
+        <testcase classname="src/test/App.test.tsx" name="the login form (RHF + Zod, §13.2) &gt; renders server field errors beside the field, not as a banner" time="0.107230291">
+        </testcase>
+        <testcase classname="src/test/App.test.tsx" name="the login form (RHF + Zod, §13.2) &gt; re-validates after a correction instead of pinning the first message" time="0.141908792">
+        </testcase>
+        <testcase classname="src/test/App.test.tsx" name="the login page&apos;s side content (§13.1) &gt; lists exactly the accounts the seed creates, with their roles" time="0.01454625">
+        </testcase>
+        <testcase classname="src/test/App.test.tsx" name="the login page&apos;s side content (§13.1) &gt; prints no credential in the demo panel" time="0.011606833">
+        </testcase>
+        <testcase classname="src/test/App.test.tsx" name="the login page&apos;s side content (§13.1) &gt; sends each emergency class to the university&apos;s own channels" time="0.009681208">
+        </testcase>
+        <testcase classname="src/test/App.test.tsx" name="signing out &gt; posts to the contract&apos;s logout and returns to the login page" time="0.051406875">
+        </testcase>
+        <testcase classname="src/test/App.test.tsx" name="signing out &gt; clears the session even when logout fails in transit" time="0.055148875">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/accounts.test.tsx" timestamp="2026-11-23T07:43:13.326Z" tests="3" failures="0" errors="0" skipped="0" time="0.681733625">
+        <testcase classname="src/test/accounts.test.tsx" name="#90 account management — FR-16 &gt; filters by role and active state, then clears both filters" time="0.468172542">
+            <system-err>
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/accounts.test.tsx" name="#90 account management — FR-16 &gt; disables and re-enables a Reporter while preserving the existing report" time="0.184467458">
+        </testcase>
+        <testcase classname="src/test/accounts.test.tsx" name="#90 account management — FR-16 &gt; rejects account API requests from a non Admin session" time="0.027558084">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/analytics.test.tsx" timestamp="2026-11-23T07:43:13.327Z" tests="3" failures="0" errors="0" skipped="0" time="0.359574583">
+        <testcase classname="src/test/analytics.test.tsx" name="analytics page &gt; renders empty statistics without hiding the dashboard sections" time="0.254363708">
+            <system-err>
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/analytics.test.tsx" name="analytics page &gt; renders real aggregates and labels total close duration" time="0.053911834">
+        </testcase>
+        <testcase classname="src/test/analytics.test.tsx" name="analytics page &gt; does not draw bars for zero counts alongside nonzero counts" time="0.04946575">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/assignmentQueue.test.tsx" timestamp="2026-11-23T07:43:13.327Z" tests="7" failures="0" errors="0" skipped="0" time="3.23836025">
+        <testcase classname="src/test/assignmentQueue.test.tsx" name="#53 assignment queue, action and history &gt; assigns to an active technician and displays the owner, assignment and timeline" time="0.808441083">
+            <system-err>
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/assignmentQueue.test.tsx" name="#53 assignment queue, action and history &gt; rejects a stale concurrent assignment and preserves the single winning owner" time="0.321191667">
+        </testcase>
+        <testcase classname="src/test/assignmentQueue.test.tsx" name="#53 assignment queue, action and history &gt; shows a field error if a loaded candidate is disabled, then accepts a corrected selection" time="0.338213916">
+        </testcase>
+        <testcase classname="src/test/assignmentQueue.test.tsx" name="#53 assignment queue, action and history &gt; disables confirmation when no active technicians are available" time="0.261660417">
+        </testcase>
+        <testcase classname="src/test/assignmentQueue.test.tsx" name="#53 assignment queue, action and history &gt; retries a failed candidate query and clears filters when switching queues" time="1.467453791">
+        </testcase>
+        <testcase classname="src/test/assignmentQueue.test.tsx" name="#53 assignment queue, action and history &gt; denies assignment queue and action to reporter01@campusfix.test" time="0.023801166">
+        </testcase>
+        <testcase classname="src/test/assignmentQueue.test.tsx" name="#53 assignment queue, action and history &gt; denies assignment queue and action to technician01@campusfix.test" time="0.015464833">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/client.test.ts" timestamp="2026-11-23T07:43:13.329Z" tests="14" failures="0" errors="0" skipped="0" time="0.020195542">
+        <testcase classname="src/test/client.test.ts" name="success bodies &gt; returns the declared object, unwrapped" time="0.005071542">
+        </testcase>
+        <testcase classname="src/test/client.test.ts" name="success bodies &gt; reads nothing for a 204" time="0.000450459">
+        </testcase>
+        <testcase classname="src/test/client.test.ts" name="error envelope &gt; carries code, request id and field errors" time="0.001928292">
+        </testcase>
+        <testcase classname="src/test/client.test.ts" name="error envelope &gt; treats an empty field_errors as no field errors" time="0.000456833">
+        </testcase>
+        <testcase classname="src/test/client.test.ts" name="error envelope &gt; falls back to the X-Request-ID header when the body has no id" time="0.000358209">
+        </testcase>
+        <testcase classname="src/test/client.test.ts" name="error envelope &gt; still types a non-JSON failure instead of throwing a parse error" time="0.000548167">
+        </testcase>
+        <testcase classname="src/test/client.test.ts" name="error envelope &gt; types an envelope-shaped body with a missing message as a failure too" time="0.000446875">
+        </testcase>
+        <testcase classname="src/test/client.test.ts" name="401 handling (§13.3) &gt; notifies the session owner and still throws" time="0.002447">
+        </testcase>
+        <testcase classname="src/test/client.test.ts" name="401 handling (§13.3) &gt; ignores a 401 from a request issued in an earlier session generation (#68 review)" time="0.004300375">
+        </testcase>
+        <testcase classname="src/test/client.test.ts" name="401 handling (§13.3) &gt; does not notify on other failures" time="0.000396">
+        </testcase>
+        <testcase classname="src/test/client.test.ts" name="buildQuery &gt; keeps cursor and limit and drops absent filters" time="0.001012917">
+        </testcase>
+        <testcase classname="src/test/client.test.ts" name="buildQuery &gt; emits no marker for a first page" time="0.000154584">
+        </testcase>
+        <testcase classname="src/test/client.test.ts" name="buildQuery &gt; keeps a false filter, because false is a value" time="0.00016825">
+        </testcase>
+        <testcase classname="src/test/client.test.ts" name="session credentials &gt; carries the cookie and invents no token of its own" time="0.000631833">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/components.test.tsx" timestamp="2026-11-23T07:43:13.330Z" tests="11" failures="0" errors="0" skipped="0" time="0.519026">
+        <testcase classname="src/test/components.test.tsx" name="shared table, filters and cursor navigation &gt; renders labelled mobile cells and keeps loading, empty and error states distinct" time="0.133430583">
+        </testcase>
+        <testcase classname="src/test/components.test.tsx" name="shared table, filters and cursor navigation &gt; submits from the keyboard, resets explicitly and disables busy actions" time="0.070444625">
+        </testcase>
+        <testcase classname="src/test/components.test.tsx" name="shared table, filters and cursor navigation &gt; passes opaque cursors intact, without totals or fictitious page numbers" time="0.038291792">
+        </testcase>
+        <testcase classname="src/test/components.test.tsx" name="textual status and chronological timeline &gt; labels every generated status without depending on color" time="0.012567042">
+        </testcase>
+        <testcase classname="src/test/components.test.tsx" name="textual status and chronological timeline &gt; sorts event/comment ties without mutating input, labels internal notes and escapes text" time="0.010752041">
+        </testcase>
+        <testcase classname="src/test/components.test.tsx" name="confirmation dialog keyboard and pending behavior &gt; contains focus, closes with Escape and restores the trigger" time="0.050634875">
+        </testcase>
+        <testcase classname="src/test/components.test.tsx" name="confirmation dialog keyboard and pending behavior &gt; blocks repeated confirmation and dismissal while awaiting the request" time="0.0502415">
+        </testcase>
+        <testcase classname="src/test/components.test.tsx" name="confirmation dialog keyboard and pending behavior &gt; restores focus after confirmation when the trigger is retained" time="0.035144875">
+        </testcase>
+        <testcase classname="src/test/components.test.tsx" name="confirmation dialog keyboard and pending behavior &gt; restores focus after confirmation when the trigger is removed" time="0.036941917">
+        </testcase>
+        <testcase classname="src/test/components.test.tsx" name="confirmation dialog keyboard and pending behavior &gt; restores focus after confirmation when the trigger is disabled" time="0.031275666">
+        </testcase>
+        <testcase classname="src/test/components.test.tsx" name="confirmation dialog keyboard and pending behavior &gt; keeps errors reviewable and allows a retry" time="0.047322333">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/demoAccounts.test.mjs" timestamp="2026-11-23T07:43:13.332Z" tests="4" failures="0" errors="0" skipped="0" time="0.009182625">
+        <testcase classname="src/test/demoAccounts.test.mjs" name="the login page&apos;s demo accounts against the seed &gt; reads a non-empty pair from each source" time="0.002674125">
+        </testcase>
+        <testcase classname="src/test/demoAccounts.test.mjs" name="the login page&apos;s demo accounts against the seed &gt; lists exactly the seeded role/account pairs" time="0.001363">
+        </testcase>
+        <testcase classname="src/test/demoAccounts.test.mjs" name="the login page&apos;s demo accounts against the seed &gt; prints no address the seed does not create" time="0.000844625">
+        </testcase>
+        <testcase classname="src/test/demoAccounts.test.mjs" name="the login page&apos;s demo accounts against the seed &gt; uses role words that ROLE_LABELS actually defines" time="0.002810167">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/endpoints.test.ts" timestamp="2026-11-23T07:43:13.333Z" tests="29" failures="0" errors="0" skipped="0" time="0.022946709">
+        <testcase classname="src/test/endpoints.test.ts" name="operation coverage &gt; exports exactly one function per declared business operation" time="0.002828834">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="operation coverage &gt; refuses to census an empty contract" time="0.000405125">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="generated URLs &gt; login targets a declared path" time="0.002651958">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="generated URLs &gt; logout targets a declared path" time="0.000415083">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="generated URLs &gt; getCurrentUser targets a declared path" time="0.000425333">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="generated URLs &gt; listTickets targets a declared path" time="0.001118292">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="generated URLs &gt; createTicket targets a declared path" time="0.001077208">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="generated URLs &gt; getTicket targets a declared path" time="0.000620958">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="generated URLs &gt; reviewTicket targets a declared path" time="0.000568958">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="generated URLs &gt; assignTicket targets a declared path" time="0.000343">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="generated URLs &gt; startTicket targets a declared path" time="0.000493875">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="generated URLs &gt; resolveTicket targets a declared path" time="0.000619125">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="generated URLs &gt; confirmTicket targets a declared path" time="0.000362">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="generated URLs &gt; reworkTicket targets a declared path" time="0.0004085">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="generated URLs &gt; cancelTicket targets a declared path" time="0.000254459">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="generated URLs &gt; createComment targets a declared path" time="0.000235042">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="generated URLs &gt; downloadAttachment targets a declared path" time="0.000342625">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="generated URLs &gt; listActiveLocations targets a declared path" time="0.000507792">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="generated URLs &gt; listAdminLocations targets a declared path" time="0.000861792">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="generated URLs &gt; createLocation targets a declared path" time="0.000601792">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="generated URLs &gt; updateLocation targets a declared path" time="0.00040475">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="generated URLs &gt; listUsers targets a declared path" time="0.0005965">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="generated URLs &gt; setUserActive targets a declared path" time="0.000696625">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="generated URLs &gt; getAnalytics targets a declared path" time="0.000619291">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="generated URLs &gt; lists with cursor and limit, never page or size" time="0.00121425">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="generated URLs &gt; sends an empty first page with no query marker at all" time="0.000332875">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="generated URLs &gt; finds technicians through the users endpoint, not an invented one" time="0.00026">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="generated URLs &gt; writes locations as a JSON body, not as query parameters" time="0.000809583">
+        </testcase>
+        <testcase classname="src/test/endpoints.test.ts" name="generated URLs &gt; sends the version with every state action" time="0.0002285">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/errors.test.ts" timestamp="2026-11-23T07:43:13.337Z" tests="20" failures="0" errors="0" skipped="0" time="0.010014833">
+        <testcase classname="src/test/errors.test.ts" name="the census itself &gt; finds all eight contract codes" time="0.001994583">
+        </testcase>
+        <testcase classname="src/test/errors.test.ts" name="classify &gt; maps a transport failure to a local network label" time="0.000766">
+        </testcase>
+        <testcase classname="src/test/errors.test.ts" name="classify &gt; keeps the server&apos;s message for a class the UI can show directly" time="0.000415459">
+        </testcase>
+        <testcase classname="src/test/errors.test.ts" name="classify &gt; substitutes copy when the system class arrives with no message" time="0.000194958">
+        </testcase>
+        <testcase classname="src/test/errors.test.ts" name="classify &gt; VALIDATION_ERROR → validation" time="0.0005005">
+        </testcase>
+        <testcase classname="src/test/errors.test.ts" name="classify &gt; UNAUTHORIZED → permission" time="0.000244584">
+        </testcase>
+        <testcase classname="src/test/errors.test.ts" name="classify &gt; FORBIDDEN → permission" time="0.000123">
+        </testcase>
+        <testcase classname="src/test/errors.test.ts" name="classify &gt; NOT_FOUND → notfound" time="0.000152208">
+        </testcase>
+        <testcase classname="src/test/errors.test.ts" name="classify &gt; CONFLICT → conflict" time="0.000149958">
+        </testcase>
+        <testcase classname="src/test/errors.test.ts" name="classify &gt; TICKET_VERSION_CONFLICT → conflict" time="0.00009825">
+        </testcase>
+        <testcase classname="src/test/errors.test.ts" name="classify &gt; ORIGIN_NOT_ALLOWED → permission" time="0.000085708">
+        </testcase>
+        <testcase classname="src/test/errors.test.ts" name="classify &gt; INTERNAL_ERROR → system" time="0.00007825">
+        </testcase>
+        <testcase classname="src/test/errors.test.ts" name="classify &gt; classifies every code the contract declares, and no others" time="0.002251041">
+        </testcase>
+        <testcase classname="src/test/errors.test.ts" name="field errors &gt; reads the dotted field paths the server sends" time="0.000334333">
+        </testcase>
+        <testcase classname="src/test/errors.test.ts" name="field errors &gt; is empty for a non-validation failure" time="0.000148417">
+        </testcase>
+        <testcase classname="src/test/errors.test.ts" name="§13.3 conflict copy &gt; says the ticket was updated for a stale version" time="0.000172208">
+        </testcase>
+        <testcase classname="src/test/errors.test.ts" name="§13.3 conflict copy &gt; says the ticket moved for a state conflict" time="0.000122417">
+        </testcase>
+        <testcase classname="src/test/errors.test.ts" name="§13.3 conflict copy &gt; shares one presentation between both 409 codes" time="0.000117416">
+        </testcase>
+        <testcase classname="src/test/errors.test.ts" name="request reference &gt; shows the id support needs" time="0.000148583">
+        </testcase>
+        <testcase classname="src/test/errors.test.ts" name="request reference &gt; shows nothing when there is no id to trace" time="0.000132875">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/labels.test.ts" timestamp="2026-11-23T07:43:13.340Z" tests="33" failures="0" errors="0" skipped="0" time="0.01254225">
+        <testcase classname="src/test/labels.test.ts" name="the census itself &gt; found every enum it claims to have found" time="0.002249584">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="label maps cover the contract enums &gt; TicketStatus" time="0.000757458">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="label maps cover the contract enums &gt; Category" time="0.000115709">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="label maps cover the contract enums &gt; Priority" time="0.000085583">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="label maps cover the contract enums &gt; Role" time="0.000075375">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="label maps cover the contract enums &gt; EventType" time="0.000092625">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="label maps cover the contract enums &gt; TicketAction" time="0.000084708">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="label maps cover the contract enums &gt; AttachmentPurpose" time="0.00008575">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="label maps cover the contract enums &gt; Visibility" time="0.000076916">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="label maps cover the contract enums &gt; NextAction" time="0.000077792">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="label maps cover the contract enums &gt; TicketStatus renders as text, never blank" time="0.000561625">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="label maps cover the contract enums &gt; Category renders as text, never blank" time="0.0002205">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="label maps cover the contract enums &gt; Priority renders as text, never blank" time="0.00010375">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="label maps cover the contract enums &gt; Role renders as text, never blank" time="0.000091625">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="label maps cover the contract enums &gt; EventType renders as text, never blank" time="0.000678209">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="label maps cover the contract enums &gt; TicketAction renders as text, never blank" time="0.00050075">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="label maps cover the contract enums &gt; AttachmentPurpose renders as text, never blank" time="0.00028625">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="label maps cover the contract enums &gt; Visibility renders as text, never blank" time="0.000278958">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="label maps cover the contract enums &gt; NextAction renders as text, never blank" time="0.000248584">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="status decorations stay in step &gt; tones, glyphs, next-actor copy and rail position all key off the same set" time="0.000329292">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="status decorations stay in step &gt; never relies on colour alone" time="0.000786333">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="status decorations stay in step &gt; gives every status a glyph" time="0.000208833">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="order lists &gt; STATUS_ORDER is its map, not a second copy" time="0.0001075">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="order lists &gt; starts at SUBMITTED, which is what a reporter&apos;s timeline reads as" time="0.000081167">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="order lists &gt; CATEGORY_ORDER is its map too" time="0.000088375">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="order lists &gt; puts HIGH first, because that is the one display order that is not the map&apos;s" time="0.000114792">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="terminal statuses &gt; are exactly the three the state machine ends on" time="0.000628833">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="terminal statuses &gt; keep every status on a step the rail actually draws" time="0.000582417">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="terminal statuses &gt; name the state each terminal status stopped in" time="0.000186709">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="rail steps &gt; reference only declared events" time="0.000400958">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="rail steps &gt; has no step for rework, which returns the ticket rather than advancing it" time="0.000157708">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="hasAction &gt; matches the server&apos;s tokens exactly" time="0.0001305">
+        </testcase>
+        <testcase classname="src/test/labels.test.ts" name="hasAction &gt; is false for an empty capability list, which is what a terminal ticket gets" time="0.000345125">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/locations.test.tsx" timestamp="2026-11-23T07:43:13.345Z" tests="5" failures="0" errors="0" skipped="0" time="1.643805458">
+        <testcase classname="src/test/locations.test.tsx" name="#49 location management — FR-12 &gt; creates a location and shows the server&apos;s duplicate-combination error" time="0.660202583">
+            <system-err>
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/locations.test.tsx" name="#49 location management — FR-12 &gt; edits, disables and re-enables without changing an existing ticket&apos;s snapshot" time="0.415733083">
+        </testcase>
+        <testcase classname="src/test/locations.test.tsx" name="#49 location management — FR-12 &gt; keeps the management route behind the Admin role gate" time="0.040512583">
+        </testcase>
+        <testcase classname="src/test/locations.test.tsx" name="#49 location management — FR-12 &gt; pages through the complete admin list with server cursors" time="0.32611875">
+        </testcase>
+        <testcase classname="src/test/locations.test.tsx" name="#49 location cascade for #51&apos;s form &gt; loads every active page and chooses a leaf ID, resetting descendants when a parent changes" time="0.199376208">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/mockApi.test.ts" timestamp="2026-11-23T07:43:13.346Z" tests="62" failures="0" errors="0" skipped="0" time="0.395895583">
+        <testcase classname="src/test/mockApi.test.ts" name="mock sessions and visibility — FR-01, FR-04 &gt; uses bare users, rejects invalid/inactive credentials and expires after eight hours" time="0.022322875">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="mock sessions and visibility — FR-01, FR-04 &gt; restricts lists and details before paging, without exposing email or internal notes" time="0.011081792">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="mock sessions and visibility — FR-01, FR-04 &gt; does not infer action permissions from responsibility alone" time="0.004671292">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="mock sessions and visibility — FR-01, FR-04 &gt; returns role-only 403 envelopes for restricted GETs as user 1 — #46 009f7f3" time="0.003437">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="mock sessions and visibility — FR-01, FR-04 &gt; returns role-only 403 envelopes for restricted GETs as user 2 — #46 009f7f3" time="0.002870167">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="mock sessions and visibility — FR-01, FR-04 &gt; returns contract errors and fails closed for unsupported API requests" time="0.002153709">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="mock sessions and visibility — FR-01, FR-04 &gt; uses contract request IDs for errors, JSON, downloads and empty responses" time="0.009319083">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="partner review: seeded details and failure envelopes &gt; downloads both seeded photo purposes without an upload, preserving visibility and later IDs" time="0.01309375">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="partner review: seeded details and failure envelopes &gt; seeds public comments and all event types while keeping P0 assignments open" time="0.005912417">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="partner review: seeded details and failure envelopes &gt; wraps unexpected errors safely and lets the next queued request recover" time="0.004023667">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="partner review: seeded details and failure envelopes &gt; returns path validation errors for GET /api/tickets/{id} without mutating data" time="0.0032105">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="partner review: seeded details and failure envelopes &gt; returns path validation errors for GET /api/attachments/{id} without mutating data" time="0.003902375">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="partner review: seeded details and failure envelopes &gt; returns path validation errors for PATCH /api/admin/locations/{id} without mutating data" time="0.003319833">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="partner review: seeded details and failure envelopes &gt; returns path validation errors for PATCH /api/admin/users/{id}/active without mutating data" time="0.002067333">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="partner review: seeded details and failure envelopes &gt; returns path validation errors for POST /api/tickets/{id}/review without mutating data" time="0.002788459">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="partner review: seeded details and failure envelopes &gt; returns path validation errors for POST /api/tickets/{id}/assign without mutating data" time="0.002307375">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="partner review: seeded details and failure envelopes &gt; returns path validation errors for POST /api/tickets/{id}/start without mutating data" time="0.002450125">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="partner review: seeded details and failure envelopes &gt; returns path validation errors for POST /api/tickets/{id}/resolve without mutating data" time="0.002275625">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="partner review: seeded details and failure envelopes &gt; returns path validation errors for POST /api/tickets/{id}/confirm without mutating data" time="0.00325775">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="partner review: seeded details and failure envelopes &gt; returns path validation errors for POST /api/tickets/{id}/rework without mutating data" time="0.003204042">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="partner review: seeded details and failure envelopes &gt; returns path validation errors for POST /api/tickets/{id}/cancel without mutating data" time="0.003796">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="partner review: seeded details and failure envelopes &gt; returns path validation errors for POST /api/tickets/{id}/comments without mutating data" time="0.00572825">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="partner review: seeded details and failure envelopes &gt; keeps unknown routes, unsupported methods and absent valid IDs as 404" time="0.004398375">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="mock filters and cursor contract — FR-04 &gt; matches the code or title separately, not across their concatenation" time="0.002434125">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="mock filters and cursor contract — FR-04 &gt; ANDs filters with inclusive/exclusive time bounds and no made-up total" time="0.004522959">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="mock filters and cursor contract — FR-04 &gt; enforces filter lengths and rejects reversed creation ranges" time="0.008413833">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="mock filters and cursor contract — FR-04 &gt; uses stable keyset cursors and rejects mismatched filters, roles and malformed values" time="0.006857917">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="Shanghai ticket dates — FR-02; updated #46 contract &gt; uses the Shanghai day at 2026-10-03T15:59:59.999Z for new codes and daily counts" time="0.003487542">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="Shanghai ticket dates — FR-02; updated #46 contract &gt; uses the Shanghai day at 2026-10-03T16:00:00.000Z for new codes and daily counts" time="0.003130291">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="Shanghai ticket dates — FR-02; updated #46 contract &gt; uses the Shanghai day at 2026-10-31T16:00:00.000Z for new codes and daily counts" time="0.003575625">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="Shanghai ticket dates — FR-02; updated #46 contract &gt; uses the Shanghai day at 2026-12-31T16:00:00.000Z for new codes and daily counts" time="0.002858667">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="Shanghai ticket dates — FR-02; updated #46 contract &gt; uses the Shanghai creation day for seeded codes at 2026-10-03T15:59:59.999Z" time="0.001452917">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="Shanghai ticket dates — FR-02; updated #46 contract &gt; uses the Shanghai creation day for seeded codes at 2026-10-03T16:00:00.000Z" time="0.001384125">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="mutable workflow — FR-02, FR-05–09; UC-01–04 &gt; rejects a location disabled after selection with a conflict and no creation side effects" time="0.008447042">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="mutable workflow — FR-02, FR-05–09; UC-01–04 &gt; keeps a nonexistent location as a field validation error without creating a ticket" time="0.00309575">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="mutable workflow — FR-02, FR-05–09; UC-01–04 &gt; preserves valid text and enforces length before any whitespace normalization" time="0.005083666">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="mutable workflow — FR-02, FR-05–09; UC-01–04 &gt; runs create → review → assign → start → resolve → rework → resolve → confirm" time="0.024695">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="mutable workflow — FR-02, FR-05–09; UC-01–04 &gt; supports rejection and cancellation as terminal branches" time="0.00541275">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="mutable workflow — FR-02, FR-05–09; UC-01–04 &gt; rejects oversized event text without changing tickets" time="0.009250542">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="mutable workflow — FR-02, FR-05–09; UC-01–04 &gt; rejects invalid assignments without changing state, assignments or events" time="0.005778792">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="mutable workflow — FR-02, FR-05–09; UC-01–04 &gt; keeps failed validation and illegal states unchanged" time="0.005594333">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="mutable workflow — FR-02, FR-05–09; UC-01–04 &gt; accepts exactly one concurrent review with the same version" time="0.003421042">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="mutable workflow — FR-02, FR-05–09; UC-01–04 &gt; accepts exactly one concurrent start with the same version" time="0.002188583">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="mutable workflow — FR-02, FR-05–09; UC-01–04 &gt; accepts exactly one concurrent resolve with the same version" time="0.002488417">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="mutable workflow — FR-02, FR-05–09; UC-01–04 &gt; accepts exactly one concurrent confirm with the same version" time="0.003329417">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="mutable workflow — FR-02, FR-05–09; UC-01–04 &gt; replays only the matching successful confirm request" time="0.003900333">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="comments, files, locations and accounts — FR-03, FR-10, FR-12 &gt; restricts internal notes and terminal comments without changing versions" time="0.004644917">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="comments, files, locations and accounts — FR-03, FR-10, FR-12 &gt; stores and downloads image bytes only for visible tickets" time="0.014372875">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="comments, files, locations and accounts — FR-03, FR-10, FR-12 &gt; rejects invalid image type without creating a ticket" time="0.002127792">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="comments, files, locations and accounts — FR-03, FR-10, FR-12 &gt; rejects invalid image size without creating a ticket" time="0.003918042">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="comments, files, locations and accounts — FR-03, FR-10, FR-12 &gt; rejects invalid image count without creating a ticket" time="0.004315208">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="comments, files, locations and accounts — FR-03, FR-10, FR-12 &gt; rejects invalid image disguised content without creating a ticket" time="0.003383">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="comments, files, locations and accounts — FR-03, FR-10, FR-12 &gt; rolls back damaged result uploads and keeps the cumulative limit across rework" time="0.008749833">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="comments, files, locations and accounts — FR-03, FR-10, FR-12 &gt; supports location pages, unique edits, disabling and immutable ticket snapshots" time="0.007265958">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="comments, files, locations and accounts — FR-03, FR-10, FR-12 &gt; preserves nonempty location whitespace and case on create and partial update" time="0.009800209">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="comments, files, locations and accounts — FR-03, FR-10, FR-12 &gt; retains location empty-string, type, strict-field and nonempty-PATCH validation" time="0.012981833">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="comments, files, locations and accounts — FR-03, FR-10, FR-12 &gt; limits building names on create and update" time="0.002533375">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="comments, files, locations and accounts — FR-03, FR-10, FR-12 &gt; lists managed accounts and disallows Admin management and inactive logins" time="0.005365333">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="statistics and scaffold integration — FR-11 / UC-05 / §13.3 &gt; updates all aggregates and builds a Shanghai 30-day zero-filled series" time="0.006880916">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="statistics and scaffold integration — FR-11 / UC-05 / §13.3 &gt; passes expired sessions through the existing unauthorized handler" time="0.001053666">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="statistics and scaffold integration — FR-11 / UC-05 / §13.3 &gt; uses the existing 409 notification and re-fetches authoritative details" time="0.061532584">
+        </testcase>
+        <testcase classname="src/test/mockApi.test.ts" name="statistics and scaffold integration — FR-11 / UC-05 / §13.3 &gt; leaves the real API address untouched when the mock switch is off" time="0.001588375">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/mockBridge.test.ts" timestamp="2026-11-23T07:43:13.355Z" tests="7" failures="0" errors="0" skipped="0" time="0.011748167">
+        <testcase classname="src/test/mockBridge.test.ts" name="the Mock mount point &gt; stays out of the way when nothing is installed" time="0.006580542">
+        </testcase>
+        <testcase classname="src/test/mockBridge.test.ts" name="the Mock mount point &gt; serves a mocked response without reaching the network" time="0.000793708">
+        </testcase>
+        <testcase classname="src/test/mockBridge.test.ts" name="the Mock mount point &gt; hands a declined request to the real backend address" time="0.000660084">
+        </testcase>
+        <testcase classname="src/test/mockBridge.test.ts" name="the Mock mount point &gt; does not intercept when the switch is off" time="0.000948">
+        </testcase>
+        <testcase classname="src/test/mockBridge.test.ts" name="the Mock mount point &gt; runs the shared envelope handling over a mocked failure" time="0.000984959">
+        </testcase>
+        <testcase classname="src/test/mockBridge.test.ts" name="the Mock mount point &gt; detaches again when the responder is removed" time="0.000246542">
+        </testcase>
+        <testcase classname="src/test/mockBridge.test.ts" name="the Mock mount point &gt; passes the method, path and body a fixture needs to match on" time="0.000219167">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/mockPages.test.tsx" timestamp="2026-11-23T07:43:13.356Z" tests="8" failures="0" errors="0" skipped="0" time="1.048496417">
+        <testcase classname="src/test/mockPages.test.tsx" name="two developer pages reuse the public components &gt; directs a Mock-mode login visitor to working Mock accounts while retaining the seed panel" time="0.272763">
+            <system-err>
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/mockPages.test.tsx" name="two developer pages reuse the public components &gt; includes all three emergency classes in the preview notice" time="0.00846825">
+        </testcase>
+        <testcase classname="src/test/mockPages.test.tsx" name="two developer pages reuse the public components &gt; disables stale cancellation after TICKET_VERSION_CONFLICT refreshes the permitted actions" time="0.145665292">
+        </testcase>
+        <testcase classname="src/test/mockPages.test.tsx" name="two developer pages reuse the public components &gt; disables stale cancellation after CONFLICT refreshes the permitted actions" time="0.125873542">
+        </testcase>
+        <testcase classname="src/test/mockPages.test.tsx" name="two developer pages reuse the public components &gt; uses queue filters, pagination, detail timeline and a real cancellation through the shared dialog" time="0.310732417">
+        </testcase>
+        <testcase classname="src/test/mockPages.test.tsx" name="two developer pages reuse the public components &gt; clears cached admin data on logout before a different role logs in" time="0.125674417">
+        </testcase>
+        <testcase classname="src/test/mockPages.test.tsx" name="actual scaffold bootstrap and 401 routing &gt; mounts the real responder before authentication and redirects to login on expiry" time="0.054424041">
+        </testcase>
+        <testcase classname="src/test/mockPages.test.tsx" name="actual scaffold bootstrap and 401 routing &gt; does not install fixtures when the switch is disabled" time="0.002840958">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/queryClient.test.ts" timestamp="2026-11-23T07:43:13.358Z" tests="16" failures="0" errors="0" skipped="0" time="0.023916166">
+        <testcase classname="src/test/queryClient.test.ts" name="409 on a ticket operation &gt; notifies and marks the detail query stale for a declared ticket action" time="0.006468">
+        </testcase>
+        <testcase classname="src/test/queryClient.test.ts" name="409 on a ticket operation &gt; treats TICKET_VERSION_CONFLICT as a ticket even if the call site forgot its meta" time="0.000587541">
+        </testcase>
+        <testcase classname="src/test/queryClient.test.ts" name="409 on a ticket operation &gt; still announces the ticket wording when the variables name no ticket" time="0.000542584">
+        </testcase>
+        <testcase classname="src/test/queryClient.test.ts" name="409 on a ticket operation &gt; does not treat a zero or negative id as a ticket to re-fetch" time="0.000385459">
+        </testcase>
+        <testcase classname="src/test/queryClient.test.ts" name="409 on another resource &gt; says what the server said when creating a location" time="0.000740417">
+        </testcase>
+        <testcase classname="src/test/queryClient.test.ts" name="409 on another resource &gt; does not mistake a location edit&apos;s id for a ticket (#71 review)" time="0.00070125">
+        </testcase>
+        <testcase classname="src/test/queryClient.test.ts" name="409 outside ticket state actions &gt; preserves the server message without refreshing detail for ticket creation with an inactive location" time="0.002361084">
+        </testcase>
+        <testcase classname="src/test/queryClient.test.ts" name="409 outside ticket state actions &gt; preserves the server message without refreshing detail for a comment on a terminal ticket" time="0.000927792">
+        </testcase>
+        <testcase classname="src/test/queryClient.test.ts" name="other failures &gt; leaves a validation error to the form that raised it" time="0.000464541">
+        </testcase>
+        <testcase classname="src/test/queryClient.test.ts" name="other failures &gt; leaves a non-API failure alone as well" time="0.000259458">
+        </testcase>
+        <testcase classname="src/test/queryClient.test.ts" name="other failures &gt; never notifies on a successful mutation" time="0.000281208">
+        </testcase>
+        <testcase classname="src/test/queryClient.test.ts" name="session generations (#68 review) &gt; suppresses an old-session declared ticket action without invalidating the new session" time="0.0024695">
+        </testcase>
+        <testcase classname="src/test/queryClient.test.ts" name="session generations (#68 review) &gt; suppresses an old-session ticket version conflict without metadata without invalidating the new session" time="0.00161975">
+        </testcase>
+        <testcase classname="src/test/queryClient.test.ts" name="session generations (#68 review) &gt; suppresses an old-session location conflict without invalidating the new session" time="0.001518042">
+        </testcase>
+        <testcase classname="src/test/queryClient.test.ts" name="session generations (#68 review) &gt; still toasts a 409 raised inside the current session" time="0.0016725">
+        </testcase>
+        <testcase classname="src/test/queryClient.test.ts" name="query keys &gt; names the ticket list and its filters so pages cannot drift apart" time="0.000530625">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/reporterPages.test.tsx" timestamp="2026-11-23T07:43:13.360Z" tests="18" failures="0" errors="0" skipped="0" time="5.425478625">
+        <testcase classname="src/test/reporterPages.test.tsx" name="create a repair report (#51) &gt; blocks a submit with every required field empty and keeps entered values" time="0.268437083">
+            <system-err>
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/reporterPages.test.tsx" name="create a repair report (#51) &gt; submits fields and a photo as one request, then shows the photo and timeline on detail" time="0.560632">
+        </testcase>
+        <testcase classname="src/test/reporterPages.test.tsx" name="create a repair report (#51) &gt; creates without photos and reports the empty photo groups" time="0.345925417">
+        </testcase>
+        <testcase classname="src/test/reporterPages.test.tsx" name="create a repair report (#51) &gt; shows the server&apos;s field error for a disguised image and stays on the form" time="0.410776541">
+        </testcase>
+        <testcase classname="src/test/reporterPages.test.tsx" name="create a repair report (#51) &gt; ignores a create response that settles after the session ended" time="0.37929175">
+        </testcase>
+        <testcase classname="src/test/reporterPages.test.tsx" name="my reports list (#51) &gt; shows only the reporter&apos;s tickets, filters by status and clears the filter" time="0.224130459">
+        </testcase>
+        <testcase classname="src/test/reporterPages.test.tsx" name="my reports list (#51) &gt; walks cursor pages without inventing totals" time="0.221336666">
+        </testcase>
+        <testcase classname="src/test/reporterPages.test.tsx" name="my reports list (#51) &gt; shows the empty state when the reporter has no reports" time="0.042029834">
+        </testcase>
+        <testcase classname="src/test/reporterPages.test.tsx" name="my reports list (#51) &gt; renders a loading state and retries after an error" time="1.170408583">
+        </testcase>
+        <testcase classname="src/test/reporterPages.test.tsx" name="photo picker (#54) &gt; rejects SVG, oversize files and more than five images, and removes a selected photo" time="0.094306625">
+        </testcase>
+        <testcase classname="src/test/reporterPages.test.tsx" name="conversation on the shared detail (#54) &gt; posts a public comment as the reporter and shows it on the timeline" time="0.165273708">
+        </testcase>
+        <testcase classname="src/test/reporterPages.test.tsx" name="conversation on the shared detail (#54) &gt; preserves a comment containing only whitespace, matching the frozen contract" time="0.085499625">
+        </testcase>
+        <testcase classname="src/test/reporterPages.test.tsx" name="conversation on the shared detail (#54) &gt; keeps a terminal-comment conflict visible without refreshing the detail" time="0.142729708">
+        </testcase>
+        <testcase classname="src/test/reporterPages.test.tsx" name="conversation on the shared detail (#54) &gt; ignores a comment success that settles after the session ended" time="0.111123333">
+        </testcase>
+        <testcase classname="src/test/reporterPages.test.tsx" name="conversation on the shared detail (#54) &gt; shows internal notes only to an administrator" time="0.079798875">
+        </testcase>
+        <testcase classname="src/test/reporterPages.test.tsx" name="conversation on the shared detail (#54) &gt; keeps a terminal ticket&apos;s history but offers no composer" time="0.054112333">
+        </testcase>
+        <testcase classname="src/test/reporterPages.test.tsx" name="conversation on the shared detail (#54) &gt; hides another reporter&apos;s ticket behind the generic not-found page" time="1.020823792">
+        </testcase>
+        <testcase classname="src/test/reporterPages.test.tsx" name="conversation on the shared detail (#54) &gt; keeps the creation-time location snapshot after the location is renamed" time="0.046545375">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/reviewQueue.test.tsx" timestamp="2026-11-23T07:43:13.362Z" tests="8" failures="0" errors="0" skipped="0" time="3.3547975">
+        <testcase classname="src/test/reviewQueue.test.tsx" name="#52 review queue and review actions &gt; approves from the queue with category, priority and version, records the event and removes the row" time="0.605239667">
+            <system-err>
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/reviewQueue.test.tsx" name="#52 review queue and review actions &gt; requires a rejection reason and displays the rejected event" time="0.359806959">
+        </testcase>
+        <testcase classname="src/test/reviewQueue.test.tsx" name="#52 review queue and review actions &gt; pages with server cursors and resets the cursor when applying priority" time="0.640642875">
+        </testcase>
+        <testcase classname="src/test/reviewQueue.test.tsx" name="#52 review queue and review actions &gt; closes a stale review after a concurrent approval and refreshes the detail" time="0.366989958">
+        </testcase>
+        <testcase classname="src/test/reviewQueue.test.tsx" name="#52 review queue and review actions &gt; shows retry on list failures without showing stale rows" time="1.126036417">
+        </testcase>
+        <testcase classname="src/test/reviewQueue.test.tsx" name="#52 review queue and review actions &gt; offers only contract priorities and refuses an invalid priority without updating the ticket" time="0.211247959">
+        </testcase>
+        <testcase classname="src/test/reviewQueue.test.tsx" name="#52 review queue and review actions &gt; denies the workbench and review operation to reporter01@campusfix.test" time="0.023368709">
+        </testcase>
+        <testcase classname="src/test/reviewQueue.test.tsx" name="#52 review queue and review actions &gt; denies the workbench and review operation to technician01@campusfix.test" time="0.019568625">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/sessionCache.test.tsx" timestamp="2026-11-23T07:43:13.364Z" tests="7" failures="0" errors="0" skipped="0" time="1.785333041">
+        <testcase classname="src/test/sessionCache.test.tsx" name="logout &gt; empties the cache before the next account signs in" time="0.189544625">
+        </testcase>
+        <testcase classname="src/test/sessionCache.test.tsx" name="logout &gt; clears the session even when logout fails in transit" time="0.028294875">
+        </testcase>
+        <testcase classname="src/test/sessionCache.test.tsx" name="a mid-session 401 &gt; empties the cache, not just the login state" time="0.027488375">
+        </testcase>
+        <testcase classname="src/test/sessionCache.test.tsx" name="a request in flight at the boundary &gt; cannot repopulate the cache or 401 the next session away" time="0.457679917">
+        </testcase>
+        <testcase classname="src/test/sessionCache.test.tsx" name="a request in flight at the boundary &gt; discards a boot probe that settles after a newer login" time="0.371603791">
+            <system-err>
+Warning: An update to AuthProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() =&gt; {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you&apos;re testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at AuthProvider ([repository]/frontend/src/features/auth/AuthContext.tsx:44:25)
+    at QueryClientProvider ([repository]/frontend/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:42:32)
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/sessionCache.test.tsx" name="switching accounts &gt; clears residual cache at the login boundary itself" time="0.034652542">
+        </testcase>
+        <testcase classname="src/test/sessionCache.test.tsx" name="a signal-less request&apos;s late 401 (#68 review) &gt; cannot end the session that replaced its own" time="0.674109334">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/technicianWorkbench.test.tsx" timestamp="2026-11-23T07:43:13.365Z" tests="11" failures="0" errors="0" skipped="0" time="4.120355167">
+        <testcase classname="src/test/technicianWorkbench.test.tsx" name="#55 technician workbench — FR-04 / UC-03 entry &gt; renders only A&apos;s assignments with status, snapshot, priority, reported time and detail links, including closed tickets" time="0.378633042">
+            <system-err>
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/technicianWorkbench.test.tsx" name="#55 technician workbench — FR-04 / UC-03 entry &gt; uses session-scoped server queries and status filters without sending an actor or admin-only assignee filter" time="0.358695792">
+        </testcase>
+        <testcase classname="src/test/technicianWorkbench.test.tsx" name="#55 technician workbench — FR-04 / UC-03 entry &gt; walks server cursor pages, goes back, and resets the cursor on a filter change" time="0.626228042">
+        </testcase>
+        <testcase classname="src/test/technicianWorkbench.test.tsx" name="#55 technician workbench — FR-04 / UC-03 entry &gt; shows the empty state when the technician has no tickets" time="0.055749375">
+        </testcase>
+        <testcase classname="src/test/technicianWorkbench.test.tsx" name="#55 technician workbench — FR-04 / UC-03 entry &gt; shows a loading state without partial rows and retries list failures" time="1.112239167">
+        </testcase>
+        <testcase classname="src/test/technicianWorkbench.test.tsx" name="#55 technician workbench — FR-04 / UC-03 entry &gt; redirects an anonymous visitor without requesting the list, and the API rejects the missing session" time="0.019837458">
+        </testcase>
+        <testcase classname="src/test/technicianWorkbench.test.tsx" name="#55 technician workbench — FR-04 / UC-03 entry &gt; denies the technician route to reporter01@campusfix.test before loading a list" time="0.021740041">
+        </testcase>
+        <testcase classname="src/test/technicianWorkbench.test.tsx" name="#55 technician workbench — FR-04 / UC-03 entry &gt; denies the technician route to admin01@campusfix.test before loading a list" time="0.025995791">
+        </testcase>
+        <testcase classname="src/test/technicianWorkbench.test.tsx" name="#55 technician workbench — FR-04 / UC-03 entry &gt; hides cached rows when the server denies the next list request" time="1.106499542">
+        </testcase>
+        <testcase classname="src/test/technicianWorkbench.test.tsx" name="#55 technician workbench — FR-04 / UC-03 entry &gt; returns to login when the session expires during a list request" time="0.1263145">
+        </testcase>
+        <testcase classname="src/test/technicianWorkbench.test.tsx" name="#55 technician workbench — FR-04 / UC-03 entry &gt; clears A&apos;s cached tasks before B logs in and displays only B&apos;s assignment" time="0.28665625">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/ticketDetail.test.tsx" timestamp="2026-11-23T07:43:13.367Z" tests="27" failures="0" errors="0" skipped="0" time="2.053866833">
+        <testcase classname="src/test/ticketDetail.test.tsx" name="operation area projection (#91) &gt; classifies every contract action as a lifecycle action or a conversation action" time="0.002352041">
+        </testcase>
+        <testcase classname="src/test/ticketDetail.test.tsx" name="operation area projection (#91) &gt; for &apos;SUBMITTED&apos; (ticket 1), each role sees only the actions the server allows" time="0.119120875">
+        </testcase>
+        <testcase classname="src/test/ticketDetail.test.tsx" name="operation area projection (#91) &gt; for &apos;PENDING_ASSIGNMENT&apos; (ticket 2), each role sees only the actions the server allows" time="0.013419333">
+        </testcase>
+        <testcase classname="src/test/ticketDetail.test.tsx" name="operation area projection (#91) &gt; for &apos;ASSIGNED&apos; (ticket 3), each role sees only the actions the server allows" time="0.011178584">
+        </testcase>
+        <testcase classname="src/test/ticketDetail.test.tsx" name="operation area projection (#91) &gt; for &apos;IN_PROGRESS&apos; (ticket 4), each role sees only the actions the server allows" time="0.011639042">
+        </testcase>
+        <testcase classname="src/test/ticketDetail.test.tsx" name="operation area projection (#91) &gt; for &apos;PENDING_CONFIRMATION&apos; (ticket 5), each role sees only the actions the server allows" time="0.014018792">
+        </testcase>
+        <testcase classname="src/test/ticketDetail.test.tsx" name="operation area projection (#91) &gt; for &apos;CLOSED&apos; (ticket 6), each role sees only the actions the server allows" time="0.004684458">
+        </testcase>
+        <testcase classname="src/test/ticketDetail.test.tsx" name="operation area projection (#91) &gt; for &apos;REJECTED&apos; (ticket 7), each role sees only the actions the server allows" time="0.004480416">
+        </testcase>
+        <testcase classname="src/test/ticketDetail.test.tsx" name="operation area projection (#91) &gt; for &apos;CANCELLED&apos; (ticket 8), each role sees only the actions the server allows" time="0.004192625">
+        </testcase>
+        <testcase classname="src/test/ticketDetail.test.tsx" name="operation area projection (#91) &gt; renders no operation area at all for a terminal ticket" time="0.003824542">
+        </testcase>
+        <testcase classname="src/test/ticketDetail.test.tsx" name="timeline order and visibility (#91) &gt; sorts ascending without mutating input and hides internal notes from a reporter" time="0.026089375">
+        </testcase>
+        <testcase classname="src/test/ticketDetail.test.tsx" name="ticket detail page (#91) &gt; only validates rejection reason length when rejecting" time="0.222435667">
+        </testcase>
+        <testcase classname="src/test/ticketDetail.test.tsx" name="ticket detail page (#91) &gt; shows the event note length error before starting work" time="0.050316167">
+        </testcase>
+        <testcase classname="src/test/ticketDetail.test.tsx" name="ticket detail page (#91) &gt; shows status, owner, next actor and only the reporter&apos;s action" time="0.102142959">
+            <system-err>
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/ticketDetail.test.tsx" name="ticket detail page (#91) &gt; shows internal notes and review controls to an administrator" time="0.065629208">
+        </testcase>
+        <testcase classname="src/test/ticketDetail.test.tsx" name="ticket detail page (#91) &gt; runs a state action through the shared dialog and refreshes the ticket" time="0.114138666">
+        </testcase>
+        <testcase classname="src/test/ticketDetail.test.tsx" name="ticket detail page (#91) &gt; keeps the rework dialog open when the required reason is empty" time="0.080771833">
+        </testcase>
+        <testcase classname="src/test/ticketDetail.test.tsx" name="ticket detail page (#91) &gt; closes a stale action when the ticket moved on and reports the conflict" time="0.075011083">
+        </testcase>
+        <testcase classname="src/test/ticketDetail.test.tsx" name="technician result (#56) &gt; starts an assigned ticket and submits its selected result photo once" time="0.380084875">
+        </testcase>
+        <testcase classname="src/test/ticketDetail.test.tsx" name="technician result (#56) &gt; requires a resolution note even when a photo is selected" time="0.119836958">
+        </testcase>
+        <testcase classname="src/test/ticketDetail.test.tsx" name="technician result (#56) &gt; offers only the remaining result-photo slots after rework" time="0.174438583">
+        </testcase>
+        <testcase classname="src/test/ticketDetail.test.tsx" name="technician result (#56) &gt; shows an indexed photo error beside the picker and keeps the note available for retry" time="0.21897025">
+        </testcase>
+        <testcase classname="src/test/ticketDetail.test.tsx" name="action dialog ownership (#91 P2) &gt; closes an open dialog when the route moves to another ticket" time="0.030695917">
+        </testcase>
+        <testcase classname="src/test/ticketDetail.test.tsx" name="action dialog ownership (#91 P2) &gt; closes a dialog whose action is no longer allowed on the same ticket" time="0.029251459">
+        </testcase>
+        <testcase classname="src/test/ticketDetail.test.tsx" name="action success and session generation (#91 P2) &gt; does not toast a success that settles after the session ended" time="0.039900458">
+        </testcase>
+        <testcase classname="src/test/ticketDetail.test.tsx" name="assignment candidate pagination (#91 P2) &gt; follows every cursor page before offering the technician list" time="0.04424575">
+        </testcase>
+        <testcase classname="src/test/ticketDetail.test.tsx" name="action validation summary (#97 P2) &gt; keeps the field error and dialog summary until a corrected assignment succeeds" time="0.088428959">
+        </testcase>
+    </testsuite>
+</testsuites>

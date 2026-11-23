@@ -1,0 +1,1024 @@
+{
+  "issue": 90,
+  "source_commit": "6fe349f01acc5ae6f17d1059e2e8984676016ab9",
+  "started_at": "2026-11-23T08:02:59.791Z",
+  "base_url": "http://127.0.0.1:41843",
+  "method": "Real production UI with real local API/database; no mocked responses",
+  "scenarios": [
+    {
+      "name": "three real role logins and historical ticket baseline",
+      "result": "PASS",
+      "duration_ms": 1725
+    },
+    {
+      "name": "Admin managed accounts role/status filters and clear",
+      "result": "PASS",
+      "duration_ms": 537
+    },
+    {
+      "name": "REPORTER UI disable denies stale session/login; history remains",
+      "result": "PASS",
+      "duration_ms": 1713
+    },
+    {
+      "name": "REPORTER UI re-enable allows fresh login without reviving old session",
+      "result": "PASS",
+      "duration_ms": 674
+    },
+    {
+      "name": "TECHNICIAN UI disable denies stale session/login; history remains",
+      "result": "PASS",
+      "duration_ms": 1043
+    },
+    {
+      "name": "TECHNICIAN UI re-enable allows fresh login without reviving old session",
+      "result": "PASS",
+      "duration_ms": 596
+    },
+    {
+      "name": "non-Admin account access and Admin self-disable are forbidden",
+      "result": "PASS",
+      "duration_ms": 354
+    },
+    {
+      "name": "both managed accounts restored and original history unchanged",
+      "result": "PASS",
+      "duration_ms": 195
+    }
+  ],
+  "observations": [
+    {
+      "name": "admin_login",
+      "role": "ADMIN",
+      "http_status": 200,
+      "response": {
+        "id": 3,
+        "role": "ADMIN",
+        "active": true
+      }
+    },
+    {
+      "name": "admin_login_me",
+      "role": "ADMIN",
+      "http_status": 200,
+      "response": {
+        "id": 3,
+        "role": "ADMIN",
+        "active": true
+      }
+    },
+    {
+      "name": "reporter_login",
+      "role": "REPORTER",
+      "http_status": 200,
+      "response": {
+        "id": 1,
+        "role": "REPORTER",
+        "active": true
+      }
+    },
+    {
+      "name": "reporter_login_me",
+      "role": "REPORTER",
+      "http_status": 200,
+      "response": {
+        "id": 1,
+        "role": "REPORTER",
+        "active": true
+      }
+    },
+    {
+      "name": "technician_login",
+      "role": "TECHNICIAN",
+      "http_status": 200,
+      "response": {
+        "id": 2,
+        "role": "TECHNICIAN",
+        "active": true
+      }
+    },
+    {
+      "name": "technician_login_me",
+      "role": "TECHNICIAN",
+      "http_status": 200,
+      "response": {
+        "id": 2,
+        "role": "TECHNICIAN",
+        "active": true
+      }
+    },
+    {
+      "name": "historical_ticket_before",
+      "role": "ADMIN",
+      "http_status": 200,
+      "response": {
+        "id": 1,
+        "code": "CF-20261123-900001",
+        "status": "SUBMITTED",
+        "version": 1,
+        "reporter_id": 1,
+        "current_assignee_id": null,
+        "created_at": "2026-11-23T07:59:48.061721Z",
+        "updated_at": "2026-11-23T07:59:48.061721Z",
+        "closed_at": null,
+        "event_ids": [],
+        "event_types": [],
+        "assignments": 0
+      }
+    },
+    {
+      "name": "managed_accounts_excludes_admin",
+      "role": "ADMIN",
+      "http_status": 200,
+      "response": {
+        "items": [
+          {
+            "id": 2,
+            "role": "TECHNICIAN",
+            "active": true
+          },
+          {
+            "id": 1,
+            "role": "REPORTER",
+            "active": true
+          }
+        ],
+        "has_next_cursor": false
+      }
+    },
+    {
+      "name": "filter_active_reporters",
+      "role": "ADMIN",
+      "http_status": 200,
+      "response": {
+        "items": [
+          {
+            "id": 1,
+            "role": "REPORTER",
+            "active": true
+          }
+        ],
+        "has_next_cursor": false
+      }
+    },
+    {
+      "name": "filter_inactive_technicians_initially_empty",
+      "role": "ADMIN",
+      "http_status": 200,
+      "response": {
+        "items": [],
+        "has_next_cursor": false
+      }
+    },
+    {
+      "name": "reporter_disable_ui",
+      "role": "ADMIN",
+      "http_status": 200,
+      "response": {
+        "id": 1,
+        "role": "REPORTER",
+        "active": false
+      }
+    },
+    {
+      "name": "reporter_stale_session_denied",
+      "role": "REPORTER",
+      "http_status": 401,
+      "response": {
+        "error_code": "UNAUTHORIZED"
+      }
+    },
+    {
+      "name": "reporter_disabled_login_denied",
+      "role": "REPORTER",
+      "http_status": 401,
+      "response": {
+        "error_code": "UNAUTHORIZED"
+      }
+    },
+    {
+      "name": "historical_ticket_while_reporter_disabled",
+      "role": "ADMIN",
+      "http_status": 200,
+      "response": {
+        "id": 1,
+        "code": "CF-20261123-900001",
+        "status": "SUBMITTED",
+        "version": 1,
+        "reporter_id": 1,
+        "current_assignee_id": null,
+        "created_at": "2026-11-23T07:59:48.061721Z",
+        "updated_at": "2026-11-23T07:59:48.061721Z",
+        "closed_at": null,
+        "event_ids": [],
+        "event_types": [],
+        "assignments": 0
+      }
+    },
+    {
+      "name": "reporter_inactive_filter",
+      "role": "ADMIN",
+      "http_status": 200,
+      "response": {
+        "items": [
+          {
+            "id": 1,
+            "role": "REPORTER",
+            "active": false
+          }
+        ],
+        "has_next_cursor": false
+      }
+    },
+    {
+      "name": "reporter_enable_ui",
+      "role": "ADMIN",
+      "http_status": 200,
+      "response": {
+        "id": 1,
+        "role": "REPORTER",
+        "active": true
+      }
+    },
+    {
+      "name": "reporter_old_session_still_revoked_after_enable",
+      "role": "REPORTER",
+      "http_status": 401,
+      "response": {
+        "error_code": "UNAUTHORIZED"
+      }
+    },
+    {
+      "name": "reporter_fresh_login_after_enable",
+      "role": "REPORTER",
+      "http_status": 200,
+      "response": {
+        "id": 1,
+        "role": "REPORTER",
+        "active": true
+      }
+    },
+    {
+      "name": "reporter_fresh_login_after_enable_me",
+      "role": "REPORTER",
+      "http_status": 200,
+      "response": {
+        "id": 1,
+        "role": "REPORTER",
+        "active": true
+      }
+    },
+    {
+      "name": "technician_disable_ui",
+      "role": "ADMIN",
+      "http_status": 200,
+      "response": {
+        "id": 2,
+        "role": "TECHNICIAN",
+        "active": false
+      }
+    },
+    {
+      "name": "technician_stale_session_denied",
+      "role": "TECHNICIAN",
+      "http_status": 401,
+      "response": {
+        "error_code": "UNAUTHORIZED"
+      }
+    },
+    {
+      "name": "technician_disabled_login_denied",
+      "role": "TECHNICIAN",
+      "http_status": 401,
+      "response": {
+        "error_code": "UNAUTHORIZED"
+      }
+    },
+    {
+      "name": "historical_ticket_while_technician_disabled",
+      "role": "ADMIN",
+      "http_status": 200,
+      "response": {
+        "id": 1,
+        "code": "CF-20261123-900001",
+        "status": "SUBMITTED",
+        "version": 1,
+        "reporter_id": 1,
+        "current_assignee_id": null,
+        "created_at": "2026-11-23T07:59:48.061721Z",
+        "updated_at": "2026-11-23T07:59:48.061721Z",
+        "closed_at": null,
+        "event_ids": [],
+        "event_types": [],
+        "assignments": 0
+      }
+    },
+    {
+      "name": "technician_inactive_filter",
+      "role": "ADMIN",
+      "http_status": 200,
+      "response": {
+        "items": [
+          {
+            "id": 2,
+            "role": "TECHNICIAN",
+            "active": false
+          }
+        ],
+        "has_next_cursor": false
+      }
+    },
+    {
+      "name": "technician_enable_ui",
+      "role": "ADMIN",
+      "http_status": 200,
+      "response": {
+        "id": 2,
+        "role": "TECHNICIAN",
+        "active": true
+      }
+    },
+    {
+      "name": "technician_old_session_still_revoked_after_enable",
+      "role": "TECHNICIAN",
+      "http_status": 401,
+      "response": {
+        "error_code": "UNAUTHORIZED"
+      }
+    },
+    {
+      "name": "technician_fresh_login_after_enable",
+      "role": "TECHNICIAN",
+      "http_status": 200,
+      "response": {
+        "id": 2,
+        "role": "TECHNICIAN",
+        "active": true
+      }
+    },
+    {
+      "name": "technician_fresh_login_after_enable_me",
+      "role": "TECHNICIAN",
+      "http_status": 200,
+      "response": {
+        "id": 2,
+        "role": "TECHNICIAN",
+        "active": true
+      }
+    },
+    {
+      "name": "reporter_list_forbidden",
+      "role": "REPORTER",
+      "http_status": 403,
+      "response": {
+        "error_code": "FORBIDDEN"
+      }
+    },
+    {
+      "name": "reporter_toggle_forbidden",
+      "role": "REPORTER",
+      "http_status": 403,
+      "response": {
+        "error_code": "FORBIDDEN"
+      }
+    },
+    {
+      "name": "technician_list_forbidden",
+      "role": "TECHNICIAN",
+      "http_status": 403,
+      "response": {
+        "error_code": "FORBIDDEN"
+      }
+    },
+    {
+      "name": "technician_toggle_forbidden",
+      "role": "TECHNICIAN",
+      "http_status": 403,
+      "response": {
+        "error_code": "FORBIDDEN"
+      }
+    },
+    {
+      "name": "admin_self_disable_forbidden",
+      "role": "ADMIN",
+      "http_status": 403,
+      "response": {
+        "error_code": "FORBIDDEN"
+      }
+    },
+    {
+      "name": "admin_still_active_after_denied_self_disable",
+      "role": "ADMIN",
+      "http_status": 200,
+      "response": {
+        "id": 3,
+        "role": "ADMIN",
+        "active": true
+      }
+    },
+    {
+      "name": "reporter_remains_active_after_forbidden_toggle",
+      "role": "REPORTER",
+      "http_status": 200,
+      "response": {
+        "id": 1,
+        "role": "REPORTER",
+        "active": true
+      }
+    },
+    {
+      "name": "technician_remains_active_after_forbidden_toggle",
+      "role": "TECHNICIAN",
+      "http_status": 200,
+      "response": {
+        "id": 2,
+        "role": "TECHNICIAN",
+        "active": true
+      }
+    },
+    {
+      "name": "final_managed_accounts",
+      "role": "ADMIN",
+      "http_status": 200,
+      "response": {
+        "items": [
+          {
+            "id": 2,
+            "role": "TECHNICIAN",
+            "active": true
+          },
+          {
+            "id": 1,
+            "role": "REPORTER",
+            "active": true
+          }
+        ],
+        "has_next_cursor": false
+      }
+    },
+    {
+      "name": "historical_ticket_after",
+      "role": "ADMIN",
+      "http_status": 200,
+      "response": {
+        "id": 1,
+        "code": "CF-20261123-900001",
+        "status": "SUBMITTED",
+        "version": 1,
+        "reporter_id": 1,
+        "current_assignee_id": null,
+        "created_at": "2026-11-23T07:59:48.061721Z",
+        "updated_at": "2026-11-23T07:59:48.061721Z",
+        "closed_at": null,
+        "event_ids": [],
+        "event_types": [],
+        "assignments": 0
+      }
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "01-managed-accounts-active.png",
+      "role": "ADMIN",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "file": "02-filter-active-reporters.png",
+      "role": "ADMIN",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "file": "03-filter-empty-inactive-technicians.png",
+      "role": "ADMIN",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "file": "04-reporter-inactive.png",
+      "role": "ADMIN",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "file": "5-reporter-disabled-login.png",
+      "role": "REPORTER",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "file": "06-admin-history-while-reporter-disabled.png",
+      "role": "ADMIN",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "file": "09-reporter-restored-login.png",
+      "role": "REPORTER",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "file": "07-technician-inactive.png",
+      "role": "ADMIN",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "file": "8-technician-disabled-login.png",
+      "role": "TECHNICIAN",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "file": "10-technician-restored-login.png",
+      "role": "TECHNICIAN",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "file": "11-reporter-forbidden-page.png",
+      "role": "REPORTER",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "file": "12-technician-forbidden-page.png",
+      "role": "TECHNICIAN",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "file": "13-managed-accounts-restored.png",
+      "role": "ADMIN",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    }
+  ],
+  "network": [
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/me",
+      "http_status": 401
+    },
+    {
+      "role": "ADMIN",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/me",
+      "http_status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/me",
+      "http_status": 401
+    },
+    {
+      "role": "REPORTER",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "http_status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/me",
+      "http_status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/tickets",
+      "http_status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/me",
+      "http_status": 401
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "http_status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/tickets",
+      "http_status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/me",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/me",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/users",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/users",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/users",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/users",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/users",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "PATCH",
+      "path": "/api/admin/users/1/active",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/users",
+      "http_status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/me",
+      "http_status": 401
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/me",
+      "http_status": 401
+    },
+    {
+      "role": "REPORTER",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "http_status": 401
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/me",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/me",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/users",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/users",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/users",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "PATCH",
+      "path": "/api/admin/users/1/active",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/users",
+      "http_status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/me",
+      "http_status": 401
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/me",
+      "http_status": 401
+    },
+    {
+      "role": "REPORTER",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "http_status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/tickets",
+      "http_status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/me",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "PATCH",
+      "path": "/api/admin/users/2/active",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/users",
+      "http_status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/me",
+      "http_status": 401
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/me",
+      "http_status": 401
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "http_status": 401
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/users",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/users",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "PATCH",
+      "path": "/api/admin/users/2/active",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/users",
+      "http_status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/me",
+      "http_status": 401
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/me",
+      "http_status": 401
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "http_status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/tickets",
+      "http_status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/me",
+      "http_status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/admin/users",
+      "http_status": 403
+    },
+    {
+      "role": "REPORTER",
+      "method": "PATCH",
+      "path": "/api/admin/users/1/active",
+      "http_status": 403
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/me",
+      "http_status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/admin/users",
+      "http_status": 403
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "PATCH",
+      "path": "/api/admin/users/1/active",
+      "http_status": 403
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/me",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "PATCH",
+      "path": "/api/admin/users/3/active",
+      "http_status": 403
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/me",
+      "http_status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/me",
+      "http_status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/me",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/me",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/users",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/users",
+      "http_status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "http_status": 200
+    }
+  ],
+  "page_errors": [],
+  "external_requests": [],
+  "browser_version": "153.0.8010.12",
+  "historical_ticket_before": {
+    "id": 1,
+    "code": "CF-20261123-900001",
+    "status": "SUBMITTED",
+    "version": 1,
+    "reporter_id": 1,
+    "current_assignee_id": null,
+    "created_at": "2026-11-23T07:59:48.061721Z",
+    "updated_at": "2026-11-23T07:59:48.061721Z",
+    "closed_at": null,
+    "event_ids": [],
+    "event_types": [],
+    "assignments": 0
+  },
+  "historical_ticket_after": {
+    "id": 1,
+    "code": "CF-20261123-900001",
+    "status": "SUBMITTED",
+    "version": 1,
+    "reporter_id": 1,
+    "current_assignee_id": null,
+    "created_at": "2026-11-23T07:59:48.061721Z",
+    "updated_at": "2026-11-23T07:59:48.061721Z",
+    "closed_at": null,
+    "event_ids": [],
+    "event_types": [],
+    "assignments": 0
+  },
+  "history_unchanged": true,
+  "result": "PASS",
+  "exit_code": 0,
+  "finished_at": "2026-11-23T08:03:07.033Z"
+}

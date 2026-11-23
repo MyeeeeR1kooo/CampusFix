@@ -1,0 +1,11 @@
+issue	suite	source_path	covered_lines	total_lines	original_cobertura_xml
+#58	backend	backend/app/modules/analytics/__init__.py	0	0	backend/coverage.xml
+#58	backend	backend/app/modules/analytics/router.py	11	11	backend/coverage.xml
+#58	backend	backend/app/modules/analytics/schemas.py	30	30	backend/coverage.xml
+#58	backend	backend/app/modules/analytics/service.py	29	30	backend/coverage.xml
+#58	frontend	frontend/src/features/analytics/AnalyticsPage.tsx	57	59	frontend/cobertura-coverage.xml
+#90	backend	backend/app/modules/users/__init__.py	0	0	backend/coverage.xml
+#90	backend	backend/app/modules/users/cursor.py	32	35	backend/coverage.xml
+#90	backend	backend/app/modules/users/router.py	47	47	backend/coverage.xml
+#90	backend	backend/app/modules/users/schemas.py	22	22	backend/coverage.xml
+#90	frontend	frontend/src/features/users/AccountManagementPage.tsx	75	75	frontend/cobertura-coverage.xml

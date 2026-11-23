@@ -1,0 +1,656 @@
+{
+  "issue": 58,
+  "source_commit": "6fe349f01acc5ae6f17d1059e2e8984676016ab9",
+  "started_at": "2026-11-23T08:05:59.005Z",
+  "environment": "isolated localhost, real FastAPI and PostgreSQL, synthetic data",
+  "frontend_mocking": false,
+  "checks": [
+    {
+      "name": "Unauthenticated analytics denied with HTTP 401",
+      "status": "PASS",
+      "details": {
+        "status": 401,
+        "body": {
+          "error": {
+            "code": "UNAUTHORIZED",
+            "message": "Authentication failed.",
+            "request_id": "req_DTb6haQS4b0Zz7JT",
+            "field_errors": []
+          }
+        }
+      }
+    },
+    {
+      "name": "Empty PostgreSQL database: six real API metrics and rendered UI",
+      "status": "PASS",
+      "details": {
+        "status_count": 8,
+        "category_count": 6,
+        "building_count": 0,
+        "backlog": 0,
+        "average_close_seconds": 0,
+        "trend_rows": 30
+      }
+    },
+    {
+      "name": "Populated PostgreSQL: exact six-metric API equality to independent raw-row oracle and UI",
+      "status": "PASS",
+      "details": {
+        "synthetic_tickets": 15,
+        "backlog": 9,
+        "average_close_seconds": 201600,
+        "by_status_rows": 8,
+        "by_category_rows": 6,
+        "by_building_rows": 3,
+        "trend_rows": 30
+      }
+    },
+    {
+      "name": "Shanghai 30-day window, midnight pairs, old/future exclusion, and full closure time including wait",
+      "status": "PASS",
+      "details": {
+        "all_eight_statuses": true,
+        "all_six_categories": true,
+        "three_buildings": true,
+        "full_close_duration_seconds": [
+          86400,
+          172800,
+          345600
+        ],
+        "processing_only_average_seconds": 3600,
+        "expected_full_average_seconds": 201600,
+        "start_midnight_boundary_pair": true,
+        "today_midnight_boundary_pair": true,
+        "old_and_future_created_excluded_from_trend": true,
+        "old_closed_still_in_all_time_average": true
+      }
+    },
+    {
+      "name": "REPORTER analytics denied with HTTP 403",
+      "status": "PASS",
+      "details": {
+        "status": 403,
+        "body": {
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "This action is not allowed.",
+            "request_id": "req_qGXEWxwl9ahR-NPW",
+            "field_errors": []
+          }
+        }
+      }
+    },
+    {
+      "name": "TECHNICIAN analytics denied with HTTP 403",
+      "status": "PASS",
+      "details": {
+        "status": 403,
+        "body": {
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "This action is not allowed.",
+            "request_id": "req_-5QbV3U-VmmwJE76",
+            "field_errors": []
+          }
+        }
+      }
+    },
+    {
+      "name": "No browser JavaScript errors",
+      "status": "PASS"
+    }
+  ],
+  "network": [
+    {
+      "role": "UNAUTHENTICATED",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 401
+    },
+    {
+      "role": "UNAUTHENTICATED",
+      "method": "GET",
+      "path": "/api/admin/analytics",
+      "status": 401
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 401
+    },
+    {
+      "role": "ADMIN",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/analytics",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/analytics",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 401
+    },
+    {
+      "role": "REPORTER",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/tickets",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/admin/analytics",
+      "status": 403
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 401
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/tickets",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/admin/analytics",
+      "status": 403
+    }
+  ],
+  "screenshots": [
+    "01-analytics-empty.png",
+    "02-analytics-populated.png"
+  ],
+  "page_errors": [],
+  "empty_response": {
+    "by_status": [
+      {
+        "status": "SUBMITTED",
+        "count": 0
+      },
+      {
+        "status": "PENDING_ASSIGNMENT",
+        "count": 0
+      },
+      {
+        "status": "ASSIGNED",
+        "count": 0
+      },
+      {
+        "status": "IN_PROGRESS",
+        "count": 0
+      },
+      {
+        "status": "PENDING_CONFIRMATION",
+        "count": 0
+      },
+      {
+        "status": "CLOSED",
+        "count": 0
+      },
+      {
+        "status": "REJECTED",
+        "count": 0
+      },
+      {
+        "status": "CANCELLED",
+        "count": 0
+      }
+    ],
+    "by_category": [
+      {
+        "category": "LIGHTING_ELECTRICAL",
+        "count": 0
+      },
+      {
+        "category": "DOORS_WINDOWS_LOCKS",
+        "count": 0
+      },
+      {
+        "category": "FURNITURE",
+        "count": 0
+      },
+      {
+        "category": "HVAC",
+        "count": 0
+      },
+      {
+        "category": "WATER_SANITARY",
+        "count": 0
+      },
+      {
+        "category": "OTHER_FACILITY",
+        "count": 0
+      }
+    ],
+    "by_building": [],
+    "backlog_count": 0,
+    "average_close_seconds": 0,
+    "daily_trend": [
+      {
+        "date": "2026-10-25",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-10-26",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-10-27",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-10-28",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-10-29",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-10-30",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-10-31",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-01",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-02",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-03",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-04",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-05",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-06",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-07",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-08",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-09",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-10",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-11",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-12",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-13",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-14",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-15",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-16",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-17",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-18",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-19",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-20",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-21",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-22",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-23",
+        "created_count": 0,
+        "closed_count": 0
+      }
+    ]
+  },
+  "db_oracle": "analytics-db-oracle.json",
+  "populated_response": {
+    "by_status": [
+      {
+        "status": "SUBMITTED",
+        "count": 5
+      },
+      {
+        "status": "PENDING_ASSIGNMENT",
+        "count": 1
+      },
+      {
+        "status": "ASSIGNED",
+        "count": 1
+      },
+      {
+        "status": "IN_PROGRESS",
+        "count": 1
+      },
+      {
+        "status": "PENDING_CONFIRMATION",
+        "count": 1
+      },
+      {
+        "status": "CLOSED",
+        "count": 3
+      },
+      {
+        "status": "REJECTED",
+        "count": 1
+      },
+      {
+        "status": "CANCELLED",
+        "count": 2
+      }
+    ],
+    "by_category": [
+      {
+        "category": "LIGHTING_ELECTRICAL",
+        "count": 3
+      },
+      {
+        "category": "DOORS_WINDOWS_LOCKS",
+        "count": 3
+      },
+      {
+        "category": "FURNITURE",
+        "count": 3
+      },
+      {
+        "category": "HVAC",
+        "count": 2
+      },
+      {
+        "category": "WATER_SANITARY",
+        "count": 2
+      },
+      {
+        "category": "OTHER_FACILITY",
+        "count": 2
+      }
+    ],
+    "by_building": [
+      {
+        "building": "Analytics Building A",
+        "count": 5
+      },
+      {
+        "building": "Analytics Building B",
+        "count": 5
+      },
+      {
+        "building": "Analytics Building C",
+        "count": 5
+      }
+    ],
+    "backlog_count": 9,
+    "average_close_seconds": 201600,
+    "daily_trend": [
+      {
+        "date": "2026-10-25",
+        "created_count": 1,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-10-26",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-10-27",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-10-28",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-10-29",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-10-30",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-10-31",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-01",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-02",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-03",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-04",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-05",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-06",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-07",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-08",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-09",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-10",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-11",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-12",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-13",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-14",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-15",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-16",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-17",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-18",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-19",
+        "created_count": 1,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-20",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-21",
+        "created_count": 8,
+        "closed_count": 1
+      },
+      {
+        "date": "2026-11-22",
+        "created_count": 1,
+        "closed_count": 1
+      },
+      {
+        "date": "2026-11-23",
+        "created_count": 1,
+        "closed_count": 0
+      }
+    ]
+  },
+  "status": "PASS",
+  "finished_at": "2026-11-23T08:06:02.585Z"
+}

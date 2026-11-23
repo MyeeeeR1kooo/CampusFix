@@ -1,0 +1,71 @@
+{
+  "issue": 58,
+  "source_commit": "6fe349f01acc5ae6f17d1059e2e8984676016ab9",
+  "started_at": "2026-11-23T08:07:22.269Z",
+  "checks": [
+    {
+      "name": "Loading text while a real request is delayed",
+      "status": "PASS"
+    },
+    {
+      "name": "Visible error and Retry after injected transport failure",
+      "status": "PASS"
+    },
+    {
+      "name": "Retry restores real API and populated statistics",
+      "status": "PASS"
+    }
+  ],
+  "injection": "Only this browser intercepted analytics GET: first delayed actual request, then aborted requests to simulate transport failure. Retry restored real API. No synthetic responses; database unchanged.",
+  "distribution_idrefs": [
+    {
+      "heading": "By status",
+      "heading_id": "By status-heading",
+      "aria_labelledby": "By status-heading",
+      "referenced_ids": [
+        {
+          "id": "By",
+          "exists": false
+        },
+        {
+          "id": "status-heading",
+          "exists": false
+        }
+      ]
+    },
+    {
+      "heading": "By category",
+      "heading_id": "By category-heading",
+      "aria_labelledby": "By category-heading",
+      "referenced_ids": [
+        {
+          "id": "By",
+          "exists": false
+        },
+        {
+          "id": "category-heading",
+          "exists": false
+        }
+      ]
+    },
+    {
+      "heading": "By building",
+      "heading_id": "By building-heading",
+      "aria_labelledby": "By building-heading",
+      "referenced_ids": [
+        {
+          "id": "By",
+          "exists": false
+        },
+        {
+          "id": "building-heading",
+          "exists": false
+        }
+      ]
+    }
+  ],
+  "ax_snapshot": "- region:\n  - heading \"By status\" [level=2]\n  - list:\n    - listitem: Submitted 5\n    - listitem: Pending Assignment 1\n    - listitem: Assigned 1\n    - listitem: In Progress 1\n    - listitem: Pending Confirmation 1\n    - listitem: Closed 3\n    - listitem: Rejected 1\n    - listitem: Cancelled 2\n- region:\n  - heading \"By category\" [level=2]\n  - list:\n    - listitem: Lighting & Electrical 3\n    - listitem: Doors, Windows & Locks 3\n    - listitem: Furniture 3\n    - listitem: HVAC 2\n    - listitem: Water & Sanitary 2\n    - listitem: Other Facility 2\n- region:\n  - heading \"By building\" [level=2]\n  - list:\n    - listitem: Analytics Building A 5\n    - listitem: Analytics Building B 5\n    - listitem: Analytics Building C 5",
+  "observation": "The three distribution headings have spaces in their id; aria-labelledby is parsed as separate IDREF tokens, none exists. Headings and numeric content remain visible, but the sections lack the intended accessible names.",
+  "status": "PASS_WITH_ACCESSIBILITY_OBSERVATION",
+  "finished_at": "2026-11-23T08:07:25.576Z"
+}

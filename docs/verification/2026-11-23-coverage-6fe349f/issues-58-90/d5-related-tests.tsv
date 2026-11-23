@@ -1,0 +1,11 @@
+issue	suite	test_file	test_case	result	duration_seconds	original_junit_file
+#58	backend	tests.test_analytics_api	test_analytics_matches_ticket_rows_and_shanghai_days	PASS	0.554	backend-results.xml
+#58	backend	tests.test_analytics_api	test_analytics_requires_admin_and_has_stable_empty_response	PASS	0.462	backend-results.xml
+#58	backend	tests.test_analytics_api	test_shanghai_midnight_and_waiting_for_confirmation_count_in_close_time	PASS	0.357	backend-results.xml
+#58	frontend	src/test/analytics.test.tsx	analytics page > does not draw bars for zero counts alongside nonzero counts	PASS	0.04946575	frontend-results.xml
+#58	frontend	src/test/analytics.test.tsx	analytics page > renders empty statistics without hiding the dashboard sections	PASS	0.254363708	frontend-results.xml
+#58	frontend	src/test/analytics.test.tsx	analytics page > renders real aggregates and labels total close duration	PASS	0.053911834	frontend-results.xml
+#90	backend	tests.test_auth_api	test_admin_account_management_revokes_existing_sessions	PASS	1.251	backend-results.xml
+#90	frontend	src/test/accounts.test.tsx	#90 account management — FR-16 > disables and re-enables a Reporter while preserving the existing report	PASS	0.184467458	frontend-results.xml
+#90	frontend	src/test/accounts.test.tsx	#90 account management — FR-16 > filters by role and active state, then clears both filters	PASS	0.468172542	frontend-results.xml
+#90	frontend	src/test/accounts.test.tsx	#90 account management — FR-16 > rejects account API requests from a non Admin session	PASS	0.027558084	frontend-results.xml

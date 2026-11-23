@@ -1,8 +1,10 @@
 from datetime import timedelta
 
-from sqlalchemy.orm import Session
 from fastapi.testclient import TestClient
+from sqlalchemy import update
+from sqlalchemy.orm import Session
 
+from app.models import Ticket
 from app.modules.analytics.service import get_analytics
 from test_locations_api import app, settings, signed_in  # noqa: F401
 from test_ticket_reads import STAMP, pg_engine, read_data  # noqa: F401
@@ -31,6 +33,31 @@ def test_analytics_matches_ticket_rows_and_shanghai_days(read_data):
     assert by_day["2026-10-12"].closed_count == 1
     assert by_day["2026-10-13"].created_count == 0
     assert by_day["2026-10-13"].closed_count == 0
+
+
+def test_shanghai_midnight_and_waiting_for_confirmation_count_in_close_time(read_data):
+    with Session(read_data.engine) as db, db.begin():
+        db.execute(update(Ticket).where(Ticket.id == read_data.ids[0]).values(
+            created_at=STAMP + timedelta(hours=12, minutes=59, seconds=59),
+        ))
+        db.execute(update(Ticket).where(Ticket.id == read_data.ids[1]).values(
+            created_at=STAMP + timedelta(hours=13),
+        ))
+        # Reporter confirmation two days after creation is part of total close time.
+        db.execute(update(Ticket).where(Ticket.id == read_data.ids[4]).values(
+            closed_at=STAMP + timedelta(days=2),
+        ))
+
+    with Session(read_data.engine) as db:
+        result = get_analytics(db, now=STAMP + timedelta(days=2))
+
+    by_day = {row.date.isoformat(): row for row in result.daily_trend}
+    assert by_day["2026-10-11"].created_count == 0
+    assert by_day["2026-10-12"].created_count == 7
+    assert by_day["2026-10-13"].created_count == 1
+    assert by_day["2026-10-12"].closed_count == 0
+    assert by_day["2026-10-14"].closed_count == 1
+    assert result.average_close_seconds == 2 * 24 * 60 * 60
 
 
 def test_analytics_requires_admin_and_has_stable_empty_response(app):

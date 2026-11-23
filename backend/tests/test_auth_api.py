@@ -22,7 +22,7 @@ from app.core.database import get_db
 from app.core.errors import AppError
 from app.core.security import SESSION_COOKIE_NAME, hash_session_token
 from app.main import create_app
-from app.models import Session as AuthSession, User
+from app.models import Location, Session as AuthSession, Ticket, User
 from app.modules.users.cursor import decode_cursor, encode_cursor
 from app.seed import SeedPasswords, seed_demo_data
 
@@ -227,6 +227,17 @@ def test_admin_account_management_revokes_existing_sessions(app, pg_engine):
     reporter_token = reporter.cookies[SESSION_COOKIE_NAME]
     admin_id = admin.get("/api/me").json()["id"]
     reporter_id = reporter.get("/api/me").json()["id"]
+    with Session(pg_engine) as db, db.begin():
+        location = db.scalar(select(Location).limit(1))
+        ticket = Ticket(
+            code="CF-20261008-900001", reporter_id=reporter_id, location_id=location.id,
+            location_label_snapshot="Historical location", title="Existing report",
+            description="Must remain after account deactivation.", category="OTHER_FACILITY",
+            status="SUBMITTED", version=1,
+        )
+        db.add(ticket)
+        db.flush()
+        ticket_id = ticket.id
 
     first = admin.get("/api/admin/users", params={"limit": 1})
     assert first.status_code == 200
@@ -255,6 +266,11 @@ def test_admin_account_management_revokes_existing_sessions(app, pg_engine):
     inactive = admin.get("/api/admin/users", params={"active": False})
     assert [item["id"] for item in inactive.json()["items"]] == [reporter_id]
     assert reporter.get("/api/me").status_code == 401
+    historical = admin.get(f"/api/tickets/{ticket_id}")
+    assert historical.status_code == 200
+    assert historical.json()["reporter"]["id"] == reporter_id
+    with Session(pg_engine) as db:
+        assert db.get(Ticket, ticket_id).reporter_id == reporter_id
     disabled_login = login(TestClient(app), "REPORTER")
     assert (disabled_login.status_code, disabled_login.json()["error"]["message"]) == (401, "Authentication failed.")
     with Session(pg_engine) as db:

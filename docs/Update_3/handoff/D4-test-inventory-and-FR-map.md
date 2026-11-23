@@ -8,8 +8,9 @@
 
 | 证据 | 被测源码 / 执行结果 | 用途与边界 |
 | --- | --- | --- |
-| [11 月 23 日全量 JUnit](../../verification/2026-11-23-coverage-6fe349f/README.md) | 被测 `main@6fe349f01acc5ae6f17d1059e2e8984676016ab9`；pytest **758/758 通过**（28 文件，0 失败、0 错误、0 跳过）；Vitest **318/318 通过**（20 文件，0 失败、0 错误、0 跳过） | [后端 XML](../../verification/2026-11-23-coverage-6fe349f/backend-results.xml)和[前端 XML](../../verification/2026-11-23-coverage-6fe349f/frontend-results.xml)是本清单的逐函数结果来源。当前 `main@667d9303` 相比被测 SHA 只新增 #127 证据文档，应用及测试代码无差异；不能把被测 SHA 改写为当前提交。 |
-| [11 月 23 日 C7/C8 专项](../../verification/2026-11-23-update3-acceptance/README.md) | 历史被测 `main@c5b600f16635dd11589a0d93c6592890192e8598`；pytest **170/170 通过**（7 文件，0 失败、0 错误、0 跳过） | [专项 XML](../../verification/2026-11-23-update3-acceptance/backend-junit.xml)和同版本浏览器证据供 C7/C8 使用；170 项不与新全量 758 项相加。 |
+| [11 月 23 日全量 JUnit](../../verification/2026-11-23-coverage-6fe349f/README.md) | 被测 `main@6fe349f01acc5ae6f17d1059e2e8984676016ab9`；pytest **758/758 通过**（28 文件，0 失败、0 错误、0 跳过）；Vitest **318/318 通过**（20 文件，0 失败、0 错误、0 跳过） | [后端 XML](../../verification/2026-11-23-coverage-6fe349f/backend-results.xml)和[前端 XML](../../verification/2026-11-23-coverage-6fe349f/frontend-results.xml)是本清单的逐函数结果来源。C7/C8 验收目标 `667d9303` 相比本次被测 SHA 只新增 #127 证据文档，应用及测试代码无差异。 |
+| [11 月 23 日 C7/C8 专项](../../verification/2026-11-23-update3-acceptance-main-667d9303/README.md) | 被测 `main@667d9303ab8a10c89ebd46bcc14e25d66b95f558`。浏览器 **8/8 通过**，pytest **170/170 通过**（0 失败、0 错误、0 跳过） | [同版专项 XML](../../verification/2026-11-23-update3-acceptance-main-667d9303/backend-junit.xml)与浏览器证据用于本轮 C7/C8 确认。与全量结果分别列报。 |
+| [C7/C8 历史记录](../../verification/2026-11-23-update3-acceptance/README.md) | 历史被测 `main@c5b600f16635dd11589a0d93c6592890192e8598`，后端专项 **170/170 通过** | 保留当次 [专项 XML](../../verification/2026-11-23-update3-acceptance/backend-junit.xml)和浏览器证据。 |
 
 pytest 数字是**参数化展开后的实例数**，不是函数定义数。前端数字是 `it`/`test` 用例数。下面的文件表采用同一全量 JUnit 的实跑数字；完整用例名以 XML 的 `classname` + `name` 为准。
 
@@ -98,4 +99,4 @@ pytest 数字是**参数化展开后的实例数**，不是函数定义数。前
 
 1. 用上方 FR 表选具体测试函数作为 TC 候选，按需求行为拆分 TC，不直接把参数化实例数当 TC 数。复合闭环测试可在多个 FR 下引用同一个测试 ID，并标注它实际断言的步骤。
 2. 要完整列出某文件的每个测试函数，筛选[逐函数索引](D4-test-functions.tsv)的 `file` 列；要展开 pytest 的每个参数化实例，从同版[后端 JUnit](../../verification/2026-11-23-coverage-6fe349f/backend-results.xml)按 `classname` 筛选 `testcase`。
-3. D4 的正式结果栏注明被测 SHA `6fe349f` 与 2026-11-23 的执行时间。C7/C8 的浏览器验收仍对应历史 `c5b600f`；全量测试通过不能代替新版本的浏览器闭环。
+3. D4 的全量结果栏注明被测 SHA `6fe349f` 与 2026-11-23 的执行时间。本轮 C7/C8 联合确认对应 `667d9303`，验收范围、保留事项和后续复核见 [C8 追踪矩阵](../2026-11-23-c8-acceptance-traceability.md#联合签收状态)。

@@ -1,0 +1,763 @@
+{
+  "started_at": "2026-11-23T09:40:49.117Z",
+  "source_commit": "667d9303ab8a10c89ebd46bcc14e25d66b95f558",
+  "base_url": "http://127.0.0.1:41823",
+  "scenario": "production UI three-role lifecycle including rework and same-payload confirm replay",
+  "scenarios": [
+    {
+      "name": "three separate real browser role logins",
+      "result": "PASS",
+      "duration_ms": 800
+    },
+    {
+      "name": "reporter creates ticket with report photo through UI",
+      "result": "PASS",
+      "duration_ms": 806
+    },
+    {
+      "name": "administrator reviews then assigns via workbench",
+      "result": "PASS",
+      "duration_ms": 399
+    },
+    {
+      "name": "technician sees assigned ticket and starts through UI",
+      "result": "PASS",
+      "duration_ms": 239
+    },
+    {
+      "name": "technician submits result with photo through mobile UI",
+      "result": "PASS",
+      "duration_ms": 440
+    },
+    {
+      "name": "reporter requests rework with required reason",
+      "result": "PASS",
+      "duration_ms": 367
+    },
+    {
+      "name": "technician resubmits reworked result and second photo",
+      "result": "PASS",
+      "duration_ms": 426
+    },
+    {
+      "name": "reporter confirms via UI; exact same payload replay is idempotent",
+      "result": "PASS",
+      "duration_ms": 236
+    }
+  ],
+  "transitions": [
+    {
+      "action": "submit",
+      "role": "REPORTER",
+      "http_status": 201,
+      "response": {
+        "id": 1,
+        "code": "CF-20261123-000001",
+        "status": "SUBMITTED",
+        "version": 1,
+        "created_at": "2026-11-23T09:40:50.572821Z",
+        "updated_at": "2026-11-23T09:40:50.572821Z",
+        "closed_at": null,
+        "current_assignee_id": null
+      }
+    },
+    {
+      "action": "review",
+      "role": "ADMIN",
+      "http_status": 200,
+      "response": {
+        "id": 1,
+        "code": "CF-20261123-000001",
+        "status": "PENDING_ASSIGNMENT",
+        "version": 2,
+        "created_at": "2026-11-23T09:40:50.572821Z",
+        "updated_at": "2026-11-23T09:40:51.185832Z",
+        "closed_at": null,
+        "current_assignee_id": null
+      }
+    },
+    {
+      "action": "assign",
+      "role": "ADMIN",
+      "http_status": 200,
+      "response": {
+        "id": 1,
+        "code": "CF-20261123-000001",
+        "status": "ASSIGNED",
+        "version": 3,
+        "created_at": "2026-11-23T09:40:50.572821Z",
+        "updated_at": "2026-11-23T09:40:51.335179Z",
+        "closed_at": null,
+        "current_assignee_id": 2
+      }
+    },
+    {
+      "action": "start",
+      "role": "TECHNICIAN",
+      "http_status": 200,
+      "response": {
+        "id": 1,
+        "code": "CF-20261123-000001",
+        "status": "IN_PROGRESS",
+        "version": 4,
+        "created_at": "2026-11-23T09:40:50.572821Z",
+        "updated_at": "2026-11-23T09:40:51.620501Z",
+        "closed_at": null,
+        "current_assignee_id": 2
+      }
+    },
+    {
+      "action": "resolve",
+      "role": "TECHNICIAN",
+      "http_status": 200,
+      "response": {
+        "id": 1,
+        "code": "CF-20261123-000001",
+        "status": "PENDING_CONFIRMATION",
+        "version": 5,
+        "created_at": "2026-11-23T09:40:50.572821Z",
+        "updated_at": "2026-11-23T09:40:52.055024Z",
+        "closed_at": null,
+        "current_assignee_id": 2
+      }
+    },
+    {
+      "action": "rework",
+      "role": "REPORTER",
+      "http_status": 200,
+      "response": {
+        "id": 1,
+        "code": "CF-20261123-000001",
+        "status": "IN_PROGRESS",
+        "version": 6,
+        "created_at": "2026-11-23T09:40:50.572821Z",
+        "updated_at": "2026-11-23T09:40:52.418096Z",
+        "closed_at": null,
+        "current_assignee_id": 2
+      }
+    },
+    {
+      "action": "resolve",
+      "role": "TECHNICIAN",
+      "http_status": 200,
+      "response": {
+        "id": 1,
+        "code": "CF-20261123-000001",
+        "status": "PENDING_CONFIRMATION",
+        "version": 7,
+        "created_at": "2026-11-23T09:40:50.572821Z",
+        "updated_at": "2026-11-23T09:40:52.636783Z",
+        "closed_at": null,
+        "current_assignee_id": 2
+      }
+    },
+    {
+      "action": "confirm",
+      "role": "REPORTER",
+      "http_status": 200,
+      "response": {
+        "id": 1,
+        "code": "CF-20261123-000001",
+        "status": "CLOSED",
+        "version": 8,
+        "created_at": "2026-11-23T09:40:50.572821Z",
+        "updated_at": "2026-11-23T09:40:53.017427Z",
+        "closed_at": "2026-11-23T09:40:53.017427Z",
+        "current_assignee_id": 2
+      }
+    },
+    {
+      "action": "confirm_same_payload_replay",
+      "role": "REPORTER",
+      "http_status": 200,
+      "response": {
+        "id": 1,
+        "code": "CF-20261123-000001",
+        "status": "CLOSED",
+        "version": 8,
+        "created_at": "2026-11-23T09:40:50.572821Z",
+        "updated_at": "2026-11-23T09:40:53.017427Z",
+        "closed_at": "2026-11-23T09:40:53.017427Z",
+        "current_assignee_id": 2
+      }
+    }
+  ],
+  "network": [
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 401
+    },
+    {
+      "role": "REPORTER",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/tickets",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 401
+    },
+    {
+      "role": "ADMIN",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 401
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/tickets",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/locations",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/locations",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "POST",
+      "path": "/api/tickets",
+      "status": 201
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/attachments/1",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/attachments/1",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "POST",
+      "path": "/api/tickets/1/review",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/admin/users",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "POST",
+      "path": "/api/tickets/1/assign",
+      "status": 200
+    },
+    {
+      "role": "ADMIN",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/tickets",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/tickets",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/attachments/1",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "POST",
+      "path": "/api/tickets/1/start",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "POST",
+      "path": "/api/tickets/1/resolve",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/attachments/2",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/attachments/1",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/attachments/2",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "POST",
+      "path": "/api/tickets/1/rework",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/attachments/1",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/attachments/2",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "POST",
+      "path": "/api/tickets/1/resolve",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/attachments/3",
+      "status": 200
+    },
+    {
+      "role": "TECHNICIAN",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/me",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/attachments/2",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/attachments/1",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/attachments/3",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "POST",
+      "path": "/api/tickets/1/confirm",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "POST",
+      "path": "/api/tickets/1/confirm",
+      "status": 200
+    },
+    {
+      "role": "REPORTER",
+      "method": "GET",
+      "path": "/api/tickets/1",
+      "status": 200
+    }
+  ],
+  "page_errors": [],
+  "blocked_external_requests": [],
+  "screenshots": [
+    {
+      "role": "TECHNICIAN",
+      "file": "01-technician-workbench.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "role": "REPORTER",
+      "file": "02-reporter-create.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "role": "REPORTER",
+      "file": "03-reporter-submitted.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "role": "ADMIN",
+      "file": "04-admin-assigned.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "role": "TECHNICIAN",
+      "file": "05-technician-assigned-list.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "role": "TECHNICIAN",
+      "file": "06-technician-mobile-result-photo.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "role": "REPORTER",
+      "file": "07-reporter-rework.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "role": "TECHNICIAN",
+      "file": "08-technician-resubmitted.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "role": "REPORTER",
+      "file": "09-reporter-closed.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    }
+  ],
+  "assertions": {
+    "mobile_dialog": {
+      "width": 390,
+      "scrollWidth": 388,
+      "viewport": 390
+    },
+    "event_sequence": {
+      "expected": [
+        "TICKET_SUBMITTED",
+        "TICKET_APPROVED",
+        "TICKET_ASSIGNED",
+        "WORK_STARTED",
+        "RESOLUTION_SUBMITTED",
+        "REWORK_REQUESTED",
+        "RESOLUTION_SUBMITTED",
+        "TICKET_CLOSED"
+      ],
+      "observed": [
+        "TICKET_SUBMITTED",
+        "TICKET_APPROVED",
+        "TICKET_ASSIGNED",
+        "WORK_STARTED",
+        "RESOLUTION_SUBMITTED",
+        "REWORK_REQUESTED",
+        "RESOLUTION_SUBMITTED",
+        "TICKET_CLOSED"
+      ],
+      "exact_order_match": true
+    },
+    "confirm_replay": {
+      "exact_original_payload": true,
+      "idempotency_key_present": true,
+      "key_redacted": true,
+      "response_status": 200,
+      "unchanged_version": true,
+      "unchanged_closed_at": true,
+      "unchanged_timeline": true,
+      "ticket_closed_events": 1
+    }
+  },
+  "browser_version": "157.0.8103.80",
+  "ticket": {
+    "id": 1,
+    "code": "CF-20261123-000001",
+    "title": "C7 synthetic repair lifecycle 1795426850242"
+  },
+  "final_events": [
+    {
+      "id": 1,
+      "type": "TICKET_SUBMITTED",
+      "created_at": "2026-11-23T09:40:50.572821Z"
+    },
+    {
+      "id": 2,
+      "type": "TICKET_APPROVED",
+      "created_at": "2026-11-23T09:40:51.184823Z"
+    },
+    {
+      "id": 3,
+      "type": "TICKET_ASSIGNED",
+      "created_at": "2026-11-23T09:40:51.333994Z"
+    },
+    {
+      "id": 4,
+      "type": "WORK_STARTED",
+      "created_at": "2026-11-23T09:40:51.619769Z"
+    },
+    {
+      "id": 5,
+      "type": "RESOLUTION_SUBMITTED",
+      "created_at": "2026-11-23T09:40:52.053795Z"
+    },
+    {
+      "id": 6,
+      "type": "REWORK_REQUESTED",
+      "created_at": "2026-11-23T09:40:52.417294Z"
+    },
+    {
+      "id": 7,
+      "type": "RESOLUTION_SUBMITTED",
+      "created_at": "2026-11-23T09:40:52.635475Z"
+    },
+    {
+      "id": 8,
+      "type": "TICKET_CLOSED",
+      "created_at": "2026-11-23T09:40:53.016414Z"
+    }
+  ],
+  "final_ticket": {
+    "id": 1,
+    "code": "CF-20261123-000001",
+    "status": "CLOSED",
+    "version": 8,
+    "closed_at": "2026-11-23T09:40:53.017427Z",
+    "report_photos": 1,
+    "resolution_photos": 2,
+    "event_types": [
+      "TICKET_SUBMITTED",
+      "TICKET_APPROVED",
+      "TICKET_ASSIGNED",
+      "WORK_STARTED",
+      "RESOLUTION_SUBMITTED",
+      "REWORK_REQUESTED",
+      "RESOLUTION_SUBMITTED",
+      "TICKET_CLOSED"
+    ],
+    "assignments": 1
+  },
+  "result": "PASS",
+  "finished_at": "2026-11-23T09:40:53.126Z"
+}

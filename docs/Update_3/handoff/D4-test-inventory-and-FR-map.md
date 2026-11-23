@@ -2,17 +2,16 @@
 
 整理日期：2026-11-23。交给彭兆彬统一编正式 TC 编号；本清单不预编 TC，也不把覆盖率或测试通过数当成需求验收结论。FR 编号以 `docs/CampusFix_PRD.md` 第 5 节的 **FR-01 至 FR-12** 和冻结 P0 基线为准。一个测试可支撑多个 FR；表中的 FR 是所测行为的归属，不表示该文件的每个参数化实例都单独证明全部所列 FR。
 
-**完整逐函数索引：**[D4-test-functions.tsv](D4-test-functions.tsv)。共 623 条：旧版后端 300 个函数、#120 新增的 2 个函数、当前版统计模块 3 个函数、当前前端 318 个用例。每行含文件、精确函数／用例名、来源运行的实例数、候选 FR 范围、结果及 SHA。`candidate_FR_scope` 是**文件级候选范围**，不是逐函数断言结论；编 TC 时应以本页 FR 表及测试断言确认精确映射。`shared-infrastructure` 表示通用支撑测试，不强行分配单个业务 FR。
+**完整逐函数索引：**[D4-test-functions.tsv](D4-test-functions.tsv)。共 623 条：后端 305 个函数、前端 318 个用例，均对应同一次全量运行。每行含文件、精确函数／用例名、参数化实例数、候选 FR 范围、结果及 SHA。`candidate_FR_scope` 是**文件级候选范围**，不是逐函数断言结论；编 TC 时应以本页 FR 表及测试断言确认精确映射。`shared-infrastructure` 表示通用支撑测试，不强行分配单个业务 FR。
 
 ## 版本与统计口径
 
 | 证据 | 被测源码 / 执行结果 | 用途与边界 |
 | --- | --- | --- |
-| [11 月 21 日全量 JUnit](../../verification/2026-11-21-coverage/README.md) | `main@46304e481da466e7bf78eac5be84f68f2abc2764` 加 #119 覆盖率配置；pytest **753/753 通过**（27 文件，0 失败、0 错误、0 跳过）；Vitest **312/312 通过**（18 文件，0 失败、0 错误、0 跳过） | [后端 XML](../../verification/2026-11-21-coverage/backend-results.xml)与[前端 XML](../../verification/2026-11-21-coverage/frontend-results.xml)给出每个实例的完整函数／用例名和结果。753 与 312 分属不同测试框架。 |
-| [11 月 23 日 C7/C8 专项](../../verification/2026-11-23-update3-acceptance/README.md) | `main@c5b600f16635dd11589a0d93c6592890192e8598`；pytest **170/170 通过**（7 文件，0 失败、0 错误、0 跳过） | [专项 XML](../../verification/2026-11-23-update3-acceptance/backend-junit.xml)包括 #120 新增的 2 个 C3 函数；170 是全量测试的子集，不与 753 相加。 |
-| 当前工作树 `main@1fa6102a641876c1a24b7d2ca0ec4dc241e2248b` | Vitest **318/318 通过**（20 文件，0 失败、0 跳过）；`test_analytics_api.py` 专项 pytest **3/3 通过**（0 失败、0 错误、0 跳过） | 前端比旧版多 `accounts.test.tsx` 与 `analytics.test.tsx` 各 3 项。后端专项使用 Python 3.12.13、pytest 8.4.2、临时 PostgreSQL 17.11，命令为 `CAMPUSFIX_TEST_DATABASE_URL=<临时测试库 URL> TZ=UTC PGTZ=UTC ALLOWED_ORIGINS=http://localhost:5173 python -m pytest -q tests/test_analytics_api.py`。当前版后端**全量** pytest 未运行；不得把 753 或 170 写成当前 SHA 的全量通过数。 |
+| [11 月 23 日全量 JUnit](../../verification/2026-11-23-coverage-6fe349f/README.md) | 被测 `main@6fe349f01acc5ae6f17d1059e2e8984676016ab9`；pytest **758/758 通过**（28 文件，0 失败、0 错误、0 跳过）；Vitest **318/318 通过**（20 文件，0 失败、0 错误、0 跳过） | [后端 XML](../../verification/2026-11-23-coverage-6fe349f/backend-results.xml)和[前端 XML](../../verification/2026-11-23-coverage-6fe349f/frontend-results.xml)是本清单的逐函数结果来源。当前 `main@667d9303` 相比被测 SHA 只新增 #127 证据文档，应用及测试代码无差异；不能把被测 SHA 改写为当前提交。 |
+| [11 月 23 日 C7/C8 专项](../../verification/2026-11-23-update3-acceptance/README.md) | 历史被测 `main@c5b600f16635dd11589a0d93c6592890192e8598`；pytest **170/170 通过**（7 文件，0 失败、0 错误、0 跳过） | [专项 XML](../../verification/2026-11-23-update3-acceptance/backend-junit.xml)和同版本浏览器证据供 C7/C8 使用；170 项不与新全量 758 项相加。 |
 
-pytest 数字是**参数化展开后的实例数**，不是函数定义数。前端数字是 `it`/`test` 用例数。下面的文件表采用以上已实跑数字；`--` 表示该文件不在对应历史报告中，不能按 0 项理解。完整的历史用例名以 XML 的 `classname` + `name` 为准，当前新增函数名见文末。
+pytest 数字是**参数化展开后的实例数**，不是函数定义数。前端数字是 `it`/`test` 用例数。下面的文件表采用同一全量 JUnit 的实跑数字；完整用例名以 XML 的 `classname` + `name` 为准。
 
 ## FR 到具体测试
 
@@ -30,12 +29,12 @@ pytest 数字是**参数化展开后的实例数**，不是函数定义数。前
 | FR-08 结果说明、照片与待确认状态 | `test_workflow_api.py::test_resolution_photo_is_private_metadata_and_file`；`test_workflow_api.py::test_invalid_result_photo_leaves_no_file_or_state_change`；`test_workflow_api.py::test_result_photo_and_state_roll_back_when_event_insert_fails` | `ticketDetail.test.tsx > requires a resolution note even when a photo is selected`；`ticketDetail.test.tsx > shows an indexed photo error beside the picker and keeps the note available for retry` |
 | FR-09 原报修人确认／返工、幂等 | `test_workflow_api.py::test_reporter_rework_preserves_assignee_and_can_resolve_again`；`test_workflow_api.py::test_confirm_replay_requires_matching_key_and_version`；`test_workflow_api.py::test_repeating_confirm_preserves_a_single_ticket_closed_event`（#120 新增）；`test_workflow_api.py::test_concurrent_confirm_replay_has_one_event` | `ticketDetail.test.tsx > keeps the rework dialog open when the required reason is empty`；`mockApi.test.ts > replays only the matching successful confirm request` |
 | FR-10 留言、公开时间线与内部备注 | `test_comments_api.py::test_allowed_comment_is_a_contract_row_without_state_version_or_event_change`；`test_comments_api.py::test_non_admin_internal_note_is_denied_and_never_written`；`test_ticket_detail_api.py::test_internal_timeline_is_filtered_in_sql_before_public_http_response` | `reporterPages.test.tsx > posts a public comment as the reporter and shows it on the timeline`；`ticketDetail.test.tsx > sorts ascending without mutating input and hides internal notes from a reporter` |
-| FR-11 真实统计与空数据 | `test_analytics_api.py::test_analytics_matches_ticket_rows_and_shanghai_days`；`test_analytics_api.py::test_shanghai_midnight_and_waiting_for_confirmation_count_in_close_time`；`test_analytics_api.py::test_analytics_requires_admin_and_has_stable_empty_response`（当前版专项 3/3 通过） | `analytics.test.tsx > renders real aggregates and labels total close duration`；`analytics.test.tsx > renders empty statistics without hiding the dashboard sections`（当前版 3/3 通过） |
+| FR-11 真实统计与空数据 | `test_analytics_api.py::test_analytics_matches_ticket_rows_and_shanghai_days`；`test_analytics_api.py::test_shanghai_midnight_and_waiting_for_confirmation_count_in_close_time`；`test_analytics_api.py::test_analytics_requires_admin_and_has_stable_empty_response` | `analytics.test.tsx > renders real aggregates and labels total close duration`；`analytics.test.tsx > renders empty statistics without hiding the dashboard sections` |
 | FR-12 地点维护与历史快照 | `test_locations_api.py::test_create_edit_disable_enable_returns_current_utc_resource_without_deleting`；`test_locations_api.py::test_rename_and_disable_leave_historical_ticket_snapshot_and_workflow_data_unchanged`；`test_location_ticket_selection.py::test_location_disabled_after_an_earlier_selection_is_rejected_on_reselection` | `locations.test.tsx > edits, disables and re-enables without changing an existing ticket's snapshot`；`locations.test.tsx > loads every active page and chooses a leaf ID, resetting descendants when a parent changes` |
 
 ## 后端全文件清单
 
-路径统一前缀 `backend/tests/`。数字为 11 月 21 日全量 JUnit 的**实例数**；`test_workflow_api.py` 在 11 月 23 日专项 XML 中为 **44** 项，增加的另一个函数是 `test_technician_list_after_dispatch_only_returns_current_assignments`。`test_analytics_api.py` 是此后合入的当前版文件，已单独跑过 3 项，未包含于两份归档后端 XML。`conftest.py` 仅为夹具配置，不是测试文件。
+路径统一前缀 `backend/tests/`。数字为 `main@6fe349f` 全量 JUnit 的**实例数**。`conftest.py` 仅为夹具配置，不是测试文件。
 
 | 测试文件 | 已实跑实例数 | 对应 FR / 基础设施 | 具体函数示例 |
 | --- | ---: | --- | --- |
@@ -65,12 +64,12 @@ pytest 数字是**参数化展开后的实例数**，不是函数定义数。前
 | `test_ticket_reads.py` | 15 | FR-04、FR-10、FR-12 | `test_role_scopes_are_applied_before_seek_and_limit_including_closed_history` |
 | `test_ticket_responses.py` | 21 | FR-03、FR-04、FR-10 | `test_detail_examples_round_trip_and_match_frozen_schema` |
 | `test_ticket_schemas.py` | 83 | FR-02、FR-04 | `test_create_requires_all_four_fields`；`test_list_contains_all_seven_filter_groups_and_pagination` |
-| `test_workflow_api.py` | 42（旧版）；44（11 月 23 日专项） | FR-05–10 | `test_technician_start_and_resolve_then_reporter_confirm`；`test_repeating_confirm_preserves_a_single_ticket_closed_event`（仅新版） |
-| `test_analytics_api.py` | 3（当前版专项） | FR-11 | `test_analytics_matches_ticket_rows_and_shanghai_days`；`test_shanghai_midnight_and_waiting_for_confirmation_count_in_close_time`；`test_analytics_requires_admin_and_has_stable_empty_response` |
+| `test_workflow_api.py` | 44 | FR-05–10 | `test_technician_start_and_resolve_then_reporter_confirm`；`test_repeating_confirm_preserves_a_single_ticket_closed_event` |
+| `test_analytics_api.py` | 3 | FR-11 | `test_analytics_matches_ticket_rows_and_shanghai_days`；`test_shanghai_midnight_and_waiting_for_confirmation_count_in_close_time`；`test_analytics_requires_admin_and_has_stable_empty_response` |
 
 ## 前端全文件清单
 
-路径统一前缀 `frontend/src/test/`。数字是**当前 `main@1fa6102` 本机 Vitest 实跑结果**；旧版完整函数名及结果见上述前端 XML。前端用例名的完整定位格式为 `文件 > describe 名 > it 名`，表中省略 `describe`；例如 `technicianWorkbench.test.tsx > #55 technician workbench — FR-04 / UC-03 entry > renders only A's assignments with status, snapshot, priority, reported time and detail links, including closed tickets`。
+路径统一前缀 `frontend/src/test/`。数字是**`main@6fe349f` 全量 Vitest 实跑结果**。前端用例名的完整定位格式为 `文件 > describe 名 > it 名`，表中省略 `describe`；例如 `technicianWorkbench.test.tsx > #55 technician workbench — FR-04 / UC-03 entry > renders only A's assignments with status, snapshot, priority, reported time and detail links, including closed tickets`。
 
 | 测试文件 | 当前通过 | 对应 FR / 基础设施 | 具体用例名示例（`it` 文本） |
 | --- | ---: | --- | --- |
@@ -98,5 +97,5 @@ pytest 数字是**参数化展开后的实例数**，不是函数定义数。前
 ## 给报告组的使用说明
 
 1. 用上方 FR 表选具体测试函数作为 TC 候选，按需求行为拆分 TC，不直接把参数化实例数当 TC 数。复合闭环测试可在多个 FR 下引用同一个测试 ID，并标注它实际断言的步骤。
-2. 要完整列出某文件的每个测试函数，筛选[逐函数索引](D4-test-functions.tsv)的 `file` 列；要展开历史 pytest 的每个参数化实例，从对应 JUnit 按 `classname` 筛选 `testcase`。当前版前端新增 6 项在两个新文件中；当前版后端新增函数分别见 #120 专项 XML 和本页 FR-11 行。
-3. D4 的正式结果栏应注明执行 SHA。当前 `main` 的后端全量数字需另行实跑后补入；11 月 21 日的覆盖率数字也只属于那次测量基线。
+2. 要完整列出某文件的每个测试函数，筛选[逐函数索引](D4-test-functions.tsv)的 `file` 列；要展开 pytest 的每个参数化实例，从同版[后端 JUnit](../../verification/2026-11-23-coverage-6fe349f/backend-results.xml)按 `classname` 筛选 `testcase`。
+3. D4 的正式结果栏注明被测 SHA `6fe349f` 与 2026-11-23 的执行时间。C7/C8 的浏览器验收仍对应历史 `c5b600f`；全量测试通过不能代替新版本的浏览器闭环。

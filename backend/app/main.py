@@ -11,6 +11,7 @@ from app.core.security import OriginError, require_same_origin
 from app.modules.attachments.router import router as attachments_router
 from app.modules.auth.router import router as auth_router
 from app.modules.comments.router import router as comments_router
+from app.modules.analytics.router import router as analytics_router
 from app.modules.locations.router import router as locations_router
 from app.modules.tickets.router import router as tickets_router
 from app.modules.users.router import router as users_router
@@ -136,6 +137,7 @@ def create_app() -> FastAPI:
     app.include_router(locations_router)
     app.include_router(attachments_router)
     app.include_router(comments_router)
+    app.include_router(analytics_router)
     app.include_router(tickets_router)
     app.include_router(workflow_router)
 

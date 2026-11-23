@@ -1,0 +1,389 @@
+{
+  "source_commit": "6fe349f01acc5ae6f17d1059e2e8984676016ab9",
+  "oracle": "Python Counter and zoneinfo aggregation of actual PostgreSQL rows; does not call application analytics service",
+  "timezone": "Asia/Shanghai",
+  "today": "2026-11-23",
+  "window_start": "2026-10-25",
+  "fixture_rows": [
+    {
+      "id": 1,
+      "status": "SUBMITTED",
+      "category": "LIGHTING_ELECTRICAL",
+      "building": "Analytics Building A",
+      "created_at": "2026-11-21T04:00:00+00:00",
+      "closed_at": null
+    },
+    {
+      "id": 2,
+      "status": "PENDING_ASSIGNMENT",
+      "category": "DOORS_WINDOWS_LOCKS",
+      "building": "Analytics Building B",
+      "created_at": "2026-11-21T04:00:00+00:00",
+      "closed_at": null
+    },
+    {
+      "id": 3,
+      "status": "ASSIGNED",
+      "category": "FURNITURE",
+      "building": "Analytics Building C",
+      "created_at": "2026-11-21T04:00:00+00:00",
+      "closed_at": null
+    },
+    {
+      "id": 4,
+      "status": "IN_PROGRESS",
+      "category": "HVAC",
+      "building": "Analytics Building A",
+      "created_at": "2026-11-21T04:00:00+00:00",
+      "closed_at": null
+    },
+    {
+      "id": 5,
+      "status": "PENDING_CONFIRMATION",
+      "category": "WATER_SANITARY",
+      "building": "Analytics Building B",
+      "created_at": "2026-11-21T04:00:00+00:00",
+      "closed_at": null
+    },
+    {
+      "id": 6,
+      "status": "CLOSED",
+      "category": "OTHER_FACILITY",
+      "building": "Analytics Building C",
+      "created_at": "2026-11-21T04:00:00+00:00",
+      "closed_at": "2026-11-22T04:00:00+00:00"
+    },
+    {
+      "id": 7,
+      "status": "REJECTED",
+      "category": "LIGHTING_ELECTRICAL",
+      "building": "Analytics Building A",
+      "created_at": "2026-11-21T04:00:00+00:00",
+      "closed_at": null
+    },
+    {
+      "id": 8,
+      "status": "CANCELLED",
+      "category": "DOORS_WINDOWS_LOCKS",
+      "building": "Analytics Building B",
+      "created_at": "2026-11-21T04:00:00+00:00",
+      "closed_at": null
+    },
+    {
+      "id": 9,
+      "status": "CLOSED",
+      "category": "FURNITURE",
+      "building": "Analytics Building C",
+      "created_at": "2026-11-19T04:00:00+00:00",
+      "closed_at": "2026-11-21T04:00:00+00:00"
+    },
+    {
+      "id": 10,
+      "status": "CLOSED",
+      "category": "HVAC",
+      "building": "Analytics Building A",
+      "created_at": "2026-10-19T04:00:00+00:00",
+      "closed_at": "2026-10-23T04:00:00+00:00"
+    },
+    {
+      "id": 11,
+      "status": "SUBMITTED",
+      "category": "WATER_SANITARY",
+      "building": "Analytics Building B",
+      "created_at": "2026-10-24T15:59:59+00:00",
+      "closed_at": null
+    },
+    {
+      "id": 12,
+      "status": "SUBMITTED",
+      "category": "OTHER_FACILITY",
+      "building": "Analytics Building C",
+      "created_at": "2026-10-24T16:00:00+00:00",
+      "closed_at": null
+    },
+    {
+      "id": 13,
+      "status": "SUBMITTED",
+      "category": "LIGHTING_ELECTRICAL",
+      "building": "Analytics Building A",
+      "created_at": "2026-11-22T15:59:59+00:00",
+      "closed_at": null
+    },
+    {
+      "id": 14,
+      "status": "SUBMITTED",
+      "category": "DOORS_WINDOWS_LOCKS",
+      "building": "Analytics Building B",
+      "created_at": "2026-11-22T16:00:00+00:00",
+      "closed_at": null
+    },
+    {
+      "id": 15,
+      "status": "CANCELLED",
+      "category": "FURNITURE",
+      "building": "Analytics Building C",
+      "created_at": "2026-11-23T16:00:00+00:00",
+      "closed_at": null
+    }
+  ],
+  "resolution_events": [
+    {
+      "ticket_id": 6,
+      "at": "2026-11-21T05:00:00+00:00"
+    },
+    {
+      "ticket_id": 9,
+      "at": "2026-11-19T05:00:00+00:00"
+    },
+    {
+      "ticket_id": 10,
+      "at": "2026-10-19T05:00:00+00:00"
+    }
+  ],
+  "expected": {
+    "by_status": [
+      {
+        "status": "SUBMITTED",
+        "count": 5
+      },
+      {
+        "status": "PENDING_ASSIGNMENT",
+        "count": 1
+      },
+      {
+        "status": "ASSIGNED",
+        "count": 1
+      },
+      {
+        "status": "IN_PROGRESS",
+        "count": 1
+      },
+      {
+        "status": "PENDING_CONFIRMATION",
+        "count": 1
+      },
+      {
+        "status": "CLOSED",
+        "count": 3
+      },
+      {
+        "status": "REJECTED",
+        "count": 1
+      },
+      {
+        "status": "CANCELLED",
+        "count": 2
+      }
+    ],
+    "by_category": [
+      {
+        "category": "LIGHTING_ELECTRICAL",
+        "count": 3
+      },
+      {
+        "category": "DOORS_WINDOWS_LOCKS",
+        "count": 3
+      },
+      {
+        "category": "FURNITURE",
+        "count": 3
+      },
+      {
+        "category": "HVAC",
+        "count": 2
+      },
+      {
+        "category": "WATER_SANITARY",
+        "count": 2
+      },
+      {
+        "category": "OTHER_FACILITY",
+        "count": 2
+      }
+    ],
+    "by_building": [
+      {
+        "building": "Analytics Building A",
+        "count": 5
+      },
+      {
+        "building": "Analytics Building B",
+        "count": 5
+      },
+      {
+        "building": "Analytics Building C",
+        "count": 5
+      }
+    ],
+    "backlog_count": 9,
+    "average_close_seconds": 201600.0,
+    "daily_trend": [
+      {
+        "date": "2026-10-25",
+        "created_count": 1,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-10-26",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-10-27",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-10-28",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-10-29",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-10-30",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-10-31",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-01",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-02",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-03",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-04",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-05",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-06",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-07",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-08",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-09",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-10",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-11",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-12",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-13",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-14",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-15",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-16",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-17",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-18",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-19",
+        "created_count": 1,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-20",
+        "created_count": 0,
+        "closed_count": 0
+      },
+      {
+        "date": "2026-11-21",
+        "created_count": 8,
+        "closed_count": 1
+      },
+      {
+        "date": "2026-11-22",
+        "created_count": 1,
+        "closed_count": 1
+      },
+      {
+        "date": "2026-11-23",
+        "created_count": 1,
+        "closed_count": 0
+      }
+    ]
+  },
+  "checks": {
+    "all_eight_statuses": true,
+    "all_six_categories": true,
+    "three_buildings": true,
+    "full_close_duration_seconds": [
+      86400.0,
+      172800.0,
+      345600.0
+    ],
+    "processing_only_average_seconds": 3600,
+    "expected_full_average_seconds": 201600,
+    "start_midnight_boundary_pair": true,
+    "today_midnight_boundary_pair": true,
+    "old_and_future_created_excluded_from_trend": true,
+    "old_closed_still_in_all_time_average": true
+  }
+}

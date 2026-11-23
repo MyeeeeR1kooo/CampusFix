@@ -1,0 +1,17 @@
+PASS three real role logins and historical ticket baseline
+PASS Admin managed accounts role/status filters and clear
+PASS REPORTER UI disable denies stale session/login; history remains
+PASS REPORTER UI re-enable allows fresh login without reviving old session
+PASS TECHNICIAN UI disable denies stale session/login; history remains
+PASS TECHNICIAN UI re-enable allows fresh login without reviving old session
+PASS non-Admin account access and Admin self-disable are forbidden
+PASS both managed accounts restored and original history unchanged
+{
+  "result": "PASS",
+  "exit_code": 0,
+  "scenarios": 8,
+  "observations": 38,
+  "screenshots": 13
+}
+
+PROCESS_EXIT_CODE=0

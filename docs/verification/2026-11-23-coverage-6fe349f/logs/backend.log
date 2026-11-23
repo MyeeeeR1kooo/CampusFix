@@ -1,0 +1,82 @@
+........................................................................ [  9%]
+........................................................................ [ 18%]
+........................................................................ [ 28%]
+........................................................................ [ 37%]
+........................................................................ [ 47%]
+........................................................................ [ 56%]
+........................................................................ [ 66%]
+........................................................................ [ 75%]
+........................................................................ [ 85%]
+........................................................................ [ 94%]
+......................................                                   [100%]
+=============================== warnings summary ===============================
+../../../../..<venv>/lib/python3.12/site-packages/fastapi/testclient.py:1
+  <venv>/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: <run-directory>/raw/backend-results.xml -
+================================ tests coverage ================================
+______________ coverage: platform darwin, python 3.12.13-final-0 _______________
+
+Name                                        Stmts   Miss  Cover   Missing
+-------------------------------------------------------------------------
+app/__init__.py                                 0      0   100%
+app/core/__init__.py                            0      0   100%
+app/core/config.py                             39      2    95%   44, 54
+app/core/database.py                           12      0   100%
+app/core/errors.py                             20      0   100%
+app/core/security.py                           33      0   100%
+app/main.py                                    72      2    97%   92-93
+app/models.py                                  87      0   100%
+app/modules/__init__.py                         0      0   100%
+app/modules/analytics/__init__.py               0      0   100%
+app/modules/analytics/router.py                11      0   100%
+app/modules/analytics/schemas.py               30      0   100%
+app/modules/analytics/service.py               30      1    97%   26
+app/modules/attachments/__init__.py             0      0   100%
+app/modules/attachments/cleanup.py             44     16    64%   26, 32-33, 41-42, 47-57, 61
+app/modules/attachments/router.py              36      1    97%   41
+app/modules/attachments/service.py            118      5    96%   51-52, 54, 122, 127
+app/modules/attachments/storage.py             19      0   100%
+app/modules/auth/__init__.py                    0      0   100%
+app/modules/auth/dependencies.py               20      0   100%
+app/modules/auth/router.py                     35      0   100%
+app/modules/auth/service.py                     5      0   100%
+app/modules/comments/__init__.py                0      0   100%
+app/modules/comments/router.py                 11      0   100%
+app/modules/comments/schemas.py                 9      0   100%
+app/modules/comments/service.py                26      0   100%
+app/modules/locations/__init__.py               0      0   100%
+app/modules/locations/cursor.py                35      0   100%
+app/modules/locations/router.py                22      0   100%
+app/modules/locations/schemas.py               40      0   100%
+app/modules/locations/service.py               48      0   100%
+app/modules/locations/ticket_selection.py      18      0   100%
+app/modules/tickets/__init__.py                 0      0   100%
+app/modules/tickets/access.py                  23      0   100%
+app/modules/tickets/creation.py                42      1    98%   39
+app/modules/tickets/detail_reads.py            41      0   100%
+app/modules/tickets/numbering.py                8      0   100%
+app/modules/tickets/pagination.py             106      2    98%   67, 99
+app/modules/tickets/read_models.py             79      1    99%   29
+app/modules/tickets/reads.py                   63      1    98%   45
+app/modules/tickets/responses.py               90      0   100%
+app/modules/tickets/router.py                  39      0   100%
+app/modules/tickets/schemas.py                 65      1    98%   113
+app/modules/users/__init__.py                   0      0   100%
+app/modules/users/cursor.py                    35      3    91%   31, 39, 45
+app/modules/users/router.py                    47      0   100%
+app/modules/users/schemas.py                   22      0   100%
+app/modules/workflow/__init__.py                0      0   100%
+app/modules/workflow/router.py                 35      0   100%
+app/modules/workflow/rules.py                   9      0   100%
+app/modules/workflow/schemas.py                28      0   100%
+app/modules/workflow/service.py               121      4    97%   134, 180, 217, 222
+app/modules/workflow/submission.py             18      2    89%   17, 19
+app/seed.py                                    60      4    93%   97-100, 106
+-------------------------------------------------------------------------
+TOTAL                                        1751     46    97%
+Coverage HTML written to dir <run-directory>/reports/backend/html
+Coverage XML written to file <run-directory>/reports/backend/coverage.xml
+758 passed, 1 warning in 121.71s (0:02:01)

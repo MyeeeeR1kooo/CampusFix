@@ -1,0 +1,15 @@
+{
+  "source_commit": "6fe349f01acc5ae6f17d1059e2e8984676016ab9",
+  "kind": "read-only post-run synthetic database snapshot",
+  "role_states": {
+    "ADMIN": true,
+    "REPORTER": true,
+    "TECHNICIAN": true
+  },
+  "fixture_ticket": {
+    "code": "CF-20261123-900001",
+    "status": "SUBMITTED",
+    "version": 1,
+    "reporter_id": 1
+  }
+}
